@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
@@ -9,10 +10,16 @@ import {
   Bookmark,
   Flag,
   Trash2,
+  TrendingUp,
+  Users,
+  Tag,
+  ArrowRight,
+  Smile,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
@@ -21,11 +28,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/authStore";
-import { mockPosts } from "@/data/mock";
+import { mockPosts, mockGroups, mockDiscounts, mockEvents } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import type { Post } from "@/types";
 
-function PostCard({ post, onDelete }: { post: Post; onDelete?: (id: string) => void }) {
+function PostCard({
+  post,
+  onDelete,
+}: {
+  post: Post;
+  onDelete?: (id: string) => void;
+}) {
   const [liked, setLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [saved, setSaved] = useState(false);
@@ -51,34 +64,51 @@ function PostCard({ post, onDelete }: { post: Post; onDelete?: (id: string) => v
   const isOwn = post.userId === user?.id;
 
   return (
-    <Card>
+    <Card className="border-0 shadow-none lg:border lg:shadow-sm hover:shadow-none">
       <CardContent className="p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          <Avatar className="w-10 h-10 shrink-0">
+          <Avatar className="w-10 h-10 shrink-0 ring-2 ring-background">
             <AvatarImage src={post.userAvatar} />
-            <AvatarFallback>{post.userName.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              {post.userName.charAt(0)}
+            </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <div>
-                <span className="font-semibold text-sm">{post.userName}</span>
-                <span className="text-xs text-muted-foreground ml-2">
-                  {timeAgo(post.createdAt)}
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm hover:underline cursor-pointer">
+                  {post.userName}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  · {timeAgo(post.createdAt)}
                 </span>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="w-8 h-8" aria-label="Gönderi seçenekleri">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-8 h-8 text-muted-foreground hover:text-foreground"
+                    aria-label="Gönderi seçenekleri"
+                  >
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setSaved(!saved)} className="gap-2">
-                    <Bookmark className={cn("w-4 h-4", saved && "fill-current")} />
+                  <DropdownMenuItem
+                    onClick={() => setSaved(!saved)}
+                    className="gap-2"
+                  >
+                    <Bookmark
+                      className={cn("w-4 h-4", saved && "fill-current")}
+                    />
                     {saved ? "Kaydı Kaldır" : "Kaydet"}
                   </DropdownMenuItem>
                   {isOwn && onDelete && (
-                    <DropdownMenuItem onClick={() => onDelete(post.id)} className="gap-2 text-destructive">
+                    <DropdownMenuItem
+                      onClick={() => onDelete(post.id)}
+                      className="gap-2 text-destructive"
+                    >
                       <Trash2 className="w-4 h-4" />
                       Sil
                     </DropdownMenuItem>
@@ -92,12 +122,14 @@ function PostCard({ post, onDelete }: { post: Post; onDelete?: (id: string) => v
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <p className="text-sm mt-2 leading-relaxed">{post.content}</p>
+            <p className="text-sm mt-2 leading-relaxed text-foreground/90">
+              {post.content}
+            </p>
             {post.imageUrl && (
               <img
                 src={post.imageUrl}
                 alt="Gönderi görseli"
-                className="w-full rounded-xl mt-3 object-cover max-h-80"
+                className="w-full rounded-xl mt-3 object-cover max-h-96 border border-border/50"
               />
             )}
             <div className="flex items-center gap-1 mt-3 -ml-2">
@@ -106,18 +138,26 @@ function PostCard({ post, onDelete }: { post: Post; onDelete?: (id: string) => v
                 size="sm"
                 onClick={toggleLike}
                 className={cn(
-                  "gap-1.5 text-xs",
-                  liked && "text-red-500 hover:text-red-600",
+                  "gap-1.5 text-xs text-muted-foreground hover:text-red-500",
+                  liked && "text-red-500 hover:text-red-600"
                 )}
               >
                 <Heart className={cn("w-4 h-4", liked && "fill-current")} />
                 {likesCount}
               </Button>
-              <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-xs text-muted-foreground hover:text-primary"
+              >
                 <MessageCircle className="w-4 h-4" />
                 {post.commentsCount}
               </Button>
-              <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-xs text-muted-foreground hover:text-primary"
+              >
                 <Share2 className="w-4 h-4" />
                 Paylaş
               </Button>
@@ -126,6 +166,174 @@ function PostCard({ post, onDelete }: { post: Post; onDelete?: (id: string) => v
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function FeedSidebar() {
+  const { user } = useAuthStore();
+  const suggestedGroups = mockGroups.filter((g) => !g.isMember).slice(0, 3);
+  const activeDiscounts = mockDiscounts.filter((d) => d.isActive).slice(0, 3);
+  const upcomingEvent = mockEvents[0];
+
+  return (
+    <div className="space-y-4">
+      <Card className="overflow-hidden">
+        <div className="h-16 bg-gradient-to-r from-primary/80 to-primary" />
+        <CardContent className="px-4 pb-4 -mt-6">
+          <Avatar className="w-12 h-12 ring-4 ring-card">
+            <AvatarImage src={user?.avatarUrl} />
+            <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+              {user?.fullName?.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="mt-2">
+            <p className="font-semibold text-sm">{user?.fullName}</p>
+            <p className="text-xs text-muted-foreground">{user?.department}</p>
+          </div>
+          <Separator className="my-3" />
+          <div className="grid grid-cols-3 text-center gap-2">
+            <div>
+              <p className="text-sm font-bold">
+                {mockPosts.filter((p) => p.userId === user?.id).length}
+              </p>
+              <p className="text-[10px] text-muted-foreground">Gönderi</p>
+            </div>
+            <div>
+              <p className="text-sm font-bold">
+                {mockGroups.filter((g) => g.isMember).length}
+              </p>
+              <p className="text-[10px] text-muted-foreground">Grup</p>
+            </div>
+            <div>
+              <p className="text-sm font-bold">24</p>
+              <p className="text-[10px] text-muted-foreground">Beğeni</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {upcomingEvent && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+                Yaklaşan Etkinlik
+              </h3>
+            </div>
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <p className="font-medium text-sm">{upcomingEvent.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {new Date(upcomingEvent.startDate).toLocaleDateString("tr-TR", {
+                  day: "numeric",
+                  month: "long",
+                })}
+                {" · "}
+                {upcomingEvent.location}
+              </p>
+            </div>
+            <Link to="/events">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full mt-2 gap-1 text-xs"
+              >
+                Tüm Etkinlikler <ArrowRight className="w-3 h-3" />
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
+      {suggestedGroups.length > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Users className="w-4 h-4 text-primary" />
+              <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+                Önerilen Gruplar
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {suggestedGroups.map((group) => (
+                <div key={group.id} className="flex items-center gap-3">
+                  {group.imageUrl ? (
+                    <img
+                      src={group.imageUrl}
+                      alt={group.name}
+                      className="w-9 h-9 rounded-lg object-cover shrink-0"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{group.name}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {group.memberCount} üye
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link to="/groups">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full mt-2 gap-1 text-xs"
+              >
+                Tüm Gruplar <ArrowRight className="w-3 h-3" />
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Tag className="w-4 h-4 text-accent" />
+            <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+              Aktif İndirimler
+            </h3>
+          </div>
+          <div className="space-y-2">
+            {activeDiscounts.map((d) => (
+              <div
+                key={d.id}
+                className="flex items-center justify-between py-1.5"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">
+                    {d.businessName}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {d.title}
+                  </p>
+                </div>
+                <Badge variant="accent" className="shrink-0 ml-2">
+                  %{d.discountRate}
+                </Badge>
+              </div>
+            ))}
+          </div>
+          <Link to="/discounts">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full mt-2 gap-1 text-xs"
+            >
+              Tüm İndirimler <ArrowRight className="w-3 h-3" />
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+
+      <p className="text-[11px] text-muted-foreground/50 text-center px-4">
+        EduConnect © 2026 · Tüm hakları saklıdır.
+      </p>
+    </div>
   );
 }
 
@@ -156,44 +364,93 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 lg:p-8 space-y-4">
-      <h1 className="text-2xl font-bold mb-2">Feed</h1>
+    <div className="p-4 lg:p-6 xl:p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex gap-6">
+          {/* Main Feed Column */}
+          <div className="flex-1 min-w-0 max-w-2xl space-y-4">
+            <h1 className="text-2xl font-bold lg:text-xl lg:font-semibold lg:text-muted-foreground lg:uppercase lg:tracking-wider lg:mb-1">
+              Feed
+            </h1>
 
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Avatar className="w-10 h-10 shrink-0">
-              <AvatarImage src={user?.avatarUrl} />
-              <AvatarFallback>{user?.fullName?.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <textarea
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                placeholder="Ne düşünüyorsun?"
-                rows={3}
-                className="w-full resize-none bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
-              />
-              <Separator className="my-2" />
-              <div className="flex items-center justify-between">
-                <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground">
-                  <ImagePlus className="w-4 h-4" />
-                  Fotoğraf
-                </Button>
-                <Button size="sm" onClick={handlePost} disabled={!newPost.trim()} className="gap-1.5">
-                  <Send className="w-3 h-3" />
-                  Paylaş
-                </Button>
-              </div>
+            {/* Post Composer */}
+            <Card className="border-0 shadow-none lg:border lg:shadow-sm hover:shadow-none">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Avatar className="w-10 h-10 shrink-0">
+                    <AvatarImage src={user?.avatarUrl} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      {user?.fullName?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <textarea
+                      value={newPost}
+                      onChange={(e) => setNewPost(e.target.value)}
+                      placeholder="Ne düşünüyorsun?"
+                      rows={2}
+                      className="w-full resize-none bg-secondary/50 rounded-xl px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-secondary/80 transition-all"
+                    />
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="gap-1.5 text-xs text-muted-foreground h-8"
+                        >
+                          <ImagePlus className="w-4 h-4" />
+                          <span className="hidden sm:inline">Fotoğraf</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="gap-1.5 text-xs text-muted-foreground h-8"
+                        >
+                          <Smile className="w-4 h-4" />
+                          <span className="hidden sm:inline">Emoji</span>
+                        </Button>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={handlePost}
+                        disabled={!newPost.trim()}
+                        className="gap-1.5 px-5"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        Paylaş
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Divider on mobile */}
+            <div className="lg:hidden">
+              <Separator />
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      <div className="space-y-4">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} onDelete={deletePost} />
-        ))}
+            {/* Posts */}
+            <div className="space-y-3 lg:space-y-4">
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} onDelete={deletePost} />
+              ))}
+            </div>
+
+            {posts.length > 0 && (
+              <p className="text-center text-sm text-muted-foreground py-6">
+                Tüm gönderileri gördünüz
+              </p>
+            )}
+          </div>
+
+          {/* Desktop Right Sidebar */}
+          <aside className="hidden xl:block w-72 2xl:w-80 shrink-0">
+            <div className="sticky top-6">
+              <FeedSidebar />
+            </div>
+          </aside>
+        </div>
       </div>
     </div>
   );
