@@ -1,12 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/store/chatStore";
-import { useAuthStore } from "@/store/authStore";
 import { chatBotResponses, mockChatMessages } from "@/data/mock";
 import type { ChatMessage } from "@/types";
 
@@ -19,70 +17,78 @@ const quickQuestions = [
 
 export default function ChatBubble() {
   const { isOpen, messages, isTyping, toggleChat, addMessage, setTyping } = useChatStore();
-  const { user } = useAuthStore();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const seeded = useRef(false);
 
   useEffect(() => {
-    if (messages.length === 0) {
+    if (!seeded.current && messages.length === 0) {
+      seeded.current = true;
       mockChatMessages.forEach((m) => addMessage(m));
     }
-  }, []);
+  }, [messages.length, addMessage]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    });
   }, [messages, isTyping]);
 
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 300);
+      const timer = setTimeout(() => inputRef.current?.focus(), 300);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
-  const getBotResponse = (message: string): string => {
+  const getBotResponse = useCallback((message: string): string => {
     const lowerMsg = message.toLowerCase();
-    for (const [key, response] of Object.entries(chatBotResponses)) {
-      if (key !== "default" && lowerMsg.includes(key)) {
-        return response;
-      }
+    const entries = Object.entries(chatBotResponses).filter(([k]) => k !== "default");
+    entries.sort((a, b) => b[0].length - a[0].length);
+    for (const [key, response] of entries) {
+      if (lowerMsg.includes(key)) return response;
     }
     return chatBotResponses.default;
-  };
+  }, []);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
+  const sendMessage = useCallback(
+    (text: string) => {
+      if (!text.trim() || isTyping) return;
 
-    const userMsg: ChatMessage = {
-      id: `cm-${Date.now()}`,
-      sessionId: "s1",
-      senderType: "user",
-      content: text.trim(),
-      timestamp: new Date().toISOString(),
-    };
-    addMessage(userMsg);
-    setInput("");
-    setTyping(true);
-
-    setTimeout(() => {
-      const botMsg: ChatMessage = {
-        id: `cm-${Date.now()}-bot`,
+      const userMsg: ChatMessage = {
+        id: `cm-${Date.now()}`,
         sessionId: "s1",
-        senderType: "bot",
-        content: getBotResponse(text),
+        senderType: "user",
+        content: text.trim(),
         timestamp: new Date().toISOString(),
       };
-      addMessage(botMsg);
-      setTyping(false);
-    }, 1200 + Math.random() * 800);
-  };
+      addMessage(userMsg);
+      setInput("");
+      setTyping(true);
+
+      setTimeout(() => {
+        const botMsg: ChatMessage = {
+          id: `cm-${Date.now()}-bot`,
+          sessionId: "s1",
+          senderType: "bot",
+          content: getBotResponse(text),
+          timestamp: new Date().toISOString(),
+        };
+        addMessage(botMsg);
+        setTyping(false);
+      }, 1200 + Math.random() * 800);
+    },
+    [addMessage, setTyping, isTyping, getBotResponse],
+  );
 
   return (
     <>
       <button
         onClick={toggleChat}
+        aria-label={isOpen ? "Sohbeti kapat" : "AI Asistanı aç"}
         className={cn(
           "fixed bottom-20 lg:bottom-6 right-4 lg:right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 cursor-pointer",
           isOpen
@@ -96,7 +102,7 @@ export default function ChatBubble() {
       <div
         className={cn(
           "fixed z-50 transition-all duration-300 ease-out",
-          "bottom-36 lg:bottom-22 right-4 lg:right-6",
+          "bottom-36 lg:bottom-24 right-4 lg:right-6",
           "w-[calc(100vw-2rem)] sm:w-96",
           isOpen
             ? "opacity-100 translate-y-0 pointer-events-auto"
@@ -115,54 +121,52 @@ export default function ChatBubble() {
             <Sparkles className="w-5 h-5 text-white/60" />
           </div>
 
-          <ScrollArea className="flex-1 p-4">
-            <div ref={scrollRef} className="space-y-3">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={cn(
-                    "flex gap-2 max-w-[85%]",
-                    msg.senderType === "user" ? "ml-auto flex-row-reverse" : "",
-                  )}
-                >
-                  {msg.senderType === "bot" && (
-                    <Avatar className="w-7 h-7 shrink-0 mt-1">
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                        <Bot className="w-4 h-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div
-                    className={cn(
-                      "rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
-                      msg.senderType === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-secondary text-secondary-foreground rounded-bl-md",
-                    )}
-                  >
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
-
-              {isTyping && (
-                <div className="flex gap-2 max-w-[85%]">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={cn(
+                  "flex gap-2 max-w-[85%]",
+                  msg.senderType === "user" ? "ml-auto flex-row-reverse" : "",
+                )}
+              >
+                {msg.senderType === "bot" && (
                   <Avatar className="w-7 h-7 shrink-0 mt-1">
                     <AvatarFallback className="bg-primary/10 text-primary text-xs">
                       <Bot className="w-4 h-4" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:0ms]" />
-                      <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:150ms]" />
-                      <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:300ms]" />
-                    </div>
+                )}
+                <div
+                  className={cn(
+                    "rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                    msg.senderType === "user"
+                      ? "bg-primary text-primary-foreground rounded-br-md"
+                      : "bg-secondary text-secondary-foreground rounded-bl-md",
+                  )}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+
+            {isTyping && (
+              <div className="flex gap-2 max-w-[85%]">
+                <Avatar className="w-7 h-7 shrink-0 mt-1">
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                    <Bot className="w-4 h-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:0ms]" />
+                    <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:150ms]" />
+                    <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:300ms]" />
                   </div>
                 </div>
-              )}
-            </div>
-          </ScrollArea>
+              </div>
+            )}
+          </div>
 
           {messages.length <= 1 && (
             <div className="px-4 pb-2">
@@ -195,6 +199,7 @@ export default function ChatBubble() {
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || isTyping}
               className="shrink-0 rounded-full"
+              aria-label="Mesaj gönder"
             >
               <Send className="w-4 h-4" />
             </Button>
