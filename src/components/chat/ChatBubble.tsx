@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MessageCircle, X, Send, Bot, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Bot, Sparkles, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -16,8 +16,10 @@ const quickQuestions = [
 ];
 
 export default function ChatBubble() {
-  const { isOpen, messages, isTyping, toggleChat, addMessage, setTyping } = useChatStore();
+  const { isOpen, messages, isTyping, toggleChat, addMessage, setTyping } =
+    useChatStore();
   const [input, setInput] = useState("");
+  const [feedbackGiven, setFeedbackGiven] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const seeded = useRef(false);
@@ -44,15 +46,41 @@ export default function ChatBubble() {
     }
   }, [isOpen]);
 
-  const getBotResponse = useCallback((message: string): string => {
-    const lowerMsg = message.toLowerCase();
-    const entries = Object.entries(chatBotResponses).filter(([k]) => k !== "default");
-    entries.sort((a, b) => b[0].length - a[0].length);
-    for (const [key, response] of entries) {
-      if (lowerMsg.includes(key)) return response;
-    }
-    return chatBotResponses.default;
-  }, []);
+  const getBotResponse = useCallback(
+    (message: string, recentMessages: ChatMessage[]): string => {
+      const lowerMsg = message.toLowerCase();
+      const entries = Object.entries(chatBotResponses).filter(
+        ([k]) => k !== "default",
+      );
+      entries.sort((a, b) => b[0].length - a[0].length);
+
+      for (const [key, response] of entries) {
+        if (lowerMsg.includes(key)) return response;
+      }
+
+      const words = lowerMsg.split(/\s+/).filter((w) => w.length > 2);
+      for (const word of words) {
+        for (const [key, response] of entries) {
+          if (key.includes(word) || word.includes(key)) return response;
+        }
+      }
+
+      const contextWindow = recentMessages.slice(-10);
+      const contextText = contextWindow
+        .map((m) => m.content.toLowerCase())
+        .join(" ");
+
+      for (const [key, response] of entries) {
+        if (contextText.includes(key)) {
+          const contextHint = key.charAt(0).toUpperCase() + key.slice(1);
+          return `Önceki konuşmamıza referansla — ${contextHint} hakkında: ${response}`;
+        }
+      }
+
+      return chatBotResponses.default;
+    },
+    [],
+  );
 
   const sendMessage = useCallback(
     (text: string) => {
@@ -69,20 +97,28 @@ export default function ChatBubble() {
       setInput("");
       setTyping(true);
 
-      setTimeout(() => {
-        const botMsg: ChatMessage = {
-          id: `cm-${Date.now()}-bot`,
-          sessionId: "s1",
-          senderType: "bot",
-          content: getBotResponse(text),
-          timestamp: new Date().toISOString(),
-        };
-        addMessage(botMsg);
-        setTyping(false);
-      }, 1200 + Math.random() * 800);
+      setTimeout(
+        () => {
+          const currentMessages = useChatStore.getState().messages;
+          const botMsg: ChatMessage = {
+            id: `cm-${Date.now()}-bot`,
+            sessionId: "s1",
+            senderType: "bot",
+            content: getBotResponse(text, currentMessages),
+            timestamp: new Date().toISOString(),
+          };
+          addMessage(botMsg);
+          setTyping(false);
+        },
+        1200 + Math.random() * 800,
+      );
     },
     [addMessage, setTyping, isTyping, getBotResponse],
   );
+
+  const giveFeedback = (msgId: string) => {
+    setFeedbackGiven((prev) => new Set(prev).add(msgId));
+  };
 
   return (
     <>
@@ -96,7 +132,11 @@ export default function ChatBubble() {
             : "bg-primary text-primary-foreground hover:scale-105 hover:shadow-xl",
         )}
       >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        {isOpen ? (
+          <X className="w-6 h-6" />
+        ) : (
+          <MessageCircle className="w-6 h-6" />
+        )}
       </button>
 
       <div
@@ -121,32 +161,65 @@ export default function ChatBubble() {
             <Sparkles className="w-5 h-5 text-white/60" />
           </div>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide"
+          >
             {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={cn(
-                  "flex gap-2 max-w-[85%]",
-                  msg.senderType === "user" ? "ml-auto flex-row-reverse" : "",
-                )}
-              >
-                {msg.senderType === "bot" && (
-                  <Avatar className="w-7 h-7 shrink-0 mt-1">
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                      <Bot className="w-4 h-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+              <div key={msg.id}>
                 <div
                   className={cn(
-                    "rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                    "flex gap-2 max-w-[85%]",
                     msg.senderType === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-secondary text-secondary-foreground rounded-bl-md",
+                      ? "ml-auto flex-row-reverse"
+                      : "",
                   )}
                 >
-                  {msg.content}
+                  {msg.senderType === "bot" && (
+                    <Avatar className="w-7 h-7 shrink-0 mt-1">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                        <Bot className="w-4 h-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div
+                    className={cn(
+                      "rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                      msg.senderType === "user"
+                        ? "bg-primary text-primary-foreground rounded-br-md"
+                        : "bg-secondary text-secondary-foreground rounded-bl-md",
+                    )}
+                  >
+                    {msg.content}
+                  </div>
                 </div>
+                {/* Feedback buttons for bot messages */}
+                {msg.senderType === "bot" && msg.id !== "cm1" && (
+                  <div className="flex items-center gap-1 ml-9 mt-1">
+                    {feedbackGiven.has(msg.id) ? (
+                      <span className="text-[10px] text-muted-foreground">
+                        Geri bildiriminiz alındı
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => giveFeedback(msg.id)}
+                          className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                          aria-label="Faydalı"
+                        >
+                          <ThumbsUp className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => giveFeedback(msg.id)}
+                          className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                          aria-label="Faydalı değil"
+                        >
+                          <ThumbsDown className="w-3 h-3" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
 
@@ -170,7 +243,9 @@ export default function ChatBubble() {
 
           {messages.length <= 1 && (
             <div className="px-4 pb-2">
-              <p className="text-xs text-muted-foreground mb-2">Hızlı sorular:</p>
+              <p className="text-xs text-muted-foreground mb-2">
+                Hızlı sorular:
+              </p>
               <div className="flex flex-wrap gap-1.5">
                 {quickQuestions.map((q) => (
                   <button

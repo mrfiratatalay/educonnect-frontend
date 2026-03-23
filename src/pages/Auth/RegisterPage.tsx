@@ -16,6 +16,7 @@ const registerSchema = z
     email: z.string().email("Geçerli bir e-posta adresi giriniz"),
     university: z.string().min(1, "Üniversite seçiniz"),
     department: z.string().min(1, "Bölüm giriniz"),
+    year: z.string().min(1, "Sınıf seçiniz"),
     password: z.string().min(6, "Şifre en az 6 karakter olmalıdır"),
     confirmPassword: z.string(),
   })
@@ -50,10 +51,10 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterForm) => {
     await new Promise((r) => setTimeout(r, 800));
     login(
-      { ...mockUser, fullName: data.fullName, email: data.email, department: data.department },
+      { ...mockUser, fullName: data.fullName, email: data.email, department: data.department, year: parseInt(data.year) },
       "mock-jwt-token",
     );
-    navigate("/");
+    navigate("/?welcome=true");
   };
 
   return (
@@ -108,6 +109,24 @@ export default function RegisterPage() {
             <Input id="department" placeholder="Bilgisayar Müh." {...register("department")} />
             {errors.department && <p className="text-sm text-destructive">{errors.department.message}</p>}
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="year">Sınıf</Label>
+          <select
+            id="year"
+            {...register("year")}
+            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="">Seçiniz</option>
+            <option value="1">1. Sınıf (Hazırlık)</option>
+            <option value="1">1. Sınıf</option>
+            <option value="2">2. Sınıf</option>
+            <option value="3">3. Sınıf</option>
+            <option value="4">4. Sınıf</option>
+            <option value="5">5. Sınıf+</option>
+          </select>
+          {errors.year && <p className="text-sm text-destructive">{errors.year.message}</p>}
         </div>
 
         <div className="space-y-2">

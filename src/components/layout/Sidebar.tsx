@@ -1,18 +1,15 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Home,
   MessageSquare,
   Search,
-  ShoppingBag,
-  Calendar,
-  Users,
-  Tag,
+  Compass,
   User,
   Settings,
   LogOut,
   GraduationCap,
-  Shield,
   Bell,
+  CheckCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,11 +30,8 @@ import { useNotificationStore } from "@/store/notificationStore";
 const mainNav = [
   { to: "/", icon: Home, label: "Anasayfa" },
   { to: "/feed", icon: MessageSquare, label: "Feed" },
+  { to: "/explore", icon: Compass, label: "Keşfet" },
   { to: "/visual-search", icon: Search, label: "Görsel Arama" },
-  { to: "/marketplace", icon: ShoppingBag, label: "Pazar" },
-  { to: "/events", icon: Calendar, label: "Etkinlikler" },
-  { to: "/groups", icon: Users, label: "Gruplar" },
-  { to: "/discounts", icon: Tag, label: "İndirimler" },
 ];
 
 const bottomNav = [
@@ -47,7 +41,16 @@ const bottomNav = [
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore();
-  const { notifications, unreadCount, markAsRead } = useNotificationStore();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } =
+    useNotificationStore();
+  const navigate = useNavigate();
+
+  const handleNotificationClick = (id: string, link?: string) => {
+    markAsRead(id);
+    if (link) {
+      navigate(link);
+    }
+  };
 
   return (
     <aside className="hidden lg:flex flex-col w-64 h-screen border-r bg-sidebar-background sticky top-0">
@@ -79,13 +82,32 @@ export default function Sidebar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel>Bildirimler</DropdownMenuLabel>
+            <div className="flex items-center justify-between px-2">
+              <DropdownMenuLabel>Bildirimler</DropdownMenuLabel>
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs gap-1 text-muted-foreground"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    markAllAsRead();
+                  }}
+                >
+                  <CheckCheck className="w-3 h-3" />
+                  Tümünü Okundu İşaretle
+                </Button>
+              )}
+            </div>
             <DropdownMenuSeparator />
             {notifications.slice(0, 5).map((n) => (
               <DropdownMenuItem
                 key={n.id}
-                onClick={() => markAsRead(n.id)}
-                className="flex flex-col items-start gap-1 py-2"
+                onClick={() => handleNotificationClick(n.id, n.link)}
+                className={cn(
+                  "flex flex-col items-start gap-1 py-2 cursor-pointer",
+                  !n.isRead && "bg-primary/5",
+                )}
               >
                 <div className="flex items-center gap-2 w-full">
                   <span className="font-medium text-sm">{n.title}</span>
@@ -121,7 +143,7 @@ export default function Sidebar() {
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-sidebar-foreground hover:bg-secondary"
+                  : "text-sidebar-foreground hover:bg-secondary",
               )
             }
           >
@@ -135,22 +157,6 @@ export default function Sidebar() {
 
       {/* Bottom Navigation */}
       <div className="px-3 py-2.5 space-y-0.5">
-        {user?.role === "admin" && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-sidebar-foreground hover:bg-secondary"
-              )
-            }
-          >
-            <Shield className="w-[18px] h-[18px] shrink-0" />
-            Admin Paneli
-          </NavLink>
-        )}
         {bottomNav.map((item) => (
           <NavLink
             key={item.to}
@@ -160,7 +166,7 @@ export default function Sidebar() {
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-sidebar-foreground hover:bg-secondary"
+                  : "text-sidebar-foreground hover:bg-secondary",
               )
             }
           >

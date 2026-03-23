@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Upload, Camera, X, Search, Loader2, Sparkles } from "lucide-react";
+import { Upload, Camera, X, Search, Loader2, Sparkles, MessageCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -181,7 +181,7 @@ export default function VisualSearchPage() {
                     %{score} eşleşme
                   </Badge>
                 </div>
-                <CardContent className="p-3 space-y-1.5">
+                <CardContent className="p-3 space-y-2">
                   <h3 className="font-medium text-sm line-clamp-1">
                     {product.title}
                   </h3>
@@ -196,6 +196,10 @@ export default function VisualSearchPage() {
                   <p className="text-xs text-muted-foreground">
                     {product.sellerName}
                   </p>
+                  <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs">
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    Satıcıyla İletişim
+                  </Button>
                 </CardContent>
               </Card>
             ))}

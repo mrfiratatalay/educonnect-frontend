@@ -10,6 +10,7 @@ export interface User {
   department?: string;
   year?: number;
   bio?: string;
+  interests?: string[];
 }
 
 export interface Post {
@@ -19,6 +20,9 @@ export interface Post {
   userAvatar?: string;
   content: string;
   imageUrl?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  postType: "general" | "material" | "question";
   createdAt: string;
   likesCount: number;
   commentsCount: number;
@@ -44,6 +48,7 @@ export interface Group {
   creatorName: string;
   imageUrl?: string;
   isMember: boolean;
+  privacy?: "open" | "closed";
 }
 
 export interface Event {
@@ -104,6 +109,7 @@ export interface Notification {
   isRead: boolean;
   type: "info" | "event" | "social" | "discount" | "system";
   createdAt: string;
+  link?: string;
 }
 
 export interface VisualSearchResult {
@@ -111,6 +117,15 @@ export interface VisualSearchResult {
   product: Product;
   similarityScore: number;
   rank: number;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  category: "academic" | "campus" | "general";
+  isImportant: boolean;
 }
 
 export interface Feedback {

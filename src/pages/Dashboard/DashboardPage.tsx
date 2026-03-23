@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Calendar,
   MessageCircle,
@@ -9,8 +10,10 @@ import {
   Sparkles,
   Clock,
   MapPin,
+  PartyPopper,
+  X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,9 +67,18 @@ function StatCard({
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const { openChat } = useChatStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showWelcome, setShowWelcome] = useState(false);
   const upcomingEvents = mockEvents.slice(0, 3);
   const recentPosts = mockPosts.slice(0, 3);
   const topDiscounts = mockDiscounts.slice(0, 2);
+
+  useEffect(() => {
+    if (searchParams.get("welcome") === "true") {
+      setShowWelcome(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const hour = new Date().getHours();
   const greeting =
@@ -74,6 +86,18 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 lg:p-6 xl:p-8 max-w-7xl mx-auto space-y-6 lg:space-y-8">
+      {/* Welcome Banner */}
+      {showWelcome && (
+        <div className="relative flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-indigo-500/10 border border-primary/20">
+          <PartyPopper className="w-8 h-8 text-primary shrink-0" />
+          <div className="flex-1">
+            <p className="font-semibold text-sm">Hoş geldin, {user?.fullName?.split(" ")[0]}!</p>
+            <p className="text-xs text-muted-foreground mt-0.5">EduConnect'e katıldın. Kampüsü keşfetmeye başla!</p>
+          </div>
+          <button onClick={() => setShowWelcome(false)} className="text-muted-foreground hover:text-foreground cursor-pointer"><X className="w-4 h-4" /></button>
+        </div>
+      )}
+
       {/* Hero Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -134,7 +158,7 @@ export default function DashboardPage() {
                 <Calendar className="w-5 h-5 text-primary" />
                 Yaklaşan Etkinlikler
               </CardTitle>
-              <Link to="/events">
+              <Link to="/explore">
                 <Button variant="ghost" size="sm" className="gap-1 text-xs">
                   Tümünü Gör <ArrowRight className="w-3 h-3" />
                 </Button>
@@ -142,48 +166,53 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {upcomingEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-center gap-4 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors cursor-pointer"
-                >
-                  <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary shrink-0">
-                    <span className="text-[10px] font-semibold uppercase">
-                      {new Date(event.startDate).toLocaleDateString("tr-TR", {
-                        month: "short",
-                      })}
-                    </span>
-                    <span className="text-lg font-bold leading-none">
-                      {new Date(event.startDate).getDate()}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">
-                      {event.title}
-                    </p>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <Clock className="w-3 h-3" />
-                        {new Date(event.startDate).toLocaleTimeString("tr-TR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
+                <Link to="/explore" key={event.id}>
+                  <div className="flex items-center gap-4 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors cursor-pointer">
+                    <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary shrink-0">
+                      <span className="text-[10px] font-semibold uppercase">
+                        {new Date(event.startDate).toLocaleDateString("tr-TR", {
+                          month: "short",
                         })}
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <MapPin className="w-3 h-3" />
-                        {event.location}
+                      <span className="text-lg font-bold leading-none">
+                        {new Date(event.startDate).getDate()}
                       </span>
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">
+                        {event.title}
+                      </p>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          {new Date(event.startDate).toLocaleTimeString(
+                            "tr-TR",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
+                        </span>
+                        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <MapPin className="w-3 h-3" />
+                          {event.location}
+                        </span>
+                      </div>
+                    </div>
+                    {event.isRegistered ? (
+                      <Badge variant="success" className="shrink-0 text-[10px]">
+                        Kayıtlı
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 text-[10px]"
+                      >
+                        Açık
+                      </Badge>
+                    )}
                   </div>
-                  {event.isRegistered ? (
-                    <Badge variant="success" className="shrink-0 text-[10px]">
-                      Kayıtlı
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="shrink-0 text-[10px]">
-                      Açık
-                    </Badge>
-                  )}
-                </div>
+                </Link>
               ))}
             </CardContent>
           </Card>
@@ -203,28 +232,27 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {recentPosts.map((post) => (
-                <div
-                  key={post.id}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors cursor-pointer"
-                >
-                  <Avatar className="w-9 h-9 shrink-0">
-                    <AvatarImage src={post.userAvatar} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                      {post.userName.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium">{post.userName}</p>
-                      <span className="text-[11px] text-muted-foreground">
-                        · {post.likesCount} beğeni
-                      </span>
+                <Link to="/feed" key={post.id}>
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors cursor-pointer">
+                    <Avatar className="w-9 h-9 shrink-0">
+                      <AvatarImage src={post.userAvatar} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                        {post.userName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{post.userName}</p>
+                        <span className="text-[11px] text-muted-foreground">
+                          · {post.likesCount} beğeni
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
+                        {post.content}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-                      {post.content}
-                    </p>
                   </div>
-                </div>
+                </Link>
               ))}
             </CardContent>
           </Card>
@@ -281,7 +309,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">{d.title}</p>
                 </div>
               ))}
-              <Link to="/discounts">
+              <Link to="/explore">
                 <Button
                   variant="ghost"
                   size="sm"

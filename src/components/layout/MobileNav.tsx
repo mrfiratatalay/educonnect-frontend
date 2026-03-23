@@ -3,15 +3,11 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   Home,
   MessageSquare,
+  Compass,
   Search,
-  ShoppingBag,
   Menu,
-  Calendar,
-  Users,
-  Tag,
   User,
   Settings,
-  Shield,
   LogOut,
   X,
 } from "lucide-react";
@@ -21,27 +17,19 @@ import { useAuthStore } from "@/store/authStore";
 const tabs = [
   { to: "/", icon: Home, label: "Anasayfa" },
   { to: "/feed", icon: MessageSquare, label: "Feed" },
+  { to: "/explore", icon: Compass, label: "Keşfet" },
   { to: "/visual-search", icon: Search, label: "Arama" },
-  { to: "/marketplace", icon: ShoppingBag, label: "Pazar" },
 ];
 
 const moreLinks = [
-  { to: "/events", icon: Calendar, label: "Etkinlikler" },
-  { to: "/groups", icon: Users, label: "Gruplar" },
-  { to: "/discounts", icon: Tag, label: "İndirimler" },
   { to: "/profile", icon: User, label: "Profil" },
   { to: "/settings", icon: Settings, label: "Ayarlar" },
-  { to: "/admin", icon: Shield, label: "Admin Paneli", adminOnly: true },
 ];
 
 export default function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false);
-  const { user, logout } = useAuthStore();
+  const { logout } = useAuthStore();
   const navigate = useNavigate();
-
-  const visibleMore = moreLinks.filter(
-    (l) => !("adminOnly" in l && l.adminOnly && user?.role !== "admin"),
-  );
 
   return (
     <>
@@ -60,7 +48,7 @@ export default function MobileNav() {
       >
         {moreOpen && (
           <div className="mx-3 mb-2 rounded-2xl border bg-background shadow-2xl p-3 space-y-1 animate-in slide-in-from-bottom-4 duration-200">
-            {visibleMore.map((link) => (
+            {moreLinks.map((link) => (
               <button
                 key={link.to}
                 onClick={() => {
@@ -103,8 +91,15 @@ export default function MobileNav() {
               >
                 {({ isActive }) => (
                   <>
-                    <tab.icon className={cn("w-5 h-5", isActive && "stroke-[2.5px]")} />
-                    <span className="text-[10px] font-medium">{tab.label}</span>
+                    <tab.icon
+                      className={cn(
+                        "w-5 h-5",
+                        isActive && "stroke-[2.5px]",
+                      )}
+                    />
+                    <span className="text-[10px] font-medium">
+                      {tab.label}
+                    </span>
                   </>
                 )}
               </NavLink>
