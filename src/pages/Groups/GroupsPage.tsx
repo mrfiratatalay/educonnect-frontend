@@ -4,14 +4,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { mockGroups } from "@/data/mock";
+import { useAuthStore } from "@/store/authStore";
+import type { Group } from "@/types";
 
 const categories = ["Tümü", "Akademik", "Teknoloji", "Spor", "Sanat", "Sosyal"];
 
 export default function GroupsPage() {
+  const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Tümü");
-  const [groups, setGroups] = useState(mockGroups);
+  const [groups, setGroups] = useState<Group[]>(mockGroups);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newCat, setNewCat] = useState("Akademik");
 
   const toggleMembership = (id: string) => {
     setGroups((prev) =>
@@ -25,6 +40,24 @@ export default function GroupsPage() {
           : g,
       ),
     );
+  };
+
+  const handleCreateGroup = () => {
+    if (!newName.trim()) return;
+    const newGroup: Group = {
+      id: `g-${Date.now()}`,
+      name: newName.trim(),
+      description: newDesc.trim() || "Yeni oluşturulmuş grup.",
+      category: newCat,
+      memberCount: 1,
+      creatorName: user?.fullName || "Kullanıcı",
+      isMember: true,
+    };
+    setGroups([newGroup, ...groups]);
+    setNewName("");
+    setNewDesc("");
+    setNewCat("Akademik");
+    setDialogOpen(false);
   };
 
   const filtered = groups.filter((g) => {
@@ -42,10 +75,54 @@ export default function GroupsPage() {
             İlgi alanına uygun gruplara katıl, yeni insanlarla tanış
           </p>
         </div>
-        <Button className="gap-2 self-start">
-          <Plus className="w-4 h-4" />
-          Grup Oluştur
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2 self-start">
+              <Plus className="w-4 h-4" />
+              Grup Oluştur
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Yeni Grup Oluştur</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label>Grup Adı</Label>
+                <Input
+                  placeholder="Grup adını girin"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Açıklama</Label>
+                <textarea
+                  placeholder="Grup hakkında kısa bir açıklama..."
+                  rows={3}
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Kategori</Label>
+                <select
+                  value={newCat}
+                  onChange={(e) => setNewCat(e.target.value)}
+                  className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {categories.filter((c) => c !== "Tümü").map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <Button className="w-full" onClick={handleCreateGroup} disabled={!newName.trim()}>
+                Grubu Oluştur
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -115,6 +192,14 @@ export default function GroupsPage() {
           </Card>
         ))}
       </div>
+
+      {filtered.length === 0 && (
+        <div className="text-center py-16 text-muted-foreground">
+          <Users className="w-10 h-10 mx-auto mb-2 opacity-40" />
+          <p className="text-lg font-medium">Sonuç bulunamadı</p>
+          <p className="text-sm mt-1">Farklı anahtar kelimeler veya kategori deneyin.</p>
+        </div>
+      )}
     </div>
   );
 }

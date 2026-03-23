@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { User, Bell, Shield, Palette, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Bell, Shield, Palette, LogOut, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,53 @@ import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/store/authStore";
 
 export default function SettingsPage() {
-  const { user, logout } = useAuthStore();
-  const [darkMode, setDarkMode] = useState(false);
+  const { user, logout, updateUser } = useAuthStore();
+  const [darkMode, setDarkMode] = useState(() => {
+    return document.documentElement.classList.contains("dark");
+  });
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [passwordSaved, setPasswordSaved] = useState(false);
+
+  const [fullName, setFullName] = useState(user?.fullName || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [department, setDepartment] = useState(user?.department || "");
+  const [year, setYear] = useState(String(user?.year || ""));
+  const [bio, setBio] = useState(user?.bio || "");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("educonnect-dark-mode");
+    if (saved === "true") {
+      document.documentElement.classList.add("dark");
+      setDarkMode(true);
+    }
+  }, []);
 
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle("dark");
+    const next = !darkMode;
+    setDarkMode(next);
+    if (next) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("educonnect-dark-mode", String(next));
+  };
+
+  const handleSaveProfile = () => {
+    updateUser({
+      fullName,
+      email,
+      department,
+      year: parseInt(year, 10) || undefined,
+      bio,
+    });
+    setProfileSaved(true);
+    setTimeout(() => setProfileSaved(false), 2000);
+  };
+
+  const handleChangePassword = () => {
+    setPasswordSaved(true);
+    setTimeout(() => setPasswordSaved(false), 2000);
   };
 
   return (
@@ -31,30 +72,40 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Ad Soyad</Label>
-              <Input defaultValue={user?.fullName} />
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>E-posta</Label>
-              <Input defaultValue={user?.email} type="email" />
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
             </div>
             <div className="space-y-2">
               <Label>Bölüm</Label>
-              <Input defaultValue={user?.department} />
+              <Input value={department} onChange={(e) => setDepartment(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Sınıf</Label>
-              <Input defaultValue={String(user?.year)} type="number" />
+              <Input value={year} onChange={(e) => setYear(e.target.value)} type="number" />
             </div>
           </div>
           <div className="space-y-2">
             <Label>Biyografi</Label>
             <textarea
-              defaultValue={user?.bio}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
               rows={3}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
             />
           </div>
-          <Button size="sm">Değişiklikleri Kaydet</Button>
+          <Button size="sm" onClick={handleSaveProfile} className="gap-1.5">
+            {profileSaved ? (
+              <>
+                <Check className="w-4 h-4" />
+                Kaydedildi!
+              </>
+            ) : (
+              "Değişiklikleri Kaydet"
+            )}
+          </Button>
         </CardContent>
       </Card>
 
@@ -129,7 +180,16 @@ export default function SettingsPage() {
               <Input type="password" placeholder="••••••••" />
             </div>
           </div>
-          <Button size="sm" variant="outline">Şifreyi Değiştir</Button>
+          <Button size="sm" variant="outline" onClick={handleChangePassword} className="gap-1.5">
+            {passwordSaved ? (
+              <>
+                <Check className="w-4 h-4" />
+                Şifre Değiştirildi!
+              </>
+            ) : (
+              "Şifreyi Değiştir"
+            )}
+          </Button>
         </CardContent>
       </Card>
 

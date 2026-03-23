@@ -6,19 +6,30 @@ import {
   MoreHorizontal,
   ImagePlus,
   Send,
+  Bookmark,
+  Flag,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/authStore";
 import { mockPosts } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import type { Post } from "@/types";
 
-function PostCard({ post }: { post: Post }) {
+function PostCard({ post, onDelete }: { post: Post; onDelete?: (id: string) => void }) {
   const [liked, setLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [saved, setSaved] = useState(false);
+  const { user } = useAuthStore();
 
   const toggleLike = () => {
     setLiked(!liked);
@@ -27,13 +38,17 @@ function PostCard({ post }: { post: Post }) {
 
   const timeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
+    if (diff < 0) return "az önce";
     const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "az önce";
     if (mins < 60) return `${mins}dk`;
     const hours = Math.floor(mins / 60);
     if (hours < 24) return `${hours}sa`;
     const days = Math.floor(hours / 24);
     return `${days}g`;
   };
+
+  const isOwn = post.userId === user?.id;
 
   return (
     <Card>
@@ -51,15 +66,37 @@ function PostCard({ post }: { post: Post }) {
                   {timeAgo(post.createdAt)}
                 </span>
               </div>
-              <Button variant="ghost" size="icon" className="w-8 h-8">
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="w-8 h-8" aria-label="Gönderi seçenekleri">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setSaved(!saved)} className="gap-2">
+                    <Bookmark className={cn("w-4 h-4", saved && "fill-current")} />
+                    {saved ? "Kaydı Kaldır" : "Kaydet"}
+                  </DropdownMenuItem>
+                  {isOwn && onDelete && (
+                    <DropdownMenuItem onClick={() => onDelete(post.id)} className="gap-2 text-destructive">
+                      <Trash2 className="w-4 h-4" />
+                      Sil
+                    </DropdownMenuItem>
+                  )}
+                  {!isOwn && (
+                    <DropdownMenuItem className="gap-2 text-destructive">
+                      <Flag className="w-4 h-4" />
+                      Bildir
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <p className="text-sm mt-2 leading-relaxed">{post.content}</p>
             {post.imageUrl && (
               <img
                 src={post.imageUrl}
-                alt=""
+                alt="Gönderi görseli"
                 className="w-full rounded-xl mt-3 object-cover max-h-80"
               />
             )}
@@ -73,9 +110,7 @@ function PostCard({ post }: { post: Post }) {
                   liked && "text-red-500 hover:text-red-600",
                 )}
               >
-                <Heart
-                  className={cn("w-4 h-4", liked && "fill-current")}
-                />
+                <Heart className={cn("w-4 h-4", liked && "fill-current")} />
                 {likesCount}
               </Button>
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
@@ -97,10 +132,27 @@ function PostCard({ post }: { post: Post }) {
 export default function FeedPage() {
   const { user } = useAuthStore();
   const [newPost, setNewPost] = useState("");
+  const [posts, setPosts] = useState<Post[]>(mockPosts);
 
   const handlePost = () => {
     if (!newPost.trim()) return;
+    const post: Post = {
+      id: `p-${Date.now()}`,
+      userId: user?.id || "u1",
+      userName: user?.fullName || "Kullanıcı",
+      userAvatar: user?.avatarUrl,
+      content: newPost.trim(),
+      createdAt: new Date().toISOString(),
+      likesCount: 0,
+      commentsCount: 0,
+      isLiked: false,
+    };
+    setPosts([post, ...posts]);
     setNewPost("");
+  };
+
+  const deletePost = (id: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
@@ -139,8 +191,8 @@ export default function FeedPage() {
       </Card>
 
       <div className="space-y-4">
-        {mockPosts.map((post) => (
-          <PostCard key={post.id} post={post} />
+        {posts.map((post) => (
+          <PostCard key={post.id} post={post} onDelete={deletePost} />
         ))}
       </div>
     </div>

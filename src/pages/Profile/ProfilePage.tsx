@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Mail,
   GraduationCap,
@@ -7,8 +6,8 @@ import {
   ShoppingBag,
   MessageSquare,
   Users,
-  Settings,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,9 +17,15 @@ import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/store/authStore";
 import { mockPosts, mockProducts, mockGroups } from "@/data/mock";
 
+const roleLabels: Record<string, string> = {
+  student: "Öğrenci",
+  admin: "Yönetici",
+  moderator: "Moderatör",
+};
+
 export default function ProfilePage() {
   const { user } = useAuthStore();
-  const myPosts = mockPosts.filter((p) => p.userId === "u1");
+  const myPosts = mockPosts.filter((p) => p.userId === user?.id);
   const myProducts = mockProducts.filter((p) => p.sellerName === user?.fullName);
   const myGroups = mockGroups.filter((g) => g.isMember);
 
@@ -40,12 +45,16 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold">{user?.fullName}</h1>
-                  <Badge variant="secondary" className="mt-1">Öğrenci</Badge>
+                  <Badge variant="secondary" className="mt-1">
+                    {roleLabels[user?.role || "student"]}
+                  </Badge>
                 </div>
-                <Button variant="outline" size="sm" className="gap-1.5 self-start">
-                  <Edit2 className="w-3.5 h-3.5" />
-                  Profili Düzenle
-                </Button>
+                <Link to="/settings">
+                  <Button variant="outline" size="sm" className="gap-1.5 self-start">
+                    <Edit2 className="w-3.5 h-3.5" />
+                    Profili Düzenle
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -68,7 +77,8 @@ export default function ProfilePage() {
               {new Date(user?.createdAt || "").toLocaleDateString("tr-TR", {
                 month: "long",
                 year: "numeric",
-              })} tarihinden beri üye
+              })}{" "}
+              tarihinden beri üye
             </span>
           </div>
 
@@ -128,22 +138,23 @@ export default function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="products" className="mt-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {myProducts.map((product) => (
-              <Card key={product.id} className="overflow-hidden">
-                <img
-                  src={product.imageUrl}
-                  alt={product.title}
-                  className="w-full aspect-square object-cover"
-                />
-                <CardContent className="p-3">
-                  <h3 className="font-medium text-sm line-clamp-1">{product.title}</h3>
-                  <p className="text-primary font-bold mt-1">{product.price} TL</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          {myProducts.length === 0 && (
+          {myProducts.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {myProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden">
+                  <img
+                    src={product.imageUrl}
+                    alt={product.title}
+                    className="w-full aspect-square object-cover"
+                  />
+                  <CardContent className="p-3">
+                    <h3 className="font-medium text-sm line-clamp-1">{product.title}</h3>
+                    <p className="text-primary font-bold mt-1">{product.price} TL</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
             <div className="text-center py-12 text-muted-foreground">
               <ShoppingBag className="w-10 h-10 mx-auto mb-2 opacity-40" />
               <p>Henüz ilan vermediniz.</p>
@@ -152,26 +163,33 @@ export default function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="groups" className="space-y-3 mt-4">
-          {myGroups.map((group) => (
-            <Card key={group.id}>
-              <CardContent className="p-4 flex items-center gap-4">
-                {group.imageUrl && (
-                  <img
-                    src={group.imageUrl}
-                    alt={group.name}
-                    className="w-14 h-14 rounded-xl object-cover shrink-0"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm">{group.name}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {group.memberCount} üye · {group.category}
-                  </p>
-                </div>
-                <Badge variant="success">Üye</Badge>
-              </CardContent>
-            </Card>
-          ))}
+          {myGroups.length > 0 ? (
+            myGroups.map((group) => (
+              <Card key={group.id}>
+                <CardContent className="p-4 flex items-center gap-4">
+                  {group.imageUrl && (
+                    <img
+                      src={group.imageUrl}
+                      alt={group.name}
+                      className="w-14 h-14 rounded-xl object-cover shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm">{group.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {group.memberCount} üye · {group.category}
+                    </p>
+                  </div>
+                  <Badge variant="success">Üye</Badge>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <Users className="w-10 h-10 mx-auto mb-2 opacity-40" />
+              <p>Henüz bir gruba katılmadınız.</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

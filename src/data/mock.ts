@@ -13,7 +13,7 @@ export const mockUser: User = {
   id: "u1",
   fullName: "Fırat Atalay",
   email: "firat.atalay@erdogan.edu.tr",
-  role: "student",
+  role: "admin",
   universityId: "uni1",
   createdAt: "2025-09-01T00:00:00Z",
   isActive: true,
@@ -122,6 +122,16 @@ export const mockGroups: Group[] = [
     creatorName: "Zeynep Demir",
     imageUrl: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=300&h=200&fit=crop",
     isMember: false,
+  },
+  {
+    id: "g5",
+    name: "Öğrenci Dayanışma Platformu",
+    description: "Yeni gelen öğrencilere kampüs rehberliği, sosyal etkinlikler ve mentörlük programı.",
+    category: "Sosyal",
+    memberCount: 156,
+    creatorName: "Öğrenci Konseyi",
+    imageUrl: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300&h=200&fit=crop",
+    isMember: true,
   },
 ];
 

@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthStore } from "@/store/authStore";
 import { useChatStore } from "@/store/chatStore";
-import { mockEvents, mockPosts, mockDiscounts } from "@/data/mock";
+import { mockEvents, mockPosts, mockDiscounts, mockGroups } from "@/data/mock";
 
 function StatCard({
   icon: Icon,
@@ -80,10 +80,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Calendar} label="Yaklaşan Etkinlik" value="4" trend="+2 bu hafta" />
-        <StatCard icon={Users} label="Grup Üyeliği" value="3" />
-        <StatCard icon={MessageCircle} label="Feed Paylaşımı" value="156" trend="+12 bugün" />
-        <StatCard icon={Tag} label="Aktif İndirim" value="5" />
+        <StatCard icon={Calendar} label="Yaklaşan Etkinlik" value={String(mockEvents.length)} trend="+2 bu hafta" />
+        <StatCard icon={Users} label="Grup Üyeliği" value={String(mockGroups.filter((g) => g.isMember).length)} />
+        <StatCard icon={MessageCircle} label="Feed Paylaşımı" value={String(mockPosts.length)} trend="+12 bugün" />
+        <StatCard icon={Tag} label="Aktif İndirim" value={String(mockDiscounts.filter((d) => d.isActive).length)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

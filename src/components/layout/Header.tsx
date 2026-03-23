@@ -1,4 +1,4 @@
-import { Bell, GraduationCap, Menu } from "lucide-react";
+import { Bell, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ import { useNotificationStore } from "@/store/notificationStore";
 import { useNavigate } from "react-router-dom";
 
 export default function Header() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const { notifications, unreadCount, markAsRead } = useNotificationStore();
   const navigate = useNavigate();
 

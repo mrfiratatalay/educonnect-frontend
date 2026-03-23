@@ -226,7 +226,7 @@ export default function AdminPage() {
               {reports.map((r) => (
                 <div key={r.id} className="flex items-start gap-3 p-3 rounded-xl border">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                    r.status === "pending" ? "bg-amber-100 text-amber-600" : "bg-green-100 text-green-600"
+                    r.status === "pending" ? "bg-accent/20 text-accent-foreground" : "bg-success/20 text-success"
                   }`}>
                     {r.status === "pending" ? (
                       <AlertTriangle className="w-4 h-4" />

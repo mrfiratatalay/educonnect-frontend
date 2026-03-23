@@ -5,6 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import "./index.css";
 
+if (localStorage.getItem("educonnect-dark-mode") === "true") {
+  document.documentElement.classList.add("dark");
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
