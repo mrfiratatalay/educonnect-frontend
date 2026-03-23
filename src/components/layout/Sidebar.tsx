@@ -51,7 +51,8 @@ export default function Sidebar() {
 
   return (
     <aside className="hidden lg:flex flex-col w-64 h-screen border-r bg-sidebar-background sticky top-0">
-      <div className="flex items-center justify-between px-6 py-5">
+      {/* Brand */}
+      <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary text-primary-foreground">
             <GraduationCap className="w-5 h-5" />
@@ -63,8 +64,13 @@ export default function Sidebar() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative w-9 h-9" aria-label="Bildirimler">
-              <Bell className="w-4.5 h-4.5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative w-9 h-9"
+              aria-label="Bildirimler"
+            >
+              <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold rounded-full bg-destructive text-destructive-foreground">
                   {unreadCount}
@@ -84,12 +90,17 @@ export default function Sidebar() {
                 <div className="flex items-center gap-2 w-full">
                   <span className="font-medium text-sm">{n.title}</span>
                   {!n.isRead && (
-                    <Badge variant="default" className="ml-auto text-[10px] px-1.5 py-0">
+                    <Badge
+                      variant="default"
+                      className="ml-auto text-[10px] px-1.5 py-0"
+                    >
                       Yeni
                     </Badge>
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground">{n.message}</span>
+                <span className="text-xs text-muted-foreground">
+                  {n.message}
+                </span>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -98,7 +109,8 @@ export default function Sidebar() {
 
       <Separator />
 
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto scrollbar-hide">
+      {/* Main Navigation */}
+      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto scrollbar-hide">
         {mainNav.map((item) => (
           <NavLink
             key={item.to}
@@ -106,14 +118,14 @@ export default function Sidebar() {
             end={item.to === "/"}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-sidebar-foreground hover:bg-secondary",
+                  : "text-sidebar-foreground hover:bg-secondary"
               )
             }
           >
-            <item.icon className="w-5 h-5 shrink-0" />
+            <item.icon className="w-[18px] h-[18px] shrink-0" />
             {item.label}
           </NavLink>
         ))}
@@ -121,20 +133,21 @@ export default function Sidebar() {
 
       <Separator />
 
-      <div className="px-3 py-3 space-y-1">
+      {/* Bottom Navigation */}
+      <div className="px-3 py-2.5 space-y-0.5">
         {user?.role === "admin" && (
           <NavLink
             to="/admin"
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-sidebar-foreground hover:bg-secondary",
+                  : "text-sidebar-foreground hover:bg-secondary"
               )
             }
           >
-            <Shield className="w-5 h-5 shrink-0" />
+            <Shield className="w-[18px] h-[18px] shrink-0" />
             Admin Paneli
           </NavLink>
         )}
@@ -144,14 +157,14 @@ export default function Sidebar() {
             to={item.to}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-sidebar-foreground hover:bg-secondary",
+                  : "text-sidebar-foreground hover:bg-secondary"
               )
             }
           >
-            <item.icon className="w-5 h-5 shrink-0" />
+            <item.icon className="w-[18px] h-[18px] shrink-0" />
             {item.label}
           </NavLink>
         ))}
@@ -159,21 +172,26 @@ export default function Sidebar() {
           onClick={logout}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors w-full cursor-pointer"
         >
-          <LogOut className="w-5 h-5 shrink-0" />
+          <LogOut className="w-[18px] h-[18px] shrink-0" />
           Çıkış Yap
         </button>
       </div>
 
       <Separator />
 
-      <div className="flex items-center gap-3 px-4 py-4">
+      {/* User Info */}
+      <div className="flex items-center gap-3 px-4 py-3.5">
         <Avatar className="w-9 h-9">
           <AvatarImage src={user?.avatarUrl} alt={user?.fullName} />
-          <AvatarFallback>{user?.fullName?.charAt(0)}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+            {user?.fullName?.charAt(0)}
+          </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{user?.fullName}</p>
-          <p className="text-xs text-muted-foreground truncate">{user?.department}</p>
+          <p className="text-[11px] text-muted-foreground truncate">
+            {user?.department}
+          </p>
         </div>
       </div>
     </aside>

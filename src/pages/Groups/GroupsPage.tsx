@@ -16,7 +16,14 @@ import { mockGroups } from "@/data/mock";
 import { useAuthStore } from "@/store/authStore";
 import type { Group } from "@/types";
 
-const categories = ["Tümü", "Akademik", "Teknoloji", "Spor", "Sanat", "Sosyal"];
+const categories = [
+  "Tümü",
+  "Akademik",
+  "Teknoloji",
+  "Spor",
+  "Sanat",
+  "Sosyal",
+];
 
 export default function GroupsPage() {
   const { user } = useAuthStore();
@@ -35,10 +42,12 @@ export default function GroupsPage() {
           ? {
               ...g,
               isMember: !g.isMember,
-              memberCount: g.isMember ? g.memberCount - 1 : g.memberCount + 1,
+              memberCount: g.isMember
+                ? g.memberCount - 1
+                : g.memberCount + 1,
             }
-          : g,
-      ),
+          : g
+      )
     );
   };
 
@@ -61,23 +70,28 @@ export default function GroupsPage() {
   };
 
   const filtered = groups.filter((g) => {
-    const matchSearch = g.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchCategory = selectedCategory === "Tümü" || g.category === selectedCategory;
+    const matchSearch = g.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchCategory =
+      selectedCategory === "Tümü" || g.category === selectedCategory;
     return matchSearch && matchCategory;
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-4 lg:p-8 space-y-6">
+    <div className="p-4 lg:p-6 xl:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold">Gruplar</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+            Gruplar
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
             İlgi alanına uygun gruplara katıl, yeni insanlarla tanış
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2 self-start">
+            <Button className="gap-2 self-start shadow-sm">
               <Plus className="w-4 h-4" />
               Grup Oluştur
             </Button>
@@ -112,12 +126,20 @@ export default function GroupsPage() {
                   onChange={(e) => setNewCat(e.target.value)}
                   className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  {categories.filter((c) => c !== "Tümü").map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                  {categories
+                    .filter((c) => c !== "Tümü")
+                    .map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
                 </select>
               </div>
-              <Button className="w-full" onClick={handleCreateGroup} disabled={!newName.trim()}>
+              <Button
+                className="w-full"
+                onClick={handleCreateGroup}
+                disabled={!newName.trim()}
+              >
                 Grubu Oluştur
               </Button>
             </div>
@@ -125,8 +147,9 @@ export default function GroupsPage() {
         </Dialog>
       </div>
 
+      {/* Search & Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+        <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             value={searchQuery}
@@ -150,32 +173,41 @@ export default function GroupsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Groups Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filtered.map((group) => (
-          <Card key={group.id} className="overflow-hidden">
+          <Card
+            key={group.id}
+            className="overflow-hidden hover:shadow-md transition-shadow"
+          >
             {group.imageUrl && (
-              <img
-                src={group.imageUrl}
-                alt={group.name}
-                className="w-full h-36 object-cover"
-              />
+              <div className="relative overflow-hidden bg-secondary/30">
+                <img
+                  src={group.imageUrl}
+                  alt={group.name}
+                  className="w-full h-36 object-cover"
+                />
+                {group.isMember && (
+                  <Badge
+                    variant="success"
+                    className="absolute top-2 right-2 text-[10px]"
+                  >
+                    Üye
+                  </Badge>
+                )}
+              </div>
             )}
             <CardContent className="p-4 space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-semibold">{group.name}</h3>
-                  <Badge variant="secondary" className="mt-1 text-[10px]">
-                    {group.category}
-                  </Badge>
-                </div>
-                {group.isMember && (
-                  <Badge variant="success" className="shrink-0">Üye</Badge>
-                )}
+              <div>
+                <h3 className="font-semibold">{group.name}</h3>
+                <Badge variant="secondary" className="mt-1.5 text-[10px]">
+                  {group.category}
+                </Badge>
               </div>
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {group.description}
               </p>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pt-1">
                 <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Users className="w-3.5 h-3.5" />
                   {group.memberCount} üye
@@ -194,10 +226,12 @@ export default function GroupsPage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-16 text-muted-foreground">
-          <Users className="w-10 h-10 mx-auto mb-2 opacity-40" />
+        <div className="text-center py-20 text-muted-foreground">
+          <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="text-lg font-medium">Sonuç bulunamadı</p>
-          <p className="text-sm mt-1">Farklı anahtar kelimeler veya kategori deneyin.</p>
+          <p className="text-sm mt-1">
+            Farklı anahtar kelimeler veya kategori deneyin.
+          </p>
         </div>
       )}
     </div>

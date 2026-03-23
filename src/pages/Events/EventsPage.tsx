@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Calendar, MapPin, Users, Clock, CalendarDays, LayoutGrid } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Clock,
+  CalendarDays,
+  LayoutGrid,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +28,8 @@ export default function EventsPage() {
                 ? e.currentParticipants - 1
                 : e.currentParticipants + 1,
             }
-          : e,
-      ),
+          : e
+      )
     );
   };
 
@@ -43,25 +50,29 @@ export default function EventsPage() {
     Math.round((current / max) * 100);
 
   return (
-    <div className="max-w-6xl mx-auto p-4 lg:p-8 space-y-6">
+    <div className="p-4 lg:p-6 xl:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold">Etkinlikler</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+            Etkinlikler
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
             Kampüste ve çevresinde düzenlenen etkinlikleri keşfet
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 bg-secondary rounded-lg p-1">
           <Button
-            variant={view === "grid" ? "default" : "outline"}
+            variant={view === "grid" ? "default" : "ghost"}
             size="icon"
+            className="h-8 w-8"
             onClick={() => setView("grid")}
           >
             <LayoutGrid className="w-4 h-4" />
           </Button>
           <Button
-            variant={view === "list" ? "default" : "outline"}
+            variant={view === "list" ? "default" : "ghost"}
             size="icon"
+            className="h-8 w-8"
             onClick={() => setView("list")}
           >
             <CalendarDays className="w-4 h-4" />
@@ -72,31 +83,49 @@ export default function EventsPage() {
       <div
         className={cn(
           view === "grid"
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-            : "space-y-4",
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            : "space-y-3"
         )}
       >
         {events.map((event) => (
-          <Card key={event.id} className="overflow-hidden">
-            {view === "grid" && event.imageUrl && (
-              <img
-                src={event.imageUrl}
-                alt={event.title}
-                className="w-full h-40 object-cover"
-              />
+          <Card
+            key={event.id}
+            className={cn(
+              "overflow-hidden",
+              view === "grid" && "hover:shadow-md transition-shadow"
             )}
-            <CardContent className={cn("space-y-3", view === "grid" ? "p-4" : "p-5")}>
+          >
+            {view === "grid" && event.imageUrl && (
+              <div className="relative overflow-hidden bg-secondary/30">
+                <img
+                  src={event.imageUrl}
+                  alt={event.title}
+                  className="w-full h-40 object-cover"
+                />
+                {event.isRegistered && (
+                  <Badge
+                    variant="success"
+                    className="absolute top-2 right-2 text-[10px]"
+                  >
+                    Kayıtlı
+                  </Badge>
+                )}
+              </div>
+            )}
+            <CardContent
+              className={cn("space-y-3", view === "grid" ? "p-4" : "p-4 lg:p-5")}
+            >
               {view === "list" && (
                 <div className="flex items-start gap-4">
                   {event.imageUrl && (
                     <img
                       src={event.imageUrl}
                       alt={event.title}
-                      className="w-24 h-24 rounded-xl object-cover shrink-0 hidden sm:block"
+                      className="w-20 h-20 lg:w-28 lg:h-20 rounded-xl object-cover shrink-0 hidden sm:block"
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3 className="font-semibold">{event.title}</h3>
                         <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
@@ -136,41 +165,46 @@ export default function EventsPage() {
 
               {view === "grid" && (
                 <>
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold line-clamp-1">{event.title}</h3>
-                    {event.isRegistered && (
-                      <Badge variant="success" className="shrink-0">Kayıtlı</Badge>
-                    )}
+                  <div>
+                    <h3 className="font-semibold line-clamp-1">
+                      {event.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                      {event.description}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {event.description}
-                  </p>
-                  <div className="space-y-2 text-xs text-muted-foreground">
+                  <div className="space-y-1.5 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5" />
+                      <Calendar className="w-3.5 h-3.5 shrink-0" />
                       {formatDate(event.startDate)}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" />
-                      {formatTime(event.startDate)} - {formatTime(event.endDate)}
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
+                      {formatTime(event.startDate)} -{" "}
+                      {formatTime(event.endDate)}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5" />
-                      {event.location}
+                      <MapPin className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{event.location}</span>
                     </div>
                   </div>
                   <div>
-                    <div className="flex items-center justify-between text-xs mb-1">
+                    <div className="flex items-center justify-between text-xs mb-1.5">
                       <span className="text-muted-foreground">
-                        {event.currentParticipants}/{event.maxParticipants} katılımcı
+                        {event.currentParticipants}/{event.maxParticipants}{" "}
+                        katılımcı
                       </span>
                       <span className="font-medium">
-                        %{fillPercent(event.currentParticipants, event.maxParticipants)}
+                        %
+                        {fillPercent(
+                          event.currentParticipants,
+                          event.maxParticipants
+                        )}
                       </span>
                     </div>
                     <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-primary transition-all duration-300"
+                        className="h-full rounded-full bg-primary transition-all duration-500"
                         style={{
                           width: `${fillPercent(event.currentParticipants, event.maxParticipants)}%`,
                         }}
@@ -191,6 +225,16 @@ export default function EventsPage() {
           </Card>
         ))}
       </div>
+
+      {events.length === 0 && (
+        <div className="text-center py-20 text-muted-foreground">
+          <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p className="text-lg font-medium">Henüz etkinlik yok</p>
+          <p className="text-sm mt-1">
+            Yakında yeni etkinlikler eklenecek.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
