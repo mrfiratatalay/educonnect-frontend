@@ -275,9 +275,6 @@ export default function ExplorePage() {
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
 
-  const formatDateFull = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
-
   const formatTime = (dateStr: string) =>
     new Date(dateStr).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
 
@@ -303,12 +300,7 @@ export default function ExplorePage() {
     <div className="p-4 lg:p-6 xl:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Keşfet</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Etkinlikleri, grupları, indirimleri ve duyuruları keşfet
-          </p>
-        </div>
+        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Keşfet</h1>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className="gap-2 self-start shadow-sm">
@@ -329,138 +321,74 @@ export default function ExplorePage() {
         </DropdownMenu>
       </div>
 
-      {/* Scope Selector */}
-      <div className="flex items-center gap-2 p-1 bg-secondary/50 rounded-lg w-fit">
-        <button
-          onClick={() => setScope("campus")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
-            scope === "campus"
-              ? "bg-background shadow-sm text-primary"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Building2 className="w-4 h-4" />
-          Kampüsüm
-          <Badge variant="secondary" className="text-[10px] ml-0.5">RTEÜ</Badge>
-        </button>
-        <button
-          onClick={() => setScope("national")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
-            scope === "national"
-              ? "bg-background shadow-sm text-primary"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <GraduationCap className="w-4 h-4" />
-          Tüm Üniversiteler
-        </button>
-      </div>
-
-      {/* Search + Date Filter */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-lg">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Etkinlik, grup, indirim veya duyuru ara..."
-            className="pl-9"
-          />
-        </div>
-        <div className="flex gap-1.5">
-          {dateFilters.map((df) => (
-            <Button
-              key={df.key}
-              variant={dateFilter === df.key ? "default" : "outline"}
-              size="sm"
-              onClick={() => setDateFilter(df.key)}
-              className="text-xs"
+      {/* Scope + Search + Tabs — single row */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          {/* Scope Toggle */}
+          <div className="flex items-center gap-1 p-1 bg-secondary/50 rounded-lg shrink-0">
+            <button
+              onClick={() => setScope("campus")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all cursor-pointer",
+                scope === "campus"
+                  ? "bg-background shadow-sm text-primary"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
             >
-              {df.label}
-            </Button>
+              <Building2 className="w-3.5 h-3.5" />
+              RTEÜ
+            </button>
+            <button
+              onClick={() => setScope("national")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all cursor-pointer",
+                scope === "national"
+                  ? "bg-background shadow-sm text-primary"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              Tümü
+            </button>
+          </div>
+
+          {/* Search */}
+          <div className="relative flex-1 w-full sm:max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Ara..."
+              className="pl-9"
+            />
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 bg-secondary/50 rounded-lg p-1 w-fit">
+          {tabsList.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                "flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-medium transition-all cursor-pointer whitespace-nowrap",
+                activeTab === tab.key
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1.5 bg-secondary/50 rounded-lg p-1 w-fit overflow-x-auto scrollbar-hide">
-        {tabsList.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all cursor-pointer whitespace-nowrap",
-              activeTab === tab.key
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
       {/* Content */}
       <div className="space-y-8">
-        {/* Announcements */}
-        {(activeTab === "all" || activeTab === "announcements") && filteredAnnouncements.length > 0 && (
-          <section>
-            {activeTab === "all" && (
-              <div className="flex items-center gap-2 mb-4">
-                <Megaphone className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Duyurular</h2>
-                <Badge variant="secondary" className="text-xs">{filteredAnnouncements.length}</Badge>
-              </div>
-            )}
-            <div className="space-y-3">
-              {filteredAnnouncements.map((ann) => (
-                <Card key={ann.id} className="transition-shadow hover:shadow-md">
-                  <CardContent className="p-4 flex items-start gap-3">
-                    <Avatar className="w-9 h-9 shrink-0 mt-0.5">
-                      <AvatarImage src={ann.userAvatar} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{ann.userName.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm">{ann.userName}</span>
-                        <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30 gap-1">
-                          <Megaphone className="w-3 h-3" />Duyuru
-                        </Badge>
-                        {scope === "national" && ann.universityName && (
-                          <Badge variant="outline" className="text-[10px] gap-1 border-blue-500/30 text-blue-600">
-                            <GraduationCap className="w-3 h-3" />
-                            {ann.universityName}
-                          </Badge>
-                        )}
-                        <span className="text-[11px] text-muted-foreground">{formatDateFull(ann.createdAt)}</span>
-                      </div>
-                      <p className="text-sm text-foreground/90 mt-1.5 leading-relaxed">{ann.content}</p>
-                      {ann.imageUrl && <img src={ann.imageUrl} alt="" className="mt-2 rounded-lg max-h-48 object-cover" />}
-                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                        <span>{ann.likesCount} beğeni</span>
-                        <span>{ann.commentsCount} yorum</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* Events */}
-        {(activeTab === "all" || activeTab === "events") && filteredEvents.length > 0 && (
+        {activeTab === "events" && filteredEvents.length > 0 && (
           <section>
-            {activeTab === "all" && (
-              <div className="flex items-center gap-2 mb-4">
-                <Calendar className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Etkinlikler</h2>
-                <Badge variant="secondary" className="text-xs">{filteredEvents.length}</Badge>
-              </div>
-            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredEvents.map((event) => (
                 <Card
@@ -519,15 +447,8 @@ export default function ExplorePage() {
         )}
 
         {/* Groups */}
-        {(activeTab === "all" || activeTab === "groups") && filteredGroups.length > 0 && (
+        {activeTab === "groups" && filteredGroups.length > 0 && (
           <section>
-            {activeTab === "all" && (
-              <div className="flex items-center gap-2 mb-4">
-                <Users className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Gruplar</h2>
-                <Badge variant="secondary" className="text-xs">{filteredGroups.length}</Badge>
-              </div>
-            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredGroups.map((group) => {
                 const btnState = getGroupButtonState(group);
@@ -578,15 +499,8 @@ export default function ExplorePage() {
         )}
 
         {/* Discounts */}
-        {(activeTab === "all" || activeTab === "discounts") && filteredDiscounts.length > 0 && (
+        {activeTab === "discounts" && filteredDiscounts.length > 0 && (
           <section>
-            {activeTab === "all" && (
-              <div className="flex items-center gap-2 mb-4">
-                <Tag className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">İndirimler</h2>
-                <Badge variant="secondary" className="text-xs">{filteredDiscounts.length}</Badge>
-              </div>
-            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredDiscounts.map((discount) => (
                 <Card key={discount.id} className="overflow-hidden relative hover:shadow-md transition-shadow">
@@ -623,11 +537,11 @@ export default function ExplorePage() {
       </div>
 
       {/* Empty State */}
-      {totalResults === 0 && (
+      {currentResults === 0 && (
         <div className="text-center py-20 text-muted-foreground">
-          <Compass className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="text-lg font-medium">Sonuç bulunamadı</p>
-          <p className="text-sm mt-1">Farklı anahtar kelimeler veya kategori deneyin.</p>
+          <p className="text-sm mt-1">Farklı anahtar kelimeler deneyin.</p>
         </div>
       )}
 
@@ -644,7 +558,7 @@ export default function ExplorePage() {
               )}
               <p className="text-sm text-muted-foreground leading-relaxed">{selectedEvent.description}</p>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-4 h-4 text-primary shrink-0" />{formatDateFull(selectedEvent.startDate)}</div>
+                <div className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-4 h-4 text-primary shrink-0" />{formatDate(selectedEvent.startDate)}</div>
                 <div className="flex items-center gap-2 text-muted-foreground"><Clock className="w-4 h-4 text-primary shrink-0" />{formatTime(selectedEvent.startDate)} - {formatTime(selectedEvent.endDate)}</div>
                 <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="w-4 h-4 text-primary shrink-0" />{selectedEvent.location}</div>
                 <div className="flex items-center gap-2 text-muted-foreground"><Users className="w-4 h-4 text-primary shrink-0" />{selectedEvent.currentParticipants}/{selectedEvent.maxParticipants} katılımcı</div>
