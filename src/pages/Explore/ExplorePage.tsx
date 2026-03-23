@@ -11,12 +11,11 @@ import {
   Check,
   Lock,
   Globe,
-  Compass,
-  Megaphone,
-  AlertTriangle,
   X,
   UserPlus,
   Info,
+  Building2,
+  GraduationCap,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,54 +39,30 @@ import {
   mockEvents,
   mockGroups,
   mockDiscounts,
-  mockAnnouncements,
   mockUsers,
+  otherUniversityEvents,
+  otherUniversityGroups,
 } from "@/data/mock";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
 import type { Event, Group } from "@/types";
 
-type TabKey = "all" | "events" | "groups" | "discounts" | "announcements";
-type DateFilter = "all" | "week" | "month";
+type TabKey = "events" | "groups" | "discounts";
+type ScopeFilter = "campus" | "national";
 
 const tabsList: { key: TabKey; label: string; icon: React.ElementType }[] = [
-  { key: "all", label: "Tümü", icon: Compass },
   { key: "events", label: "Etkinlikler", icon: Calendar },
   { key: "groups", label: "Gruplar", icon: Users },
   { key: "discounts", label: "İndirimler", icon: Tag },
-  { key: "announcements", label: "Duyurular", icon: Megaphone },
-];
-
-const dateFilters: { key: DateFilter; label: string }[] = [
-  { key: "all", label: "Tüm Zamanlar" },
-  { key: "week", label: "Bu Hafta" },
-  { key: "month", label: "Bu Ay" },
 ];
 
 const groupCategories = ["Akademik", "Teknoloji", "Spor", "Sanat", "Sosyal"];
 
-function isWithinDateFilter(dateStr: string, filter: DateFilter): boolean {
-  if (filter === "all") return true;
-  const now = new Date();
-  const date = new Date(dateStr);
-  if (filter === "week") {
-    const weekLater = new Date(now);
-    weekLater.setDate(weekLater.getDate() + 7);
-    return date >= now && date <= weekLater;
-  }
-  if (filter === "month") {
-    const monthLater = new Date(now);
-    monthLater.setMonth(monthLater.getMonth() + 1);
-    return date >= now && date <= monthLater;
-  }
-  return true;
-}
-
 export default function ExplorePage() {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<TabKey>("all");
+  const [activeTab, setActiveTab] = useState<TabKey>("events");
   const [searchQuery, setSearchQuery] = useState("");
-  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [scope, setScope] = useState<ScopeFilter>("campus");
 
   const [events, setEvents] = useState(mockEvents);
   const [groups, setGroups] = useState<Group[]>(mockGroups);
@@ -266,19 +241,27 @@ export default function ExplorePage() {
 
   const q = searchQuery.toLowerCase();
 
+  const scopedEvents = useMemo(
+    () => scope === "campus" ? events : [...events, ...otherUniversityEvents],
+    [events, scope],
+  );
+
   const filteredEvents = useMemo(
     () =>
-      events.filter(
-        (e) =>
-          (e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q)) &&
-          isWithinDateFilter(e.startDate, dateFilter),
+      scopedEvents.filter(
+        (e) => e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q),
       ),
-    [events, q, dateFilter],
+    [scopedEvents, q],
+  );
+
+  const scopedGroups = useMemo(
+    () => scope === "campus" ? groups : [...groups, ...otherUniversityGroups],
+    [groups, scope],
   );
 
   const filteredGroups = useMemo(
-    () => groups.filter((g) => g.name.toLowerCase().includes(q) || g.description.toLowerCase().includes(q)),
-    [groups, q],
+    () => scopedGroups.filter((g) => g.name.toLowerCase().includes(q) || g.description.toLowerCase().includes(q)),
+    [scopedGroups, q],
   );
 
   const filteredDiscounts = useMemo(
@@ -287,16 +270,6 @@ export default function ExplorePage() {
         (d) => d.businessName.toLowerCase().includes(q) || d.title.toLowerCase().includes(q),
       ),
     [q],
-  );
-
-  const filteredAnnouncements = useMemo(
-    () =>
-      mockAnnouncements.filter(
-        (a) =>
-          (a.title.toLowerCase().includes(q) || a.content.toLowerCase().includes(q)) &&
-          isWithinDateFilter(a.createdAt, dateFilter),
-      ),
-    [q, dateFilter],
   );
 
   const formatDate = (dateStr: string) =>
@@ -315,11 +288,10 @@ export default function ExplorePage() {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
-  const totalResults =
-    (activeTab === "all" || activeTab === "events" ? filteredEvents.length : 0) +
-    (activeTab === "all" || activeTab === "groups" ? filteredGroups.length : 0) +
-    (activeTab === "all" || activeTab === "discounts" ? filteredDiscounts.length : 0) +
-    (activeTab === "all" || activeTab === "announcements" ? filteredAnnouncements.length : 0);
+  const currentResults =
+    activeTab === "events" ? filteredEvents.length :
+    activeTab === "groups" ? filteredGroups.length :
+    filteredDiscounts.length;
 
   const getGroupButtonState = (group: Group) => {
     if (group.isMember) return { label: "Ayrıl", variant: "outline" as const };
@@ -355,6 +327,35 @@ export default function ExplorePage() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      {/* Scope Selector */}
+      <div className="flex items-center gap-2 p-1 bg-secondary/50 rounded-lg w-fit">
+        <button
+          onClick={() => setScope("campus")}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
+            scope === "campus"
+              ? "bg-background shadow-sm text-primary"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <Building2 className="w-4 h-4" />
+          Kampüsüm
+          <Badge variant="secondary" className="text-[10px] ml-0.5">RTEÜ</Badge>
+        </button>
+        <button
+          onClick={() => setScope("national")}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
+            scope === "national"
+              ? "bg-background shadow-sm text-primary"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <GraduationCap className="w-4 h-4" />
+          Tüm Üniversiteler
+        </button>
       </div>
 
       {/* Search + Date Filter */}
@@ -416,18 +417,32 @@ export default function ExplorePage() {
             )}
             <div className="space-y-3">
               {filteredAnnouncements.map((ann) => (
-                <Card key={ann.id} className={cn("transition-shadow", ann.isImportant && "border-amber-500/30 bg-amber-500/5")}>
+                <Card key={ann.id} className="transition-shadow hover:shadow-md">
                   <CardContent className="p-4 flex items-start gap-3">
-                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", ann.isImportant ? "bg-amber-500/10" : "bg-primary/10")}>
-                      {ann.isImportant ? <AlertTriangle className="w-5 h-5 text-amber-600" /> : <Megaphone className="w-5 h-5 text-primary" />}
-                    </div>
+                    <Avatar className="w-9 h-9 shrink-0 mt-0.5">
+                      <AvatarImage src={ann.userAvatar} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{ann.userName.charAt(0)}</AvatarFallback>
+                    </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-sm">{ann.title}</h3>
-                        {ann.isImportant && <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-500/30">Önemli</Badge>}
+                        <span className="font-semibold text-sm">{ann.userName}</span>
+                        <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30 gap-1">
+                          <Megaphone className="w-3 h-3" />Duyuru
+                        </Badge>
+                        {scope === "national" && ann.universityName && (
+                          <Badge variant="outline" className="text-[10px] gap-1 border-blue-500/30 text-blue-600">
+                            <GraduationCap className="w-3 h-3" />
+                            {ann.universityName}
+                          </Badge>
+                        )}
+                        <span className="text-[11px] text-muted-foreground">{formatDateFull(ann.createdAt)}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{ann.content}</p>
-                      <p className="text-[11px] text-muted-foreground mt-2">{formatDateFull(ann.createdAt)}</p>
+                      <p className="text-sm text-foreground/90 mt-1.5 leading-relaxed">{ann.content}</p>
+                      {ann.imageUrl && <img src={ann.imageUrl} alt="" className="mt-2 rounded-lg max-h-48 object-cover" />}
+                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                        <span>{ann.likesCount} beğeni</span>
+                        <span>{ann.commentsCount} yorum</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -463,7 +478,15 @@ export default function ExplorePage() {
                   )}
                   <CardContent className="p-4 space-y-3">
                     <div>
-                      <h3 className="font-semibold line-clamp-1">{event.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold line-clamp-1 flex-1">{event.title}</h3>
+                        {scope === "national" && event.universityName && (
+                          <Badge variant="outline" className="text-[10px] shrink-0 gap-1 border-blue-500/30 text-blue-600">
+                            <GraduationCap className="w-3 h-3" />
+                            {event.universityName}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{event.description}</p>
                     </div>
                     <div className="space-y-1.5 text-xs text-muted-foreground">
@@ -525,7 +548,15 @@ export default function ExplorePage() {
                     )}
                     <CardContent className="p-4 space-y-3">
                       <div>
-                        <h3 className="font-semibold">{group.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold flex-1">{group.name}</h3>
+                          {scope === "national" && group.universityName && (
+                            <Badge variant="outline" className="text-[10px] shrink-0 gap-1 border-blue-500/30 text-blue-600">
+                              <GraduationCap className="w-3 h-3" />
+                              {group.universityName}
+                            </Badge>
+                          )}
+                        </div>
                         <div className="flex items-center gap-2 mt-1.5">
                           <Badge variant="secondary" className="text-[10px]">{group.category}</Badge>
                           {group.privacy === "closed" && <Badge variant="outline" className="text-[10px] gap-1"><Lock className="w-3 h-3" />Kapalı</Badge>}

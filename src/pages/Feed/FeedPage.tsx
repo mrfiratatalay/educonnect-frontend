@@ -16,7 +16,6 @@ import {
   ArrowRight,
   Paperclip,
   FileText,
-  HelpCircle,
   X,
   ChevronDown,
   ChevronUp,
@@ -43,12 +42,6 @@ import {
 } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import type { Post, Comment } from "@/types";
-
-const postTypeLabels = {
-  general: { label: "Genel", icon: MessageCircle, color: "text-muted-foreground" },
-  material: { label: "Ders Materyali", icon: FileText, color: "text-blue-600" },
-  question: { label: "Soru", icon: HelpCircle, color: "text-amber-600" },
-} as const;
 
 function PostCard({
   post,
@@ -87,7 +80,6 @@ function PostCard({
   };
 
   const isOwn = post.userId === user?.id;
-  const typeInfo = postTypeLabels[post.postType];
 
   const handleSubmitComment = () => {
     if (!commentInput.trim()) return;
@@ -109,7 +101,7 @@ function PostCard({
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-wrap">
                 <span
                   className="font-semibold text-sm hover:underline cursor-pointer"
@@ -117,15 +109,6 @@ function PostCard({
                 >
                   {post.userName}
                 </span>
-                {post.postType !== "general" && (
-                  <Badge
-                    variant="outline"
-                    className={cn("text-[10px] gap-1", typeInfo.color)}
-                  >
-                    <typeInfo.icon className="w-3 h-3" />
-                    {typeInfo.label}
-                  </Badge>
-                )}
                 <span className="text-xs text-muted-foreground">
                   · {timeAgo(post.createdAt)}
                 </span>
@@ -478,11 +461,8 @@ export default function FeedPage() {
   const [newPost, setNewPost] = useState("");
   const [posts, setPosts] = useState<Post[]>(mockPosts);
   const [comments, setComments] = useState<Comment[]>(mockComments);
-  const [postType, setPostType] = useState<Post["postType"]>("general");
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [attachmentName, setAttachmentName] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const myGroups = mockGroups.filter((g) => g.isMember);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -496,7 +476,7 @@ export default function FeedPage() {
       content: newPost.trim(),
       imageUrl: previewImage || undefined,
       attachmentName: attachmentName || undefined,
-      postType,
+      postType: "general",
       createdAt: new Date().toISOString(),
       likesCount: 0,
       commentsCount: 0,
@@ -504,8 +484,6 @@ export default function FeedPage() {
     };
     setPosts([post, ...posts]);
     setNewPost("");
-    setPostType("general");
-    setSelectedGroupId("");
     setAttachmentName(null);
     setPreviewImage(null);
   };
@@ -574,65 +552,10 @@ export default function FeedPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    {/* Post Type Selector */}
-                    <div className="flex items-center gap-1.5 mb-2">
-                      {(
-                        Object.entries(postTypeLabels) as [
-                          Post["postType"],
-                          (typeof postTypeLabels)[Post["postType"]],
-                        ][]
-                      ).map(([key, val]) => (
-                        <button
-                          key={key}
-                          onClick={() => setPostType(key)}
-                          className={cn(
-                            "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer",
-                            postType === key
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary/60 text-muted-foreground hover:bg-secondary",
-                          )}
-                        >
-                          <val.icon className="w-3 h-3" />
-                          {val.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Group Selector */}
-                    {myGroups.length > 0 && (
-                      <div className="flex items-center gap-2 mb-2">
-                        <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <select
-                          value={selectedGroupId}
-                          onChange={(e) => setSelectedGroupId(e.target.value)}
-                          className="h-7 rounded-md border border-input bg-secondary/50 px-2 text-[11px] text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        >
-                          <option value="">Herkese Açık</option>
-                          {myGroups.map((g) => (
-                            <option key={g.id} value={g.id}>{g.name}</option>
-                          ))}
-                        </select>
-                        {selectedGroupId && (
-                          <Badge variant="secondary" className="text-[10px] gap-1">
-                            <Users className="w-3 h-3" />
-                            {myGroups.find((g) => g.id === selectedGroupId)?.name}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
                     <textarea
                       value={newPost}
                       onChange={(e) => setNewPost(e.target.value)}
-                      placeholder={
-                        postType === "question"
-                          ? "Sorunuzu yazın..."
-                          : postType === "material"
-                            ? "Materyal hakkında açıklama yazın..."
-                            : selectedGroupId
-                              ? `${myGroups.find((g) => g.id === selectedGroupId)?.name} grubuna paylaş...`
-                              : "Ne düşünüyorsun?"
-                      }
+                      placeholder="Ne düşünüyorsun?"
                       rows={2}
                       className="w-full resize-none bg-secondary/50 rounded-xl px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-secondary/80 transition-all"
                     />
