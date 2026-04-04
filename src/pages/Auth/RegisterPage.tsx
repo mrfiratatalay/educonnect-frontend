@@ -2,43 +2,50 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { Eye, EyeOff, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  getApiErrorMessage,
+  getUniversities,
+  register as registerRequest,
+} from "@/features/auth/api";
 import { useAuthStore } from "@/store/authStore";
-import { mockUser } from "@/data/mock";
 
 const registerSchema = z
   .object({
-    fullName: z.string().min(2, "Ad soyad en az 2 karakter olmalıdır"),
-    email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-    university: z.string().min(1, "Üniversite seçiniz"),
-    department: z.string().min(1, "Bölüm giriniz"),
-    year: z.string().min(1, "Sınıf seçiniz"),
-    password: z.string().min(6, "Şifre en az 6 karakter olmalıdır"),
+    fullName: z.string().min(3, "Ad soyad en az 3 karakter olmali"),
+    email: z.string().email("Gecerli bir e-posta adresi giriniz"),
+    universityId: z.string().min(1, "Universite seciniz"),
+    department: z.string().min(2, "Bolum en az 2 karakter olmali"),
+    year: z.string().min(1, "Sinif seciniz"),
+    password: z.string().min(8, "Sifre en az 8 karakter olmali"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Şifreler eşleşmiyor",
+    message: "Sifreler eslesmiyor",
     path: ["confirmPassword"],
   });
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
-const universities = [
-  "Recep Tayyip Erdoğan Üniversitesi",
-  "Karadeniz Teknik Üniversitesi",
-  "Trabzon Üniversitesi",
-  "Artvin Çoruh Üniversitesi",
-  "Giresun Üniversitesi",
-];
-
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const setSession = useAuthStore((state) => state.setSession);
+
+  const {
+    data: universities = [],
+    isLoading: isUniversitiesLoading,
+    isError: isUniversitiesError,
+  } = useQuery({
+    queryKey: ["universities"],
+    queryFn: getUniversities,
+  });
 
   const {
     register,
@@ -49,12 +56,23 @@ export default function RegisterPage() {
   });
 
   const onSubmit = async (data: RegisterForm) => {
-    await new Promise((r) => setTimeout(r, 800));
-    login(
-      { ...mockUser, fullName: data.fullName, email: data.email, department: data.department, year: parseInt(data.year) },
-      "mock-jwt-token",
-    );
-    navigate("/?welcome=true");
+    setSubmitError(null);
+
+    try {
+      const session = await registerRequest({
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,
+        universityId: data.universityId,
+        department: data.department,
+        year: Number(data.year),
+      });
+
+      setSession(session);
+      navigate("/");
+    } catch (error) {
+      setSubmitError(getApiErrorMessage(error));
+    }
   };
 
   return (
@@ -69,108 +87,154 @@ export default function RegisterPage() {
       </div>
 
       <div className="space-y-2 mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Hesap Oluştur</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Hesap Olustur</h1>
         <p className="text-muted-foreground">
-          EduConnect'e katılarak kampüs hayatını keşfet
+          Sadece gerekli alanlari doldurup kayit olabilirsiniz
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="fullName">Ad Soyad</Label>
-          <Input id="fullName" placeholder="Adınız Soyadınız" {...register("fullName")} />
-          {errors.fullName && <p className="text-sm text-destructive">{errors.fullName.message}</p>}
+          <Input
+            id="fullName"
+            placeholder="Adiniz Soyadiniz"
+            autoComplete="name"
+            {...register("fullName")}
+          />
+          {errors.fullName && (
+            <p className="text-sm text-destructive">{errors.fullName.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="email">E-posta</Label>
-          <Input id="email" type="email" placeholder="ornek@erdogan.edu.tr" {...register("email")} />
-          {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+          <Input
+            id="email"
+            type="email"
+            placeholder="ornek@universite.edu.tr"
+            autoComplete="email"
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="text-sm text-destructive">{errors.email.message}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="university">Üniversite</Label>
+            <Label htmlFor="universityId">Universite</Label>
             <select
-              id="university"
-              {...register("university")}
-              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              id="universityId"
+              disabled={isUniversitiesLoading}
+              {...register("universityId")}
+              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="">Seçiniz</option>
-              {universities.map((u) => (
-                <option key={u} value={u}>{u}</option>
+              <option value="">
+                {isUniversitiesLoading ? "Yukleniyor..." : "Seciniz"}
+              </option>
+              {universities.map((university) => (
+                <option key={university.id} value={university.id}>
+                  {university.name}
+                </option>
               ))}
             </select>
-            {errors.university && <p className="text-sm text-destructive">{errors.university.message}</p>}
+            {errors.universityId && (
+              <p className="text-sm text-destructive">
+                {errors.universityId.message}
+              </p>
+            )}
+            {isUniversitiesError && (
+              <p className="text-sm text-destructive">
+                Universiteler yuklenemedi.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="department">Bölüm</Label>
-            <Input id="department" placeholder="Bilgisayar Müh." {...register("department")} />
-            {errors.department && <p className="text-sm text-destructive">{errors.department.message}</p>}
+            <Label htmlFor="department">Bolum</Label>
+            <Input
+              id="department"
+              placeholder="Bilgisayar Muhendisligi"
+              {...register("department")}
+            />
+            {errors.department && (
+              <p className="text-sm text-destructive">{errors.department.message}</p>
+            )}
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="year">Sınıf</Label>
+          <Label htmlFor="year">Sinif</Label>
           <select
             id="year"
             {...register("year")}
             className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <option value="">Seçiniz</option>
-            <option value="1">1. Sınıf (Hazırlık)</option>
-            <option value="1">1. Sınıf</option>
-            <option value="2">2. Sınıf</option>
-            <option value="3">3. Sınıf</option>
-            <option value="4">4. Sınıf</option>
-            <option value="5">5. Sınıf+</option>
+            <option value="">Seciniz</option>
+            <option value="1">1. Sinif</option>
+            <option value="2">2. Sinif</option>
+            <option value="3">3. Sinif</option>
+            <option value="4">4. Sinif</option>
+            <option value="5">5. Sinif+</option>
           </select>
-          {errors.year && <p className="text-sm text-destructive">{errors.year.message}</p>}
+          {errors.year && (
+            <p className="text-sm text-destructive">{errors.year.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Şifre</Label>
+          <Label htmlFor="password">Sifre</Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder="********"
+              autoComplete="new-password"
               {...register("password")}
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => setShowPassword((current) => !current)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Şifre Tekrar</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="••••••••"
-            {...register("confirmPassword")}
-          />
-          {errors.confirmPassword && (
-            <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+          {errors.password && (
+            <p className="text-sm text-destructive">{errors.password.message}</p>
           )}
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Sifre Tekrar</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="********"
+            autoComplete="new-password"
+            {...register("confirmPassword")}
+          />
+          {errors.confirmPassword && (
+            <p className="text-sm text-destructive">
+              {errors.confirmPassword.message}
+            </p>
+          )}
+        </div>
+
+        {submitError && (
+          <p className="text-sm text-destructive">{submitError}</p>
+        )}
+
         <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-          {isSubmitting ? "Kayıt yapılıyor..." : "Kayıt Ol"}
+          {isSubmitting ? "Kayit yapiliyor..." : "Kayit Ol"}
         </Button>
       </form>
 
       <p className="text-center text-sm text-muted-foreground mt-6">
-        Zaten hesabınız var mı?{" "}
+        Zaten hesabiniz var mi?{" "}
         <Link to="/login" className="text-primary font-medium hover:underline">
-          Giriş Yap
+          Giris Yap
         </Link>
       </p>
     </div>

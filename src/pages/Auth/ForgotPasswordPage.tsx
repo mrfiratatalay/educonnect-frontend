@@ -7,25 +7,38 @@ import { GraduationCap, ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  forgotPassword,
+  getApiErrorMessage,
+} from "@/features/auth/api";
 
 const schema = z.object({
-  email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+  email: z.string().email("Gecerli bir e-posta adresi giriniz"),
 });
 
 type ForgotForm = z.infer<typeof schema>;
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ForgotForm>({ resolver: zodResolver(schema) });
+  } = useForm<ForgotForm>({
+    resolver: zodResolver(schema),
+  });
 
-  const onSubmit = async () => {
-    await new Promise((r) => setTimeout(r, 1000));
-    setSent(true);
+  const onSubmit = async (data: ForgotForm) => {
+    setSubmitError(null);
+
+    try {
+      await forgotPassword(data);
+      setSent(true);
+    } catch (error) {
+      setSubmitError(getApiErrorMessage(error));
+    }
   };
 
   return (
@@ -44,24 +57,24 @@ export default function ForgotPasswordPage() {
           <div className="w-16 h-16 mx-auto rounded-full bg-success/10 flex items-center justify-center">
             <CheckCircle2 className="w-8 h-8 text-success" />
           </div>
-          <h1 className="text-2xl font-bold">E-posta Gönderildi!</h1>
+          <h1 className="text-2xl font-bold">E-posta Gonderildi</h1>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-            Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. Lütfen gelen
-            kutunuzu kontrol edin.
+            Eger hesap mevcutsa sifre sifirlama adimlari e-posta adresinize
+            gonderilecektir.
           </p>
           <Link to="/login">
             <Button variant="outline" className="gap-2 mt-2">
               <ArrowLeft className="w-4 h-4" />
-              Giriş Sayfasına Dön
+              Giris Sayfasina Don
             </Button>
           </Link>
         </div>
       ) : (
         <>
           <div className="space-y-2 mb-8">
-            <h1 className="text-2xl font-bold tracking-tight">Şifremi Unuttum</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Sifremi Unuttum</h1>
             <p className="text-muted-foreground">
-              E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
+              E-posta adresinizi girin, size sifre sifirlama akisini baslatalim.
             </p>
           </div>
 
@@ -73,8 +86,9 @@ export default function ForgotPasswordPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="ornek@erdogan.edu.tr"
+                  placeholder="ornek@universite.edu.tr"
                   className="pl-9"
+                  autoComplete="email"
                   {...register("email")}
                 />
               </div>
@@ -83,15 +97,19 @@ export default function ForgotPasswordPage() {
               )}
             </div>
 
+            {submitError && (
+              <p className="text-sm text-destructive">{submitError}</p>
+            )}
+
             <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-              {isSubmitting ? "Gönderiliyor..." : "Sıfırlama Bağlantısı Gönder"}
+              {isSubmitting ? "Gonderiliyor..." : "Sifirlama Baglantisi Gonder"}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             <Link to="/login" className="text-primary font-medium hover:underline inline-flex items-center gap-1">
               <ArrowLeft className="w-3 h-3" />
-              Giriş sayfasına dön
+              Giris sayfasina don
             </Link>
           </p>
         </>

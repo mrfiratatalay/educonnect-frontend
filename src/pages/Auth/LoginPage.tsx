@@ -7,20 +7,21 @@ import { Eye, EyeOff, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getApiErrorMessage, login as loginRequest } from "@/features/auth/api";
 import { useAuthStore } from "@/store/authStore";
-import { mockUser } from "@/data/mock";
 
 const loginSchema = z.object({
-  email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalıdır"),
+  email: z.string().email("Gecerli bir e-posta adresi giriniz"),
+  password: z.string().min(8, "Sifre en az 8 karakter olmali"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const setSession = useAuthStore((state) => state.setSession);
 
   const {
     register,
@@ -31,9 +32,15 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginForm) => {
-    await new Promise((r) => setTimeout(r, 800));
-    login(mockUser, "mock-jwt-token");
-    navigate("/");
+    setSubmitError(null);
+
+    try {
+      const session = await loginRequest(data);
+      setSession(session);
+      navigate("/");
+    } catch (error) {
+      setSubmitError(getApiErrorMessage(error));
+    }
   };
 
   return (
@@ -48,9 +55,9 @@ export default function LoginPage() {
       </div>
 
       <div className="space-y-2 mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Hoş Geldiniz</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Hos Geldiniz</h1>
         <p className="text-muted-foreground">
-          Hesabınıza giriş yaparak devam edin
+          Hesabiniza giris yaparak devam edin
         </p>
       </div>
 
@@ -60,7 +67,8 @@ export default function LoginPage() {
           <Input
             id="email"
             type="email"
-            placeholder="ornek@erdogan.edu.tr"
+            placeholder="ornek@universite.edu.tr"
+            autoComplete="email"
             {...register("email")}
           />
           {errors.email && (
@@ -70,24 +78,25 @@ export default function LoginPage() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Şifre</Label>
+            <Label htmlFor="password">Sifre</Label>
             <Link
               to="/forgot-password"
               className="text-xs text-primary hover:underline"
             >
-              Şifremi Unuttum
+              Sifremi Unuttum
             </Link>
           </div>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
+              placeholder="********"
+              autoComplete="current-password"
               {...register("password")}
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => setShowPassword((current) => !current)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               {showPassword ? (
@@ -102,15 +111,19 @@ export default function LoginPage() {
           )}
         </div>
 
+        {submitError && (
+          <p className="text-sm text-destructive">{submitError}</p>
+        )}
+
         <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-          {isSubmitting ? "Giriş yapılıyor..." : "Giriş Yap"}
+          {isSubmitting ? "Giris yapiliyor..." : "Giris Yap"}
         </Button>
       </form>
 
       <p className="text-center text-sm text-muted-foreground mt-6">
-        Hesabınız yok mu?{" "}
+        Hesabiniz yok mu?{" "}
         <Link to="/register" className="text-primary font-medium hover:underline">
-          Kayıt Ol
+          Kayit Ol
         </Link>
       </p>
     </div>

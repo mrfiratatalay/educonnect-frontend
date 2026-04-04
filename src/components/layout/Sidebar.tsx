@@ -1,37 +1,25 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
+  Compass,
+  GraduationCap,
   Home,
+  LogOut,
   MessageSquare,
   Search,
-  Compass,
-  User,
   Settings,
-  LogOut,
-  GraduationCap,
-  Bell,
-  CheckCheck,
+  User,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import NotificationsMenu from "@/components/layout/NotificationsMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
-import { useNotificationStore } from "@/store/notificationStore";
+import { cn } from "@/lib/utils";
 
 const mainNav = [
   { to: "/", icon: Home, label: "Anasayfa" },
   { to: "/feed", icon: MessageSquare, label: "Feed" },
-  { to: "/explore", icon: Compass, label: "Keşfet" },
-  { to: "/visual-search", icon: Search, label: "Görsel Arama" },
+  { to: "/explore", icon: Compass, label: "Kesfet" },
+  { to: "/visual-search", icon: Search, label: "Gorsel Arama" },
 ];
 
 const bottomNav = [
@@ -40,24 +28,14 @@ const bottomNav = [
 ];
 
 export default function Sidebar() {
-  const { user, logout } = useAuthStore();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotificationStore();
-  const navigate = useNavigate();
-
-  const handleNotificationClick = (id: string, link?: string) => {
-    markAsRead(id);
-    if (link) {
-      navigate(link);
-    }
-  };
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 h-screen border-r bg-sidebar-background sticky top-0">
-      {/* Brand */}
+    <aside className="sticky top-0 hidden h-screen w-64 flex-col border-r bg-sidebar-background lg:flex">
       <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary text-primary-foreground">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <GraduationCap className="w-5 h-5" />
           </div>
           <span className="text-xl font-bold tracking-tight text-foreground">
@@ -65,74 +43,15 @@ export default function Sidebar() {
           </span>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative w-9 h-9"
-              aria-label="Bildirimler"
-            >
-              <Bell className="w-4 h-4" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold rounded-full bg-destructive text-destructive-foreground">
-                  {unreadCount}
-                </span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <div className="flex items-center justify-between px-2">
-              <DropdownMenuLabel>Bildirimler</DropdownMenuLabel>
-              {unreadCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs gap-1 text-muted-foreground"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    markAllAsRead();
-                  }}
-                >
-                  <CheckCheck className="w-3 h-3" />
-                  Tümünü Okundu İşaretle
-                </Button>
-              )}
-            </div>
-            <DropdownMenuSeparator />
-            {notifications.slice(0, 5).map((n) => (
-              <DropdownMenuItem
-                key={n.id}
-                onClick={() => handleNotificationClick(n.id, n.link)}
-                className={cn(
-                  "flex flex-col items-start gap-1 py-2 cursor-pointer",
-                  !n.isRead && "bg-primary/5",
-                )}
-              >
-                <div className="flex items-center gap-2 w-full">
-                  <span className="font-medium text-sm">{n.title}</span>
-                  {!n.isRead && (
-                    <Badge
-                      variant="default"
-                      className="ml-auto text-[10px] px-1.5 py-0"
-                    >
-                      Yeni
-                    </Badge>
-                  )}
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {n.message}
-                </span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <NotificationsMenu
+          buttonClassName="relative w-9 h-9"
+          iconClassName="w-4 h-4"
+        />
       </div>
 
       <Separator />
 
-      {/* Main Navigation */}
-      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto scrollbar-hide">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3 scrollbar-hide">
         {mainNav.map((item) => (
           <NavLink
             key={item.to}
@@ -140,14 +59,14 @@ export default function Sidebar() {
             end={item.to === "/"}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-sidebar-foreground hover:bg-secondary",
               )
             }
           >
-            <item.icon className="w-[18px] h-[18px] shrink-0" />
+            <item.icon className="h-[18px] w-[18px] shrink-0" />
             {item.label}
           </NavLink>
         ))}
@@ -155,47 +74,47 @@ export default function Sidebar() {
 
       <Separator />
 
-      {/* Bottom Navigation */}
-      <div className="px-3 py-2.5 space-y-0.5">
+      <div className="space-y-0.5 px-3 py-2.5">
         {bottomNav.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-sidebar-foreground hover:bg-secondary",
               )
             }
           >
-            <item.icon className="w-[18px] h-[18px] shrink-0" />
+            <item.icon className="h-[18px] w-[18px] shrink-0" />
             {item.label}
           </NavLink>
         ))}
+
         <button
-          onClick={logout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors w-full cursor-pointer"
+          onClick={() => void logout()}
+          className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
         >
-          <LogOut className="w-[18px] h-[18px] shrink-0" />
-          Çıkış Yap
+          <LogOut className="h-[18px] w-[18px] shrink-0" />
+          Cikis Yap
         </button>
       </div>
 
       <Separator />
 
-      {/* User Info */}
       <div className="flex items-center gap-3 px-4 py-3.5">
         <Avatar className="w-9 h-9">
           <AvatarImage src={user?.avatarUrl} alt={user?.fullName} />
-          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+          <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
             {user?.fullName?.charAt(0)}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{user?.fullName}</p>
-          <p className="text-[11px] text-muted-foreground truncate">
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{user?.fullName}</p>
+          <p className="truncate text-[11px] text-muted-foreground">
             {user?.department}
           </p>
         </div>

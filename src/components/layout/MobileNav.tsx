@@ -63,7 +63,7 @@ export default function MobileNav() {
             ))}
             <button
               onClick={() => {
-                logout();
+                void logout();
                 setMoreOpen(false);
               }}
               className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"

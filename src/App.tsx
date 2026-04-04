@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import AppLayout from "@/components/layout/AppLayout";
@@ -12,19 +13,55 @@ import ExplorePage from "@/pages/Explore/ExplorePage";
 import ProfilePage from "@/pages/Profile/ProfilePage";
 import SettingsPage from "@/pages/Settings/SettingsPage";
 
+function RouteLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+      Yukleniyor...
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  const { isAuthenticated, status } = useAuthStore();
+
+  if (status === "loading") {
+    return <RouteLoading />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <>{children}</>;
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  const { isAuthenticated, status } = useAuthStore();
+
+  if (status === "loading") {
+    return <RouteLoading />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
   return <>{children}</>;
 }
 
 export default function App() {
+  const hydrateSession = useAuthStore((state) => state.hydrateSession);
+  const hasBootstrappedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasBootstrappedRef.current) {
+      return;
+    }
+
+    hasBootstrappedRef.current = true;
+    void hydrateSession();
+  }, [hydrateSession]);
+
   return (
     <Routes>
       <Route

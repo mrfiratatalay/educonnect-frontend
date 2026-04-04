@@ -1,11 +1,14 @@
+export type UserRole = "student" | "admin" | "moderator";
+
 export interface User {
   id: string;
   fullName: string;
   email: string;
-  role: "student" | "admin" | "moderator";
-  universityId: string;
-  createdAt: string;
-  isActive: boolean;
+  role: UserRole;
+  universityId?: string;
+  universityName?: string;
+  createdAt?: string;
+  isActive?: boolean;
   avatarUrl?: string;
   department?: string;
   year?: number;

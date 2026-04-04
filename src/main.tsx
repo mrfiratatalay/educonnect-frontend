@@ -1,11 +1,14 @@
+import "antd/dist/antd.css";
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { MantineProvider } from "@mantine/core";
+import { App as AntdApp, ConfigProvider } from "antd";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import App from "./App";
+import RootApp from "./App";
+import { getAntdTheme } from "./theme/antdTheme";
 import { mantineTheme } from "./theme/mantineTheme";
 import "./index.css";
 
@@ -26,15 +29,19 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <MantineProvider
-      theme={mantineTheme}
-      defaultColorScheme={darkModeEnabled ? "dark" : "light"}
-    >
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </QueryClientProvider>
-    </MantineProvider>
+    <ConfigProvider theme={getAntdTheme(darkModeEnabled)}>
+      <AntdApp>
+        <MantineProvider
+          theme={mantineTheme}
+          defaultColorScheme={darkModeEnabled ? "dark" : "light"}
+        >
+          <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+              <RootApp />
+            </BrowserRouter>
+          </QueryClientProvider>
+        </MantineProvider>
+      </AntdApp>
+    </ConfigProvider>
   </React.StrictMode>,
 );
