@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, Flex, Input, Typography } from "antd";
 
 interface PostEditFormProps {
   initialContent: string;
@@ -22,7 +22,7 @@ export default function PostEditForm({
 
     const trimmedContent = content.trim();
     if (!trimmedContent) {
-      setErrorMessage("Paylasim metni bos olamaz.");
+      setErrorMessage("Paylaşım metni boş olamaz.");
       return;
     }
 
@@ -31,40 +31,45 @@ export default function PostEditForm({
       await onSubmit(trimmedContent);
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Paylasim guncellenemedi.",
+        error instanceof Error ? error.message : "Paylaşım güncellenemedi.",
       );
     }
   }
 
   return (
-    <form className="space-y-3" onSubmit={handleSubmit}>
-      <textarea
-        value={content}
-        onChange={(event) => setContent(event.target.value)}
-        rows={4}
-        maxLength={1500}
-        className="w-full resize-none rounded-xl border border-border/60 bg-secondary/30 px-3 py-2 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-      />
+    <form onSubmit={handleSubmit}>
+      <Flex vertical gap={8}>
+        <Input.TextArea
+          value={content}
+          onChange={(event) => setContent(event.target.value)}
+          rows={4}
+          maxLength={1500}
+          showCount
+          autoSize={{ minRows: 3, maxRows: 8 }}
+        />
 
-      <div className="flex items-center justify-between gap-3 text-xs">
-        <div className="space-y-1">
-          <span className="text-muted-foreground">{content.length}/1500</span>
-          {errorMessage && <p className="text-destructive">{errorMessage}</p>}
-        </div>
+        <Flex align="center" justify="space-between" gap={12}>
+          <div>
+            {errorMessage && (
+              <Typography.Text type="danger" style={{ fontSize: 12 }}>
+                {errorMessage}
+              </Typography.Text>
+            )}
+          </div>
 
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={onCancel}>
-            Iptal
-          </Button>
-          <Button
-            type="submit"
-            size="sm"
-            disabled={isSubmitting || !content.trim()}
-          >
-            {isSubmitting ? "Kaydediliyor" : "Kaydet"}
-          </Button>
-        </div>
-      </div>
+          <Flex gap={8}>
+            <Button onClick={onCancel}>İptal</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isSubmitting}
+              disabled={!content.trim()}
+            >
+              Kaydet
+            </Button>
+          </Flex>
+        </Flex>
+      </Flex>
     </form>
   );
 }

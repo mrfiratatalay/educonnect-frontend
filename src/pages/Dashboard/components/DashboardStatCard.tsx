@@ -1,47 +1,69 @@
-import type { ElementType } from "react";
-import { TrendingUp } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import type { LucideIcon } from "lucide-react";
+import { Card, Flex, Statistic, Typography, theme } from "antd";
 
 interface DashboardStatCardProps {
-  icon: ElementType;
+  icon: LucideIcon;
   label: string;
-  value: string;
-  trend?: string;
-  color?: string;
+  value: number;
+  loading?: boolean;
+  accentBackground: string;
+  accentColor: string;
 }
 
 export default function DashboardStatCard({
   icon: Icon,
   label,
   value,
-  trend,
-  color,
+  loading = false,
+  accentBackground,
+  accentColor,
 }: DashboardStatCardProps) {
+  const { token } = theme.useToken();
+
   return (
-    <Card className="hover:shadow-none">
-      <CardContent className="p-4 lg:p-5">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs lg:text-sm text-muted-foreground font-medium">
-              {label}
-            </p>
-            <p className="text-xl lg:text-2xl font-bold tracking-tight">
-              {value}
-            </p>
-            {trend && (
-              <p className="text-[11px] text-success flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                {trend}
-              </p>
-            )}
-          </div>
-          <div
-            className={`flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-xl ${color || "bg-primary/10 text-primary"}`}
+    <Card
+      variant="outlined"
+      styles={{
+        body: {
+          padding: 20,
+        },
+      }}
+    >
+      <Flex align="center" justify="space-between" gap={16}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Typography.Text
+            type="secondary"
+            style={{ display: "block", marginBottom: 8 }}
           >
-            <Icon className="w-5 h-5 lg:w-6 lg:h-6" />
-          </div>
+            {label}
+          </Typography.Text>
+
+          <Statistic
+            loading={loading}
+            value={value}
+            valueStyle={{
+              color: token.colorText,
+              fontSize: 30,
+              lineHeight: 1.1,
+            }}
+          />
         </div>
-      </CardContent>
+
+        <Flex
+          align="center"
+          justify="center"
+          style={{
+            width: 52,
+            height: 52,
+            borderRadius: token.borderRadiusLG,
+            background: accentBackground,
+            color: accentColor,
+            flexShrink: 0,
+          }}
+        >
+          <Icon size={24} />
+        </Flex>
+      </Flex>
     </Card>
   );
 }

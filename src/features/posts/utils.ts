@@ -2,7 +2,7 @@ export function formatPostTime(value: string) {
   const diff = Date.now() - new Date(value).getTime();
 
   if (diff < 60_000) {
-    return "Az once";
+    return "Az önce";
   }
 
   if (diff < 3_600_000) {
@@ -13,7 +13,7 @@ export function formatPostTime(value: string) {
     return `${Math.floor(diff / 3_600_000)} sa`;
   }
 
-  return `${Math.floor(diff / 86_400_000)} gun`;
+  return `${Math.floor(diff / 86_400_000)} gün`;
 }
 
 export function getPostExcerpt(content: string, maxLength = 120) {

@@ -1,9 +1,15 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Pencil, Trash2 } from "lucide-react";
+import {
+  CommentOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  HeartFilled,
+  HeartOutlined,
+  MoreOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, Button, Dropdown, Flex, Image, Typography, theme, Space, List } from "antd";
+import type { MenuProps } from "antd";
 import { useTogglePostLikeMutation } from "@/features/posts/hooks";
 import type { FeedPost } from "@/features/posts/types";
 import { formatPostTime } from "@/features/posts/utils";
@@ -31,11 +37,29 @@ export default function PostCard({
   const [isEditing, setIsEditing] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const toggleLikeMutation = useTogglePostLikeMutation();
+  const { token } = theme.useToken();
 
   const isLiking =
     toggleLikeMutation.isPending &&
     toggleLikeMutation.variables === post.id;
-
+  const managementItems: MenuProps["items"] = [
+    {
+      key: "edit",
+      icon: <EditOutlined />,
+      label: isEditing ? "Düzenlemeyi kapat" : "Gönderiyi düzenle",
+      disabled: isUpdating,
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "delete",
+      icon: <DeleteOutlined />,
+      label: isDeleting ? "Siliniyor..." : "Gönderiyi sil",
+      danger: true,
+      disabled: isDeleting,
+    },
+  ];
   function handleToggleLike() {
     void toggleLikeMutation.mutateAsync(post.id);
   }
@@ -45,106 +69,131 @@ export default function PostCard({
     setIsEditing(false);
   }
 
+  function handleManagementClick(key: string) {
+    if (key === "edit") {
+      setIsEditing((current) => !current);
+      return;
+    }
+
+    if (key === "delete") {
+      onDelete(post.id);
+    }
+  }
+
+  const actions = [
+    <Space size={4} key="like">
+      <Button
+        type="text"
+        shape="circle"
+        onClick={handleToggleLike}
+        loading={isLiking}
+        icon={post.isLiked ? <HeartFilled style={{ color: "#EF4444" }} /> : <HeartOutlined />}
+        style={{ color: post.isLiked ? "#EF4444" : token.colorTextSecondary }}
+      />
+      <Typography.Text style={{ color: post.isLiked ? "#EF4444" : token.colorTextSecondary, fontSize: 13, userSelect: 'none' }}>
+        {post.likesCount > 0 ? post.likesCount : ''}
+      </Typography.Text>
+    </Space>,
+    <Space size={4} key="comment">
+      <Button
+        type="text"
+        shape="circle"
+        onClick={() => setShowComments((current) => !current)}
+        icon={<CommentOutlined />}
+        style={{ color: showComments ? token.colorPrimary : token.colorTextSecondary }}
+      />
+      <Typography.Text style={{ color: showComments ? token.colorPrimary : token.colorTextSecondary, fontSize: 13, userSelect: 'none' }}>
+        {post.commentsCount > 0 ? post.commentsCount : ''}
+      </Typography.Text>
+    </Space>
+  ];
+
   return (
-    <Card className="border border-border/60 rounded-xl">
-      <CardContent className="space-y-4 p-4 sm:p-5">
-        <div className="flex items-start gap-3">
-          <Avatar
-            className="w-10 h-10 shrink-0 cursor-pointer"
-            onClick={() => navigate(`/profile/${post.userId}`)}
-          >
-            <AvatarImage src={post.avatarUrl} />
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-              {post.userName.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+    <List.Item 
+      style={{ padding: "24px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}
+    >
+      <Flex gap={16} align="flex-start" style={{ width: "100%" }}>
+        <Avatar
+          src={post.avatarUrl}
+          size={48}
+          onClick={() => navigate(`/profile/${post.userId}`)}
+          style={{
+            backgroundColor: token.colorPrimaryBg,
+            color: token.colorPrimary,
+            flexShrink: 0,
+            cursor: "pointer",
+          }}
+        >
+          {post.userName.charAt(0)}
+        </Avatar>
 
-          <div className="flex-1 min-w-0 space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <button
-                  type="button"
-                  className="text-sm font-semibold hover:underline"
-                  onClick={() => navigate(`/profile/${post.userId}`)}
-                >
-                  {post.userName}
-                </button>
-                <p className="text-xs text-muted-foreground">
-                  {formatPostTime(post.createdAt)}
-                </p>
-              </div>
-
-              {canManage && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={isUpdating}
-                    className="gap-1.5"
-                    onClick={() => setIsEditing((current) => !current)}
-                  >
-                    <Pencil className="w-4 h-4" />
-                    {isEditing ? "Kapat" : "Duzenle"}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={isDeleting}
-                    className="gap-1.5 text-destructive hover:text-destructive"
-                    onClick={() => onDelete(post.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    {isDeleting ? "Siliniyor" : "Sil"}
-                  </Button>
-                </div>
-              )}
+        <Flex vertical gap={12} style={{ flex: 1, minWidth: 0 }}>
+          <Flex align="flex-start" justify="space-between" gap={12}>
+            <div>
+              <Typography.Link
+                onClick={() => navigate(`/profile/${post.userId}`)}
+                style={{ fontWeight: 600, fontSize: 14 }}
+              >
+                {post.userName}
+              </Typography.Link>
+              <Typography.Text
+                type="secondary"
+                style={{ fontSize: 12, display: "block", marginTop: 2 }}
+              >
+                {formatPostTime(post.createdAt)}
+              </Typography.Text>
             </div>
 
-            {isEditing ? (
-              <PostEditForm
-                initialContent={post.content}
-                isSubmitting={isUpdating}
-                onCancel={() => setIsEditing(false)}
-                onSubmit={handleUpdate}
-              />
-            ) : (
-              <p className="text-sm leading-relaxed text-foreground/90">
+            {canManage && (
+              <Dropdown
+                menu={{
+                  items: managementItems,
+                  onClick: ({ key }) => handleManagementClick(String(key)),
+                }}
+                placement="bottomRight"
+                trigger={["click"]}
+              >
+                <Button icon={<MoreOutlined />} shape="circle" type="text" />
+              </Dropdown>
+            )}
+          </Flex>
+
+          {isEditing ? (
+            <PostEditForm
+              initialContent={post.content}
+              isSubmitting={isUpdating}
+              onCancel={() => setIsEditing(false)}
+              onSubmit={handleUpdate}
+            />
+          ) : (
+            <>
+              <Typography.Paragraph
+                style={{ marginBottom: 0, lineHeight: 1.7, whiteSpace: "pre-wrap" }}
+              >
                 {post.content}
-              </p>
-            )}
+              </Typography.Paragraph>
 
-            {post.imageUrl && (
-              <img
-                src={post.imageUrl}
-                alt="Gonderi gorseli"
-                className="max-h-96 w-full rounded-xl border border-border/50 object-cover"
-              />
-            )}
+              {post.imageUrl && (
+                <Image
+                  src={post.imageUrl}
+                  alt="Gönderi görseli"
+                  style={{
+                    maxHeight: 384,
+                    width: "100%",
+                    objectFit: "cover",
+                    borderRadius: token.borderRadiusLG,
+                  }}
+                />
+              )}
+              <Flex gap={24} align="center" wrap="wrap" style={{ marginTop: 16 }}>
+                {actions}
+              </Flex>
+            </>
+          )}
 
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <button
-                type="button"
-                onClick={handleToggleLike}
-                disabled={isLiking}
-                className={`flex items-center gap-1.5 hover:text-red-500 ${post.isLiked ? "text-red-500" : ""}`}
-              >
-                <Heart className={`w-4 h-4 ${post.isLiked ? "fill-current text-red-500" : ""}`} />
-                {post.likesCount}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowComments((current) => !current)}
-                className={`flex items-center gap-1.5 hover:text-primary ${showComments ? "text-primary" : ""}`}
-              >
-                <MessageCircle className="w-4 h-4" />
-                {post.commentsCount}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {!isEditing && <PostCommentsPanel postId={post.id} isOpen={showComments} />}
-      </CardContent>
-    </Card>
+          {!isEditing && <PostCommentsPanel postId={post.id} isOpen={showComments} />}
+        </Flex>
+      </Flex>
+    </List.Item>
   );
 }

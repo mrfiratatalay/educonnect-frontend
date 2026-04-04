@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, Descriptions, theme } from "antd";
 
 interface ProfileDetailsCardProps {
   profile: {
@@ -15,36 +15,34 @@ export default function ProfileDetailsCard({
   profile,
   isOwnProfile,
 }: ProfileDetailsCardProps) {
-  const rows = [
-    { label: "Ad Soyad", value: profile.fullName },
-    { label: "Universite", value: profile.universityName || "Belirtilmedi" },
-    { label: "Bolum", value: profile.department || "Belirtilmedi" },
+  const { token } = theme.useToken();
+  const items = [
+    { label: "Ad Soyad", children: profile.fullName },
+    { label: "Universite", children: profile.universityName || "Belirtilmedi" },
+    { label: "Bolum", children: profile.department || "Belirtilmedi" },
     {
       label: "Sinif",
-      value: profile.year ? `${profile.year}. sinif` : "Belirtilmedi",
+      children: profile.year ? `${profile.year}. sinif` : "Belirtilmedi",
     },
   ];
 
   if (isOwnProfile && profile.email) {
-    rows.push({ label: "E-posta", value: profile.email });
+    items.push({ label: "E-posta", children: profile.email });
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Profil Detaylari</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {rows.map((row) => (
-          <div
-            key={row.label}
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm"
-          >
-            <span className="text-muted-foreground">{row.label}</span>
-            <span className="font-medium">{row.value}</span>
-          </div>
-        ))}
-      </CardContent>
+    <Card 
+      title="Profil Detaylari"
+      bordered={false}
+      style={{ borderRadius: 16, border: `1px solid ${token.colorBorderSecondary}` }}
+    >
+      <Descriptions 
+        layout="vertical" 
+        column={{ xs: 1, sm: 2 }} 
+        items={items} 
+        labelStyle={{ color: token.colorTextSecondary, fontSize: 13, paddingBottom: 4 }}
+        contentStyle={{ fontSize: 15, fontWeight: 500, paddingBottom: 16 }}
+      />
     </Card>
   );
 }

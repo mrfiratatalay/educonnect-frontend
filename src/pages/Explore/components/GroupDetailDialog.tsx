@@ -1,18 +1,12 @@
-import { Calendar, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { CalendarOutlined, TeamOutlined } from "@ant-design/icons";
+import { Alert, Button, Descriptions, Drawer, Flex, Grid, Spin, Tag, Typography } from "antd";
 import { useGroupDetailQuery } from "@/features/groups/hooks";
 import type { AppGroup } from "@/features/groups/types";
 
 interface GroupDetailDialogProps {
   actingGroupId?: string;
   errorMessage?: string | null;
+  group?: AppGroup | null;
   groupId: string | null;
   onClose: () => void;
   onToggleMembership: (group: AppGroup) => void;
@@ -21,60 +15,80 @@ interface GroupDetailDialogProps {
 export default function GroupDetailDialog({
   actingGroupId,
   errorMessage,
+  group: previewGroup,
   groupId,
   onClose,
   onToggleMembership,
 }: GroupDetailDialogProps) {
-  const groupQuery = useGroupDetailQuery(groupId ?? undefined, Boolean(groupId));
-  const group = groupQuery.data;
+  const screens = Grid.useBreakpoint();
+  const groupQuery = useGroupDetailQuery(groupId ?? undefined, Boolean(groupId) && !previewGroup);
+  const group = previewGroup ?? groupQuery.data;
+  const queryError = !previewGroup && groupQuery.error instanceof Error ? groupQuery.error : null;
+  const isLoading = !previewGroup && groupQuery.isLoading;
 
   return (
-    <Dialog open={Boolean(groupId)} onOpenChange={onClose}>
-      <DialogContent>
-        {groupQuery.isLoading && <p className="text-sm text-muted-foreground">Grup detayi yukleniyor...</p>}
-        {groupQuery.error instanceof Error && <p className="text-sm text-destructive">{groupQuery.error.message}</p>}
+    <Drawer
+      destroyOnHidden
+      open={Boolean(groupId)}
+      onClose={onClose}
+      title={group?.name ?? "Grup Detayı"}
+      width={screens.md ? 480 : "100%"}
+    >
+      {isLoading && (
+        <Flex justify="center" style={{ padding: 32 }}>
+          <Spin />
+        </Flex>
+      )}
 
-        {group && (
-          <>
-            <DialogHeader>
-              <DialogTitle>{group.name}</DialogTitle>
-            </DialogHeader>
+      {queryError && <Alert type="error" showIcon message={queryError.message} />}
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{group.category}</Badge>
-                {group.isMember && <Badge variant="success">Uye</Badge>}
-              </div>
+      {group && (
+        <Flex vertical gap={16}>
+          <Flex gap={8}>
+            <Tag color="blue">{group.category}</Tag>
+            {group.isMember && <Tag color="success">Üye</Tag>}
+          </Flex>
 
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {group.description}
-              </p>
+          <Typography.Paragraph type="secondary" style={{ lineHeight: 1.7, marginBottom: 0 }}>
+            {group.description}
+          </Typography.Paragraph>
 
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" />
-                  {group.memberCount} uye
-                </p>
-                <p className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  Kurucu: {group.creatorName}
-                </p>
-              </div>
+          <Descriptions
+            column={1}
+            items={[
+              {
+                label: (
+                  <>
+                    <TeamOutlined style={{ marginRight: 6 }} />
+                    Üye sayısı
+                  </>
+                ),
+                children: `${group.memberCount} üye`,
+              },
+              {
+                label: (
+                  <>
+                    <CalendarOutlined style={{ marginRight: 6 }} />
+                    Kurucu
+                  </>
+                ),
+                children: group.creatorName,
+              },
+            ]}
+            size="small"
+          />
 
-              {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+          {errorMessage && <Alert type="error" showIcon message={errorMessage} />}
 
-              <Button
-                variant={group.isMember ? "outline" : "default"}
-                className="w-full"
-                disabled={actingGroupId === group.id}
-                onClick={() => onToggleMembership(group)}
-              >
-                {actingGroupId === group.id ? "Isleniyor" : group.isMember ? "Ayril" : "Katil"}
-              </Button>
-            </div>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+          <Button
+            type={group.isMember ? "default" : "primary"}
+            loading={actingGroupId === group.id}
+            onClick={() => onToggleMembership(group)}
+          >
+            {actingGroupId === group.id ? "İşleniyor" : group.isMember ? "Ayrıl" : "Katıl"}
+          </Button>
+        </Flex>
+      )}
+    </Drawer>
   );
 }

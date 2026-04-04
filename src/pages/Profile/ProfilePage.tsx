@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
-import { Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Users, Info, PackageOpen, Bookmark, Ghost } from "lucide-react";
+import { Alert, Button, Empty, Flex, Grid, Spin, Typography, Tabs, Row, Col } from "antd";
 import { useAuthStore } from "@/store/authStore";
 import {
   useMyProfileQuery,
@@ -10,7 +10,7 @@ import type { PublicUserProfile } from "@/features/users/api";
 import type { User, UserRole } from "@/types";
 import ProfileSummaryCard from "@/pages/Profile/components/ProfileSummaryCard";
 import ProfileDetailsCard from "@/pages/Profile/components/ProfileDetailsCard";
-import ProfileNextStepsCard from "@/pages/Profile/components/ProfileNextStepsCard";
+import ProfileTimeline from "@/pages/Profile/components/ProfileTimeline";
 
 interface ProfileViewModel {
   fullName: string;
@@ -31,27 +31,28 @@ export default function ProfilePage() {
   const myProfileQuery = useMyProfileQuery(isOwnProfile);
   const publicProfileQuery = usePublicProfileQuery(targetUserId, !isOwnProfile);
   const profileQuery = isOwnProfile ? myProfileQuery : publicProfileQuery;
+  const screens = Grid.useBreakpoint();
+  const pagePadding = screens.xs ? 16 : screens.lg ? 32 : 24;
 
   if (profileQuery.isLoading) {
     return (
-      <div className="p-4 lg:p-6 xl:p-8 max-w-4xl mx-auto text-sm text-muted-foreground">
-        Profil bilgileri yukleniyor...
-      </div>
+      <Flex justify="center" align="center" style={{ padding: 80 }}>
+        <Spin size="large" />
+      </Flex>
     );
   }
 
   if (profileQuery.isError || !profileQuery.data) {
     return (
-      <div className="p-4 lg:p-6 xl:p-8 max-w-4xl mx-auto">
-        <div className="text-center py-20 text-muted-foreground">
-          <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="text-lg font-medium">Kullanici bulunamadi</p>
+      <div style={{ padding: pagePadding, maxWidth: 900, margin: "0 auto" }}>
+        <Empty
+          image={<Users size={48} style={{ opacity: 0.3 }} />}
+          description="Kullanici bulunamadi"
+        >
           <Link to="/feed">
-            <Button variant="outline" size="sm" className="mt-3">
-              Feed'e Don
-            </Button>
+            <Button>Feed'e Don</Button>
           </Link>
-        </div>
+        </Empty>
       </div>
     );
   }
@@ -59,10 +60,67 @@ export default function ProfilePage() {
   const profile = toProfileViewModel(profileQuery.data);
 
   return (
-    <div className="p-4 lg:p-6 xl:p-8 max-w-4xl mx-auto space-y-6">
-      <ProfileSummaryCard profile={profile} isOwnProfile={isOwnProfile} />
-      <ProfileDetailsCard profile={profile} isOwnProfile={isOwnProfile} />
-      <ProfileNextStepsCard isOwnProfile={isOwnProfile} />
+    <div style={{ padding: pagePadding, maxWidth: 960, margin: "0 auto" }}>
+      <Flex vertical gap={28}>
+        <ProfileSummaryCard profile={profile} isOwnProfile={isOwnProfile} />
+        
+        <Tabs 
+          defaultActiveKey="about"
+          size="large"
+          items={[
+            {
+              key: "about",
+              label: (
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Info size={16} /> Hakkında
+                </span>
+              ),
+              children: (
+                <Row gutter={[24, 24]}>
+                  <Col xs={24} md={15} lg={16}>
+                    <ProfileDetailsCard profile={profile} isOwnProfile={isOwnProfile} />
+                  </Col>
+                  <Col xs={24} md={9} lg={8}>
+                    <ProfileTimeline />
+                  </Col>
+                </Row>
+              )
+            },
+            {
+              key: "listings",
+              label: (
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <PackageOpen size={16} /> İlanlar
+                </span>
+              ),
+              children: (
+                <div style={{ padding: "60px 0", background: "var(--ant-color-bg-container)", borderRadius: 16, border: "1px solid var(--ant-color-border-secondary)" }}>
+                  <Empty 
+                    image={<Ghost size={48} color="var(--ant-color-text-quaternary)" style={{ opacity: 0.5, marginBottom: 12 }} />} 
+                    description={<Typography.Text type="secondary">Kullanıcının henüz bir ilanı yok.</Typography.Text>} 
+                  />
+                </div>
+              )
+            },
+            ...(isOwnProfile ? [{
+              key: "saved",
+              label: (
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Bookmark size={16} /> Kaydedilenler
+                </span>
+              ),
+              children: (
+                <div style={{ padding: "60px 0", background: "var(--ant-color-bg-container)", borderRadius: 16, border: "1px solid var(--ant-color-border-secondary)" }}>
+                  <Empty 
+                    image={<Bookmark size={48} color="var(--ant-color-text-quaternary)" style={{ opacity: 0.5, marginBottom: 12 }} />} 
+                    description={<Typography.Text type="secondary">Henüz kaydedilmiş ilanınız yok.</Typography.Text>} 
+                  />
+                </div>
+              )
+            }] : [])
+          ]}
+        />
+      </Flex>
     </div>
   );
 }
@@ -79,10 +137,7 @@ function toProfileViewModel(profile: User | PublicUserProfile): ProfileViewModel
   };
 
   if ("email" in profile) {
-    return {
-      ...baseProfile,
-      email: profile.email,
-    };
+    return { ...baseProfile, email: profile.email };
   }
 
   return baseProfile;

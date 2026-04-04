@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, Flex, Input, Typography } from "antd";
 
 interface PostCommentComposerProps {
   isSubmitting: boolean;
@@ -19,7 +19,7 @@ export default function PostCommentComposer({
 
     const trimmedContent = content.trim();
     if (!trimmedContent) {
-      setErrorMessage("Yorum bos olamaz.");
+      setErrorMessage("Yorum boş olamaz.");
       return;
     }
 
@@ -29,38 +29,47 @@ export default function PostCommentComposer({
       setContent("");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Yorum gonderilemedi.",
+        error instanceof Error ? error.message : "Yorum gönderilemedi.",
       );
     }
   }
 
   return (
-    <form className="space-y-2" onSubmit={handleSubmit}>
-      <textarea
-        value={content}
-        onChange={(event) => setContent(event.target.value)}
-        placeholder="Yorum yaz..."
-        rows={2}
-        maxLength={500}
-        className="w-full resize-none rounded-lg border border-border/60 bg-secondary/30 px-3 py-2 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-      />
+    <form onSubmit={handleSubmit}>
+      <Flex vertical gap={8}>
+        <Input.TextArea
+          value={content}
+          onChange={(event) => setContent(event.target.value)}
+          placeholder="Yorum yaz..."
+          rows={2}
+          maxLength={500}
+          autoSize={{ minRows: 2, maxRows: 4 }}
+        />
 
-      <div className="flex items-center justify-between gap-3 text-xs">
-        <div className="space-y-1">
-          <span className="text-muted-foreground">{content.length}/500</span>
-          {errorMessage && <p className="text-destructive">{errorMessage}</p>}
-        </div>
+        <Flex align="center" justify="space-between" gap={12}>
+          <div>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              {content.length}/500
+            </Typography.Text>
+            {errorMessage && (
+              <Typography.Text type="danger" style={{ fontSize: 12, display: "block" }}>
+                {errorMessage}
+              </Typography.Text>
+            )}
+          </div>
 
-        <Button
-          type="submit"
-          size="sm"
-          disabled={isSubmitting || !content.trim()}
-          className="gap-1.5"
-        >
-          <Send className="w-3.5 h-3.5" />
-          {isSubmitting ? "Gonderiliyor" : "Yorum Yap"}
-        </Button>
-      </div>
+          <Button
+            type="primary"
+            htmlType="submit"
+            size="small"
+            icon={<Send size={12} />}
+            loading={isSubmitting}
+            disabled={!content.trim()}
+          >
+            Yorum Yap
+          </Button>
+        </Flex>
+      </Flex>
     </form>
   );
 }

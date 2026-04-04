@@ -1,61 +1,110 @@
 import { theme, type ThemeConfig } from "antd";
 
 const sharedToken: ThemeConfig["token"] = {
-  colorPrimary: "#5f74f6",
-  colorInfo: "#5f74f6",
-  colorLink: "#4f63dd",
-  colorSuccess: "#3ba879",
-  colorWarning: "#d3a24a",
-  colorError: "#d45f75",
-  fontFamily: "Manrope, Inter, sans-serif",
+  colorPrimary: "#6366F1",
+  colorInfo: "#6366F1",
+  colorLink: "#818CF8",
+  colorSuccess: "#22C55E",
+  colorWarning: "#F59E0B",
+  colorError: "#EF4444",
+  fontFamily: "Manrope, Inter, system-ui, -apple-system, sans-serif",
   fontFamilyCode: "JetBrains Mono, SFMono-Regular, Consolas, monospace",
   borderRadius: 12,
   lineWidth: 1,
+  fontSize: 14,
+  wireframe: false,
 };
 
 const lightToken: ThemeConfig["token"] = {
-  colorBgBase: "#fbfaf7",
-  colorBgLayout: "#f8f5ef",
-  colorBgContainer: "#ffffff",
-  colorBgElevated: "#ffffff",
-  colorBorder: "#e8e4dc",
-  colorSplit: "rgba(23, 24, 28, 0.08)",
-  colorTextBase: "#17181c",
-  colorText: "#17181c",
-  colorTextSecondary: "#5f6677",
-  colorTextTertiary: "#7f8796",
-  boxShadow: "0 18px 48px rgba(20, 28, 45, 0.08)",
-  boxShadowSecondary: "0 10px 28px rgba(20, 28, 45, 0.06)",
-  controlOutline: "rgba(95, 116, 246, 0.18)",
+  colorBgBase: "#FFFFFF",
+  colorBgLayout: "#F5F5F7",
+  colorBgContainer: "#FFFFFF",
+  colorBgElevated: "#FFFFFF",
+  colorBorder: "#E5E7EB",
+  colorBorderSecondary: "#F0F0F2",
+  colorSplit: "rgba(0, 0, 0, 0.06)",
+  colorTextBase: "#111827",
+  colorText: "#111827",
+  colorTextSecondary: "#6B7280",
+  colorTextTertiary: "#9CA3AF",
+  boxShadow:
+    "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.05)",
+  boxShadowSecondary:
+    "0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)",
+  controlOutline: "rgba(99, 102, 241, 0.15)",
 };
 
 const darkToken: ThemeConfig["token"] = {
-  colorBgBase: "#12161d",
-  colorBgLayout: "#0f1319",
-  colorBgContainer: "#171c24",
-  colorBgElevated: "#1b2230",
-  colorBorder: "#2a3140",
-  colorSplit: "rgba(255, 255, 255, 0.12)",
-  colorTextBase: "#edf1f7",
-  colorText: "#edf1f7",
-  colorTextSecondary: "#b5bfd0",
-  colorTextTertiary: "#919db3",
-  boxShadow: "0 18px 48px rgba(0, 0, 0, 0.35)",
-  boxShadowSecondary: "0 12px 30px rgba(0, 0, 0, 0.28)",
-  controlOutline: "rgba(127, 148, 255, 0.26)",
+  colorBgBase: "#0F1117",
+  colorBgLayout: "#0B0D14",
+  colorBgContainer: "#161822",
+  colorBgElevated: "#1C1F2E",
+  colorBorder: "#2A2D3E",
+  colorBorderSecondary: "#21243A",
+  colorSplit: "rgba(255, 255, 255, 0.08)",
+  colorTextBase: "#F3F4F6",
+  colorText: "#F3F4F6",
+  colorTextSecondary: "#A1A7BE",
+  colorTextTertiary: "#737A92",
+  boxShadow:
+    "0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 10px 15px -3px rgba(0, 0, 0, 0.25)",
+  boxShadowSecondary:
+    "0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2)",
+  controlOutline: "rgba(129, 140, 248, 0.2)",
 };
 
 export function getAntdTheme(isDarkMode: boolean): ThemeConfig {
   return {
     algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
     cssVar: {
-      prefix: "educonnect",
+      prefix: "edu",
     },
     hashed: false,
-    zeroRuntime: true,
     token: {
       ...sharedToken,
       ...(isDarkMode ? darkToken : lightToken),
+    },
+    components: {
+      Layout: {
+        siderBg: isDarkMode ? "#161822" : "#FFFFFF",
+        headerBg: isDarkMode ? "#161822" : "#FFFFFF",
+        bodyBg: isDarkMode ? "#0B0D14" : "#F5F5F7",
+      },
+      Menu: {
+        itemBorderRadius: 10,
+        itemMarginInline: 4,
+        itemHeight: 44,
+        activeBarBorderWidth: 0,
+      },
+      Card: {
+        borderRadiusLG: 16,
+        paddingLG: 24,
+      },
+      Button: {
+        borderRadius: 10,
+        controlHeight: 40,
+        controlHeightLG: 48,
+        controlHeightSM: 32,
+        fontWeight: 600,
+      },
+      Input: {
+        borderRadius: 10,
+        controlHeight: 44,
+      },
+      Select: {
+        borderRadius: 10,
+        controlHeight: 44,
+      },
+      Modal: {
+        borderRadiusLG: 20,
+      },
+      Drawer: {
+        borderRadiusLG: 20,
+      },
+      Tabs: {
+        itemActiveColor: isDarkMode ? "#818CF8" : "#6366F1",
+        inkBarColor: isDarkMode ? "#818CF8" : "#6366F1",
+      },
     },
   };
 }

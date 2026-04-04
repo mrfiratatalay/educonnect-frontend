@@ -1,8 +1,7 @@
 import { type FormEvent, useState } from "react";
-import { Send } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { SendOutlined } from "@ant-design/icons";
+import { Avatar, Button, Card, Flex, Input, Typography, theme, Tooltip } from "antd";
+import { Image as ImageIcon, Smile, MapPin, BarChart2 } from "lucide-react";
 
 interface PostComposerProps {
   avatarUrl?: string;
@@ -19,13 +18,14 @@ export default function PostComposer({
 }: PostComposerProps) {
   const [content, setContent] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { token } = theme.useToken();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedContent = content.trim();
     if (!trimmedContent) {
-      setErrorMessage("Paylasim metni bos olamaz.");
+      setErrorMessage("Paylaşım metni boş olamaz.");
       return;
     }
 
@@ -35,60 +35,86 @@ export default function PostComposer({
       setContent("");
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Paylasim gonderilemedi.",
+        error instanceof Error ? error.message : "Paylaşım gönderilemedi.",
       );
     }
   }
 
   return (
-    <Card className="border border-border/60 rounded-xl">
-      <CardContent className="p-4">
-        <form className="flex items-start gap-3" onSubmit={handleSubmit}>
-          <Avatar className="w-10 h-10 shrink-0">
-            <AvatarImage src={avatarUrl} />
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-              {fullName?.charAt(0) ?? "K"}
-            </AvatarFallback>
+    <div id="feed-composer" style={{ padding: "20px 24px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
+      <form onSubmit={handleSubmit}>
+        <Flex gap={16} align="flex-start">
+          <Avatar
+            src={avatarUrl}
+            size={48}
+            style={{
+              backgroundColor: token.colorPrimaryBg,
+              color: token.colorPrimary,
+              flexShrink: 0,
+            }}
+          >
+            {fullName?.charAt(0) ?? "K"}
           </Avatar>
 
-          <div className="flex-1 space-y-3">
-            <textarea
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
-              placeholder="Kampus icin kisa bir paylasim yaz..."
-              rows={4}
-              maxLength={1500}
-              className="w-full resize-none rounded-xl border border-border/60 bg-secondary/40 px-4 py-3 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-            />
-
-            <div className="flex items-center justify-between gap-3 text-xs">
-              <div className="space-y-1">
-                <p className="text-muted-foreground">
-                  Bu asamada sadece metin paylasimi aktif.
-                </p>
-                {errorMessage && (
-                  <p className="text-destructive">{errorMessage}</p>
-                )}
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="text-muted-foreground">
-                  {content.length}/1500
-                </span>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isSubmitting || !content.trim()}
-                  className="gap-1.5 px-5"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  {isSubmitting ? "Paylasiliyor" : "Paylas"}
-                </Button>
-              </div>
+          <Flex vertical gap={12} style={{ flex: 1 }}>
+            <div style={{ padding: "0 4px" }}>
+              <Input.TextArea
+                value={content}
+                onChange={(event) => setContent(event.target.value)}
+                placeholder="Kampüste neler oluyor?"
+                bordered={false}
+                style={{ 
+                  fontSize: 18, 
+                  padding: 0, 
+                  boxShadow: 'none', 
+                  resize: 'none',
+                  minHeight: 48
+                }}
+                maxLength={1500}
+                autoSize={{ minRows: 2, maxRows: 8 }}
+              />
             </div>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+
+            <div style={{ height: 1, background: token.colorBorderSecondary, margin: "4px 0", opacity: 0.5 }} />
+
+            <Flex align="center" justify="space-between" gap={12} wrap="wrap">
+                <Flex align="center" gap={4}>
+                  <Tooltip title="Medya Ekle">
+                    <Button type="text" shape="circle" icon={<ImageIcon size={18} color={token.colorPrimary} />} />
+                  </Tooltip>
+                  <Tooltip title="Anket Seçenekleri">
+                    <Button type="text" shape="circle" icon={<BarChart2 size={18} color={token.colorPrimary} />} />
+                  </Tooltip>
+                  <Tooltip title="Emoji">
+                    <Button type="text" shape="circle" icon={<Smile size={18} color={token.colorPrimary} />} />
+                  </Tooltip>
+                  <Tooltip title="Konum">
+                    <Button type="text" shape="circle" icon={<MapPin size={18} color={token.colorPrimary} />} />
+                  </Tooltip>
+                </Flex>
+
+                <Flex align="center" gap={12}>
+                  {errorMessage && (
+                    <Typography.Text type="danger" style={{ fontSize: 13 }}>
+                      {errorMessage}
+                    </Typography.Text>
+                  )}
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    icon={<SendOutlined />}
+                    loading={isSubmitting}
+                    disabled={!content.trim()}
+                    shape="round"
+                    style={{ padding: "0 24px", fontWeight: 600, boxShadow: `0 4px 12px ${token.colorPrimary}40` }}
+                  >
+                    Paylaş
+                  </Button>
+                </Flex>
+              </Flex>
+          </Flex>
+        </Flex>
+      </form>
+    </div>
   );
 }

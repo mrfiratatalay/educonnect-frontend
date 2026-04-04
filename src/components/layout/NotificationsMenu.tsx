@@ -1,16 +1,7 @@
-import type { MouseEvent } from "react";
+import { useMemo, useState } from "react";
+import { Avatar, Badge, Button, Empty, Flex, Popover, Typography, theme } from "antd";
 import { Bell, CheckCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   useMarkAllNotificationsReadMutation,
   useMarkNotificationReadMutation,
@@ -19,113 +10,188 @@ import {
 
 interface NotificationsMenuProps {
   align?: "start" | "center" | "end";
-  buttonClassName?: string;
-  iconClassName?: string;
+  buttonSize?: number;
+  iconSize?: number;
 }
 
 export default function NotificationsMenu({
   align = "end",
-  buttonClassName,
-  iconClassName,
+  buttonSize = 36,
+  iconSize = 18,
 }: NotificationsMenuProps) {
   const navigate = useNavigate();
+  const { token } = theme.useToken();
   const notificationsQuery = useNotificationsQuery();
   const markReadMutation = useMarkNotificationReadMutation();
   const markAllReadMutation = useMarkAllNotificationsReadMutation();
+  const [open, setOpen] = useState(false);
 
   const notifications = notificationsQuery.data ?? [];
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;
+  const placement = useMemo(() => {
+    if (align === "start") {
+      return "bottomLeft";
+    }
+
+    if (align === "center") {
+      return "bottom";
+    }
+
+    return "bottomRight";
+  }, [align]);
 
   function handleNotificationClick(notificationId: string, link: string) {
+    setOpen(false);
     void markReadMutation.mutateAsync(notificationId);
     navigate(link);
   }
 
-  function handleMarkAllRead(event: MouseEvent<HTMLButtonElement>) {
-    event.preventDefault();
+  function handleMarkAllRead() {
     void markAllReadMutation.mutateAsync();
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={buttonClassName}
-          aria-label="Bildirimler"
-        >
-          <Bell className={iconClassName} />
-          {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-              {unreadCount}
-            </span>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
+    <Popover
+      trigger="click"
+      placement={placement}
+      arrow={{ pointAtCenter: true }}
+      open={open}
+      onOpenChange={setOpen}
+      title={
+        <Flex align="center" justify="space-between" gap={12}>
+          <Typography.Text strong>Bildirimler</Typography.Text>
 
-      <DropdownMenuContent align={align} className="w-80">
-        <div className="flex items-center justify-between px-2">
-          <DropdownMenuLabel>Bildirimler</DropdownMenuLabel>
           {unreadCount > 0 && (
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1 text-xs text-muted-foreground"
+              type="text"
+              size="small"
+              icon={<CheckCheck size={14} />}
+              loading={markAllReadMutation.isPending}
               onClick={handleMarkAllRead}
-              disabled={markAllReadMutation.isPending}
+              style={{ paddingInline: 0 }}
             >
-              <CheckCheck className="w-3 h-3" />
               Tumunu Okundu Yap
             </Button>
           )}
+        </Flex>
+      }
+      content={
+        <div
+          style={{
+            width: 320,
+            maxWidth: "calc(100vw - 32px)",
+          }}
+        >
+          {notificationsQuery.isLoading && (
+            <Typography.Text type="secondary">
+              Bildirimler yukleniyor...
+            </Typography.Text>
+          )}
+
+          {notificationsQuery.error instanceof Error && (
+            <Typography.Text type="danger">
+              {notificationsQuery.error.message}
+            </Typography.Text>
+          )}
+
+          {!notificationsQuery.isLoading && notifications.length === 0 && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="Henuz bildirimin yok."
+              styles={{
+                image: { height: 48 },
+              }}
+            />
+          )}
+
+          <Flex vertical gap={8}>
+            {notifications.slice(0, 5).map((notification) => (
+              <Button
+                key={notification.id}
+                type="text"
+                onClick={() =>
+                  handleNotificationClick(notification.id, notification.link)
+                }
+                style={{
+                  height: "auto",
+                  padding: 12,
+                  justifyContent: "flex-start",
+                  textAlign: "left",
+                  whiteSpace: "normal",
+                  borderRadius: token.borderRadiusLG,
+                  background: notification.isRead ? "transparent" : token.colorPrimaryBg,
+                }}
+              >
+                <Flex vertical gap={6} style={{ width: "100%" }}>
+                  <Flex align="center" gap={8}>
+                    <Avatar
+                      size={28}
+                      style={{
+                        backgroundColor: notification.isRead
+                          ? token.colorFillSecondary
+                          : token.colorPrimary,
+                        color: notification.isRead
+                          ? token.colorTextSecondary
+                          : token.colorTextLightSolid,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Bell size={14} />
+                    </Avatar>
+
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <Typography.Text
+                        strong
+                        ellipsis
+                        style={{ display: "block" }}
+                      >
+                        {notification.title}
+                      </Typography.Text>
+
+                      <Typography.Text
+                        type="secondary"
+                        style={{
+                          display: "block",
+                          marginTop: 2,
+                          whiteSpace: "normal",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        {notification.message}
+                      </Typography.Text>
+                    </div>
+
+                    {!notification.isRead && (
+                      <Badge
+                        status="processing"
+                        text={
+                          <Typography.Text style={{ fontSize: 12 }}>
+                            Yeni
+                          </Typography.Text>
+                        }
+                      />
+                    )}
+                  </Flex>
+                </Flex>
+              </Button>
+            ))}
+          </Flex>
         </div>
-
-        <DropdownMenuSeparator />
-
-        {notificationsQuery.isLoading && (
-          <div className="px-2 py-3 text-sm text-muted-foreground">
-            Bildirimler yukleniyor...
-          </div>
-        )}
-
-        {notificationsQuery.error instanceof Error && (
-          <div className="px-2 py-3 text-sm text-destructive">
-            {notificationsQuery.error.message}
-          </div>
-        )}
-
-        {!notificationsQuery.isLoading && notifications.length === 0 && (
-          <div className="px-2 py-3 text-sm text-muted-foreground">
-            Henuz bildirimin yok.
-          </div>
-        )}
-
-        {notifications.slice(0, 5).map((notification) => (
-          <DropdownMenuItem
-            key={notification.id}
-            onClick={() =>
-              handleNotificationClick(notification.id, notification.link)
-            }
-            className={`flex cursor-pointer flex-col items-start gap-1 py-2 ${!notification.isRead ? "bg-primary/5" : ""}`}
-          >
-            <div className="flex w-full items-center gap-2">
-              <span className="text-sm font-medium">{notification.title}</span>
-              {!notification.isRead && (
-                <Badge
-                  variant="default"
-                  className="ml-auto px-1.5 py-0 text-[10px]"
-                >
-                  Yeni
-                </Badge>
-              )}
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {notification.message}
-            </span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      }
+    >
+      <Badge count={unreadCount} size="small">
+        <Button
+          type="text"
+          aria-label="Bildirimler"
+          style={{
+            width: buttonSize,
+            height: buttonSize,
+            borderRadius: token.borderRadiusLG,
+          }}
+        >
+          <Bell size={iconSize} />
+        </Button>
+      </Badge>
+    </Popover>
   );
 }

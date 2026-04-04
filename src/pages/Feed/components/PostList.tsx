@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Alert, Button, Empty, Skeleton, List, theme, ConfigProvider } from "antd";
 import type { FeedPost } from "@/features/posts/types";
 import type { UserRole } from "@/types";
 import PostCard from "@/pages/Feed/components/PostCard";
@@ -11,6 +11,7 @@ interface PostListProps {
   updatingPostId?: string;
   errorMessage?: string;
   isLoading: boolean;
+  onCreatePostClick: () => void;
   onDelete: (postId: string) => void;
   onUpdate: (postId: string, content: string) => Promise<void>;
 }
@@ -23,56 +24,54 @@ export default function PostList({
   updatingPostId,
   errorMessage,
   isLoading,
+  onCreatePostClick,
   onDelete,
   onUpdate,
 }: PostListProps) {
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-sm text-muted-foreground">
-          Paylasimlar yukleniyor...
-        </CardContent>
-      </Card>
-    );
-  }
+  const { token } = theme.useToken();
 
   if (errorMessage) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-sm text-destructive">
-          {errorMessage}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (posts.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-sm text-muted-foreground">
-          Henuz gonderi yok. Ilk paylasimi sen yap.
-        </CardContent>
-      </Card>
-    );
+    return <Alert type="error" showIcon message={errorMessage} />;
   }
 
   return (
-    <div className="space-y-4">
-      {posts.map((post) => (
-        <PostCard
-          key={post.id}
-          post={post}
-          canManage={
-            post.userId === currentUserId ||
-            currentUserRole === "admin" ||
-            currentUserRole === "moderator"
-          }
-          isDeleting={deletingPostId === post.id}
-          isUpdating={updatingPostId === post.id}
-          onDelete={onDelete}
-          onUpdate={onUpdate}
-        />
-      ))}
-    </div>
+    <ConfigProvider theme={{ components: { List: { paddingContentHorizontalLG: 0 } } }}>
+      <List
+        itemLayout="vertical"
+        size="large"
+        loading={isLoading}
+        dataSource={posts}
+        locale={{
+          emptyText: (
+            <Empty
+              description={<span style={{ color: token.colorTextSecondary }}>Henüz gönderi yok. İlk paylaşımı sen yap.</span>}
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              style={{ padding: "40px 0" }}
+            >
+              <Button onClick={onCreatePostClick} type="primary" shape="round" style={{ marginTop: 8 }}>
+                Paylaşım Oluştur
+              </Button>
+            </Empty>
+          )
+        }}
+        renderItem={(post) => (
+          <PostCard
+            key={post.id}
+            post={post}
+            canManage={
+              post.userId === currentUserId ||
+              currentUserRole === "admin" ||
+              currentUserRole === "moderator"
+            }
+            isDeleting={deletingPostId === post.id}
+            isUpdating={updatingPostId === post.id}
+            onDelete={onDelete}
+            onUpdate={onUpdate}
+          />
+        )}
+      />
+    </ConfigProvider>
   );
 }
+
+

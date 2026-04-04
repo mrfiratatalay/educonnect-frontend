@@ -1,0 +1,2 @@
+﻿src/pages/VisualSearch/components/SearchResultDialog.tsx(51,9): error TS2353: Object literal may only specify known properties, and 'content' does not exist in type 'ModalStylesType'.
+src/pages/VisualSearch/VisualSearchPage.tsx(2,10): error TS2305: Module '"lucide-react"' has no exported member 'ImageSearch'.

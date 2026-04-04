@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, Card, Flex, Typography, theme } from "antd";
 import type { PostComment } from "@/features/posts/types";
 import { formatPostTime } from "@/features/posts/utils";
 
@@ -7,52 +7,74 @@ interface PostCommentListProps {
   comments: PostComment[];
 }
 
-export default function PostCommentList({
-  comments,
-}: PostCommentListProps) {
+export default function PostCommentList({ comments }: PostCommentListProps) {
   const navigate = useNavigate();
+  const { token } = theme.useToken();
 
   if (comments.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        Henuz yorum yok. Ilk yorumu sen yaz.
-      </p>
+      <Card
+        size="small"
+        style={{ background: token.colorBgContainer }}
+        styles={{ body: { padding: 14 } }}
+        variant="borderless"
+      >
+        <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+          Henüz yorum yok. İlk yorumu sen yaz.
+        </Typography.Text>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <Flex vertical gap={4}>
       {comments.map((comment) => (
-        <div key={comment.id} className="flex gap-3">
-          <Avatar
-            className="w-8 h-8 shrink-0 cursor-pointer"
-            onClick={() => navigate(`/profile/${comment.userId}`)}
-          >
-            <AvatarImage src={comment.avatarUrl} />
-            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+        <div
+          key={comment.id}
+          style={{ padding: "8px 0" }}
+        >
+          <Flex gap={12} align="flex-start">
+            <Avatar
+              src={comment.avatarUrl}
+              size={34}
+              onClick={() => navigate(`/profile/${comment.userId}`)}
+              style={{
+                backgroundColor: token.colorPrimaryBg,
+                color: token.colorPrimary,
+                flexShrink: 0,
+                cursor: "pointer",
+                fontSize: 12,
+              }}
+            >
               {comment.userName.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+            </Avatar>
 
-          <div className="min-w-0 flex-1 rounded-xl bg-secondary/40 px-3 py-2">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="text-xs font-semibold hover:underline"
-                onClick={() => navigate(`/profile/${comment.userId}`)}
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              <Flex align="center" gap={8} wrap="wrap">
+                <Typography.Link
+                  onClick={() => navigate(`/profile/${comment.userId}`)}
+                  style={{ fontSize: 13, fontWeight: 600 }}
+                >
+                  {comment.userName}
+                </Typography.Link>
+                <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                  {formatPostTime(comment.createdAt)}
+                </Typography.Text>
+              </Flex>
+              <Typography.Paragraph
+                style={{ marginBottom: 0, marginTop: 6, fontSize: 13, lineHeight: 1.7 }}
               >
-                {comment.userName}
-              </button>
-              <span className="text-[11px] text-muted-foreground">
-                {formatPostTime(comment.createdAt)}
-              </span>
+                {comment.content}
+              </Typography.Paragraph>
             </div>
-            <p className="mt-1 text-sm leading-relaxed text-foreground/85">
-              {comment.content}
-            </p>
-          </div>
+          </Flex>
         </div>
       ))}
-    </div>
+    </Flex>
   );
 }

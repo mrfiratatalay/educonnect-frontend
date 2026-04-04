@@ -1,7 +1,5 @@
-import { Calendar, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, Card, Flex, Tag, Typography, theme } from "antd";
 import type { AppGroup } from "@/features/groups/types";
 
 interface GroupCardProps {
@@ -17,53 +15,70 @@ export default function GroupCard({
   onOpen,
   onToggleMembership,
 }: GroupCardProps) {
+  const { token } = theme.useToken();
+
   return (
     <Card
-      className="cursor-pointer overflow-hidden border border-border/60 transition-shadow hover:shadow-md"
+      hoverable
       onClick={() => onOpen(group.id)}
+      style={{ borderColor: token.colorBorderSecondary, height: "100%" }}
+      styles={{ body: { padding: 20, height: "100%" } }}
     >
-      <CardContent className="space-y-3 p-4">
-        <div className="space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="line-clamp-2 text-base font-semibold">{group.name}</h3>
-            {group.isMember && <Badge variant="success">Uye</Badge>}
-          </div>
+      <Flex vertical gap={16} style={{ height: "100%" }}>
+        <Flex align="flex-start" justify="space-between" gap={12}>
+          <Flex gap={12} style={{ minWidth: 0, flex: 1 }}>
+            <Avatar
+              icon={<TeamOutlined />}
+              shape="square"
+              size={44}
+              style={{ background: token.colorPrimaryBg, color: token.colorPrimary }}
+            />
 
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-[10px]">
-              {group.category}
-            </Badge>
-          </div>
-        </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <Typography.Text strong style={{ display: "block", fontSize: 16 }} ellipsis>
+                {group.name}
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                Kurucu: {group.creatorName}
+              </Typography.Text>
+            </div>
+          </Flex>
 
-        <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+          {group.isMember && <Tag color="success">Üye</Tag>}
+        </Flex>
+
+        <Flex gap={8} wrap="wrap">
+          <Tag color="default">{group.category}</Tag>
+          <Tag color="processing">{group.memberCount} üye</Tag>
+        </Flex>
+
+        <Typography.Paragraph
+          type="secondary"
+          ellipsis={{ rows: 3 }}
+          style={{ marginBottom: 0, lineHeight: 1.7 }}
+        >
           {group.description}
-        </p>
+        </Typography.Paragraph>
 
-        <div className="space-y-1 text-xs text-muted-foreground">
-          <p className="flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5" />
-            {group.memberCount} uye
-          </p>
-          <p className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5" />
-            Kurucu: {group.creatorName}
-          </p>
-        </div>
+        <Flex vertical gap={6} style={{ marginTop: "auto" }}>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <UserOutlined style={{ marginRight: 6 }} />
+            Topluluk büyüklüğü: {group.memberCount} kişi
+          </Typography.Text>
+        </Flex>
 
         <Button
-          variant={group.isMember ? "outline" : "default"}
-          size="sm"
-          className="w-full"
-          disabled={isActing}
+          type={group.isMember ? "default" : "primary"}
+          block
+          loading={isActing}
           onClick={(event) => {
             event.stopPropagation();
             onToggleMembership(group);
           }}
         >
-          {isActing ? "Isleniyor" : group.isMember ? "Ayril" : "Katil"}
+          {isActing ? "İşleniyor" : group.isMember ? "Ayrıl" : "Katıl"}
         </Button>
-      </CardContent>
+      </Flex>
     </Card>
   );
 }

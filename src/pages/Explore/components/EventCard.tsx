@@ -1,7 +1,10 @@
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  CalendarOutlined,
+  ClockCircleOutlined,
+  EnvironmentOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
+import { Button, Card, Flex, Progress, Tag, Typography, theme } from "antd";
 import type { AppEvent } from "@/features/events/types";
 import {
   formatEventDayLabel,
@@ -22,71 +25,85 @@ export default function EventCard({
   onOpen,
   onToggleRegistration,
 }: EventCardProps) {
+  const { token } = theme.useToken();
   const full = isEventFull(event);
   const isActionDisabled = isActing || (!event.isRegistered && full);
+  const capacityPercent = Math.min(
+    100,
+    Math.round((event.participantCount / event.maxParticipants) * 100),
+  );
 
   return (
     <Card
-      className="cursor-pointer overflow-hidden border border-border/60 transition-shadow hover:shadow-md"
+      hoverable
       onClick={() => onOpen(event.id)}
+      style={{ borderColor: token.colorBorderSecondary, height: "100%" }}
+      styles={{ body: { padding: 20, height: "100%" } }}
     >
-      <CardContent className="space-y-3 p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <span className="text-[10px] font-semibold uppercase">
-              {formatEventDayLabel(event.startDate).split(" ")[1]}
-            </span>
-            <span className="text-lg font-bold leading-none">
-              {formatEventDayLabel(event.startDate).split(" ")[0]}
-            </span>
+      <Flex vertical gap={16} style={{ height: "100%" }}>
+        <Flex align="flex-start" justify="space-between" gap={12}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <Flex align="center" gap={8} wrap="wrap">
+              <Tag color="blue" style={{ marginInlineEnd: 0 }}>
+                {formatEventDayLabel(event.startDate)}
+              </Tag>
+              {event.isRegistered && <Tag color="success">Kayıtlı</Tag>}
+              {full && !event.isRegistered && <Tag color="error">Kontenjan dolu</Tag>}
+            </Flex>
+
+            <Typography.Text
+              strong
+              style={{ display: "block", fontSize: 16, marginTop: 10 }}
+              ellipsis
+            >
+                {event.title}
+            </Typography.Text>
+
+            <Flex gap={6} wrap="wrap" style={{ marginTop: 8 }}>
+              <Tag color="default">{event.category}</Tag>
+              {event.groupName && <Tag color="processing">{event.groupName}</Tag>}
+            </Flex>
           </div>
+        </Flex>
 
-          <div className="min-w-0 flex-1 space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="line-clamp-2 text-base font-semibold">{event.title}</h3>
-              {event.isRegistered && <Badge variant="success">Kayitli</Badge>}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="text-[10px]">
-                {event.category}
-              </Badge>
-              {event.groupName && (
-                <Badge variant="outline" className="text-[10px]">
-                  {event.groupName}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+        <Typography.Paragraph
+          type="secondary"
+          ellipsis={{ rows: 3 }}
+          style={{ marginBottom: 0, lineHeight: 1.7 }}
+        >
           {event.description}
-        </p>
+        </Typography.Paragraph>
 
-        <div className="space-y-1 text-xs text-muted-foreground">
-          <p className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" />
+        <Flex vertical gap={6}>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <ClockCircleOutlined style={{ marginRight: 6 }} />
             {formatEventTime(event.startDate)} - {formatEventTime(event.endDate)}
-          </p>
-          <p className="flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5" />
+          </Typography.Text>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <EnvironmentOutlined style={{ marginRight: 6 }} />
             {event.location}
-          </p>
-          <p className="flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5" />
-            {event.participantCount}/{event.maxParticipants} katilimci
-          </p>
-          <p className="flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5" />
-            Duzenleyen: {event.creatorName}
-          </p>
+          </Typography.Text>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <TeamOutlined style={{ marginRight: 6 }} />
+            {event.participantCount}/{event.maxParticipants} katılımcı
+          </Typography.Text>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <CalendarOutlined style={{ marginRight: 6 }} />
+            Düzenleyen: {event.creatorName}
+          </Typography.Text>
+        </Flex>
+
+        <div style={{ marginTop: "auto" }}>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            Doluluk
+          </Typography.Text>
+          <Progress percent={capacityPercent} showInfo={false} size="small" />
         </div>
 
         <Button
-          variant={event.isRegistered ? "outline" : "default"}
-          size="sm"
-          className="w-full"
+          type={event.isRegistered ? "default" : "primary"}
+          block
+          loading={isActing}
           disabled={isActionDisabled}
           onClick={(clickedEvent) => {
             clickedEvent.stopPropagation();
@@ -94,14 +111,14 @@ export default function EventCard({
           }}
         >
           {isActing
-            ? "Isleniyor"
+            ? "İşleniyor"
             : event.isRegistered
-              ? "Kaydi Iptal Et"
+              ? "Kaydı İptal Et"
               : full
                 ? "Kontenjan Dolu"
-                : "Kayit Ol"}
+                : "Kayıt Ol"}
         </Button>
-      </CardContent>
+      </Flex>
     </Card>
   );
 }

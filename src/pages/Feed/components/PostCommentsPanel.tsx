@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Alert, Divider, Flex, Skeleton } from "antd";
 import {
   useAddPostCommentMutation,
   usePostDetailQuery,
@@ -27,27 +27,29 @@ export default function PostCommentsPanel({
   }
 
   return (
-    <Card className="border border-border/50 bg-secondary/10">
-      <CardContent className="space-y-4 p-4">
+    <div style={{ marginTop: 16, paddingLeft: 16, borderLeft: "2px solid var(--ant-color-border-secondary)" }}>
+      <Flex vertical gap={16}>
         {postDetailQuery.isLoading && (
-          <p className="text-sm text-muted-foreground">Yorumlar yukleniyor...</p>
+          <div style={{ padding: "8px 0" }}>
+            <Skeleton active avatar paragraph={{ rows: 2 }} title={false} />
+          </div>
         )}
 
         {postDetailQuery.error instanceof Error && (
-          <p className="text-sm text-destructive">
-            {postDetailQuery.error.message}
-          </p>
+          <Alert type="error" message={postDetailQuery.error.message} showIcon />
         )}
 
         {postDetailQuery.data && (
           <PostCommentList comments={postDetailQuery.data.comments} />
         )}
 
+        <Divider size="small" style={{ margin: 0 }} />
+
         <PostCommentComposer
           isSubmitting={addCommentMutation.isPending}
           onSubmit={handleAddComment}
         />
-      </CardContent>
-    </Card>
+      </Flex>
+    </div>
   );
 }

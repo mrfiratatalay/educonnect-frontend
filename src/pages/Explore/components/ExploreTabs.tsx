@@ -1,42 +1,47 @@
-import type { ElementType } from "react";
-import { Calendar, Tag, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { CalendarOutlined, TagsOutlined, TeamOutlined } from "@ant-design/icons";
+import { Flex, Tabs, Typography } from "antd";
 
 export type ExploreTab = "groups" | "events" | "discounts";
 
-const tabs: Array<{ key: ExploreTab; label: string; icon: ElementType }> = [
-  { key: "groups", label: "Gruplar", icon: Users },
-  { key: "events", label: "Etkinlikler", icon: Calendar },
-  { key: "discounts", label: "Indirimler", icon: Tag },
-];
-
 interface ExploreTabsProps {
   activeTab: ExploreTab;
+  counts?: Partial<Record<ExploreTab, number>>;
+  extraContent?: React.ReactNode;
   onChange: (tab: ExploreTab) => void;
 }
 
+const tabs: Array<{ key: ExploreTab; label: string; icon: React.ReactNode }> = [
+  { key: "groups", label: "Gruplar", icon: <TeamOutlined /> },
+  { key: "events", label: "Etkinlikler", icon: <CalendarOutlined /> },
+  { key: "discounts", label: "İndirimler", icon: <TagsOutlined /> },
+];
+
 export default function ExploreTabs({
   activeTab,
+  counts,
+  extraContent,
   onChange,
 }: ExploreTabsProps) {
   return (
-    <div className="flex w-fit gap-1 rounded-lg bg-secondary/50 p-1">
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          type="button"
-          onClick={() => onChange(tab.key)}
-          className={cn(
-            "flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium transition-all",
-            activeTab === tab.key
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <tab.icon className="w-4 h-4" />
-          {tab.label}
-        </button>
-      ))}
-    </div>
+    <Tabs
+      activeKey={activeTab}
+      items={tabs.map((tab) => ({
+        key: tab.key,
+        label: (
+          <Flex align="center" gap={8}>
+            {tab.icon}
+            <span>{tab.label}</span>
+            {typeof counts?.[tab.key] === "number" && (
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                {counts[tab.key]}
+              </Typography.Text>
+            )}
+          </Flex>
+        ),
+      }))}
+      onChange={(value) => onChange(value as ExploreTab)}
+      size="large"
+      tabBarExtraContent={extraContent}
+    />
   );
 }

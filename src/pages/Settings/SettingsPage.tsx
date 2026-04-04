@@ -1,19 +1,34 @@
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { Check, LogOut, Moon, Palette, Sun, User } from "lucide-react";
+import { Check, LogOut, Moon, Palette, Sun, User, ShieldAlert, Camera } from "lucide-react";
+import {
+  Alert,
+  Button,
+  Card,
+  Flex,
+  Form,
+  Grid,
+  Input,
+  Select,
+  Spin,
+  Typography,
+  theme,
+  Tabs,
+  Segmented,
+  Avatar,
+  Upload,
+  Popconfirm
+} from "antd";
 import { getApiErrorMessage, getUniversities } from "@/features/auth/api";
 import {
   useMyProfileQuery,
   useUpdateMyProfileMutation,
 } from "@/features/users/hooks";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store/authStore";
+import { useThemeStore } from "@/store/themeStore";
 
 const settingsSchema = z.object({
   fullName: z.string().min(3, "Ad soyad en az 3 karakter olmali"),
@@ -25,51 +40,24 @@ const settingsSchema = z.object({
 
 type SettingsForm = z.infer<typeof settingsSchema>;
 
-function Toggle({
-  checked,
-  onChange,
-}: {
-  checked: boolean;
-  onChange: () => void;
-}) {
-  return (
-    <button
-      role="switch"
-      aria-checked={checked}
-      onClick={onChange}
-      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
-        checked ? "bg-primary" : "bg-muted"
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-          checked ? "translate-x-4.5" : "translate-x-0.5"
-        }`}
-      />
-    </button>
-  );
-}
-
 export default function SettingsPage() {
   const logout = useAuthStore((state) => state.logout);
   const profileQuery = useMyProfileQuery();
   const updateProfileMutation = useUpdateMyProfileMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [profileSaved, setProfileSaved] = useState(false);
-  const [darkMode, setDarkMode] = useState(() =>
-    document.documentElement.classList.contains("dark"),
-  );
+  const isDark = useThemeStore((state) => state.isDark);
+  const toggleTheme = useThemeStore((state) => state.toggle);
+  const screens = Grid.useBreakpoint();
+  const { token } = theme.useToken();
 
-  const {
-    data: universities = [],
-    isLoading: isUniversitiesLoading,
-  } = useQuery({
+  const { data: universities = [], isLoading: isUniversitiesLoading } = useQuery({
     queryKey: ["universities"],
     queryFn: getUniversities,
   });
 
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -85,9 +73,7 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (!profileQuery.data) {
-      return;
-    }
+    if (!profileQuery.data) return;
 
     reset({
       fullName: profileQuery.data.fullName,
@@ -97,19 +83,6 @@ export default function SettingsPage() {
       bio: profileQuery.data.bio || "",
     });
   }, [profileQuery.data, reset]);
-
-  const toggleDarkMode = () => {
-    const next = !darkMode;
-    setDarkMode(next);
-
-    if (next) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-
-    localStorage.setItem("educonnect-dark-mode", String(next));
-  };
 
   const onSubmit = handleSubmit(async (data) => {
     setSubmitError(null);
@@ -123,183 +96,320 @@ export default function SettingsPage() {
         year: Number(data.year),
         bio: data.bio?.trim() || undefined,
       });
-
       setProfileSaved(true);
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
     }
   });
 
+  const pagePadding = screens.xs ? 16 : screens.lg ? 32 : 24;
+
   if (profileQuery.isLoading) {
     return (
-      <div className="p-4 lg:p-6 xl:p-8 max-w-3xl mx-auto text-sm text-muted-foreground">
-        Ayarlar yukleniyor...
-      </div>
+      <Flex justify="center" align="center" style={{ padding: 80 }}>
+        <Spin size="large" />
+      </Flex>
     );
   }
 
   if (profileQuery.isError || !profileQuery.data) {
     return (
-      <div className="p-4 lg:p-6 xl:p-8 max-w-3xl mx-auto text-sm text-destructive">
-        Profil bilgileri yuklenemedi.
+      <div style={{ padding: pagePadding, maxWidth: 720, margin: "0 auto" }}>
+        <Alert type="error" showIcon message="Profil bilgileri yuklenemedi." />
       </div>
     );
   }
 
   return (
-    <div className="p-4 lg:p-6 xl:p-8 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Ayarlar</h1>
+    <div style={{ padding: pagePadding, maxWidth: 900, margin: "0 auto" }}>
+      <Flex vertical gap={32}>
+        <div>
+          <Typography.Title level={screens.lg ? 2 : 3} style={{ margin: 0, fontWeight: 800, letterSpacing: "-0.5px" }}>
+            Ayarlar
+          </Typography.Title>
+          <Typography.Text type="secondary">
+            Hesap tercihlerinizi ve profil detaylarınızı yönetin.
+          </Typography.Text>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <User className="w-5 h-5 text-primary" />
-            Profil Bilgileri
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Ad Soyad</Label>
-                <Input id="fullName" {...register("fullName")} />
-                {errors.fullName && (
-                  <p className="text-sm text-destructive">{errors.fullName.message}</p>
-                )}
-              </div>
+        <Tabs
+          tabPosition={screens.lg ? "left" : "top"}
+          size="large"
+          items={[
+            {
+              key: "profile",
+              label: (
+                <span style={{ display: "flex", alignItems: "center", gap: 8, paddingRight: screens.lg ? 60 : 0 }}>
+                  <User size={16} /> Profil Bilgileri
+                </span>
+              ),
+              children: (
+                <div style={{ paddingLeft: screens.lg ? 32 : 0 }}>
+                  <Card bordered={false} style={{ borderRadius: 16, boxShadow: "0 4px 24px rgba(0,0,0,0.02)" }}>
+                    <Flex vertical gap={32}>
+                      <Flex gap={24} align="center" wrap="wrap">
+                        <Upload showUploadList={false}>
+                          <div style={{ position: "relative", cursor: "pointer", borderRadius: "50%" }}>
+                            <Avatar size={96} src={profileQuery.data.avatarUrl} style={{ backgroundColor: token.colorPrimary, fontSize: 32 }}>
+                              {profileQuery.data.fullName?.charAt(0)}
+                            </Avatar>
+                            <div style={{ 
+                              position: "absolute", bottom: 0, right: 0, 
+                              background: token.colorBgContainer, borderRadius: "50%", 
+                              padding: 6, boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                              display: "flex", alignItems: "center", justifyContent: "center"
+                            }}>
+                              <Camera size={16} color={token.colorPrimary} />
+                            </div>
+                          </div>
+                        </Upload>
+                        <div>
+                          <Typography.Title level={5} style={{ margin: 0 }}>Profil Fotoğrafı</Typography.Title>
+                          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                            JPG, GIF veya PNG. Maksimum 5MB.
+                          </Typography.Text>
+                        </div>
+                      </Flex>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">E-posta</Label>
-                <Input
-                  id="email"
-                  value={profileQuery.data.email}
-                  disabled
-                  readOnly
-                  type="email"
-                />
-              </div>
+                      <Form layout="vertical" requiredMark={false} onFinish={onSubmit}>
+                        <Flex gap={16} wrap="wrap">
+                          <Form.Item
+                            label={<Typography.Text strong>Ad Soyad</Typography.Text>}
+                            validateStatus={errors.fullName ? "error" : undefined}
+                            help={errors.fullName?.message}
+                            style={{ flex: "1 1 250px" }}
+                          >
+                            <Controller
+                              name="fullName"
+                              control={control}
+                              render={({ field }) => <Input size="large" {...field} />}
+                            />
+                          </Form.Item>
 
-              <div className="space-y-2">
-                <Label htmlFor="universityId">Universite</Label>
-                <select
-                  id="universityId"
-                  disabled={isUniversitiesLoading}
-                  {...register("universityId")}
-                  className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">
-                    {isUniversitiesLoading ? "Yukleniyor..." : "Seciniz"}
-                  </option>
-                  {universities.map((university) => (
-                    <option key={university.id} value={university.id}>
-                      {university.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.universityId && (
-                  <p className="text-sm text-destructive">
-                    {errors.universityId.message}
-                  </p>
-                )}
-              </div>
+                          <Form.Item label={<Typography.Text strong>E-posta</Typography.Text>} style={{ flex: "1 1 250px" }}>
+                            <Input
+                              size="large"
+                              value={profileQuery.data.email}
+                              disabled
+                              readOnly
+                              type="email"
+                            />
+                          </Form.Item>
+                        </Flex>
 
-              <div className="space-y-2">
-                <Label htmlFor="department">Bolum</Label>
-                <Input id="department" {...register("department")} />
-                {errors.department && (
-                  <p className="text-sm text-destructive">{errors.department.message}</p>
-                )}
-              </div>
-            </div>
+                        <Flex gap={16} wrap="wrap">
+                          <Form.Item
+                            label={<Typography.Text strong>Üniversite</Typography.Text>}
+                            validateStatus={errors.universityId ? "error" : undefined}
+                            help={errors.universityId?.message}
+                            style={{ flex: "1 1 250px" }}
+                          >
+                            <Controller
+                              name="universityId"
+                              control={control}
+                              render={({ field }) => (
+                                <Select
+                                  size="large"
+                                  {...field}
+                                  loading={isUniversitiesLoading}
+                                  placeholder="Seçiniz"
+                                  options={universities.map((uni) => ({
+                                    value: uni.id,
+                                    label: uni.name,
+                                  }))}
+                                />
+                              )}
+                            />
+                          </Form.Item>
 
-            <div className="space-y-2">
-              <Label htmlFor="year">Sinif</Label>
-              <select
-                id="year"
-                {...register("year")}
-                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="">Seciniz</option>
-                <option value="1">1. sinif</option>
-                <option value="2">2. sinif</option>
-                <option value="3">3. sinif</option>
-                <option value="4">4. sinif</option>
-                <option value="5">5. sinif</option>
-                <option value="6">6. sinif</option>
-                <option value="7">7. sinif</option>
-                <option value="8">8. sinif</option>
-              </select>
-              {errors.year && (
-                <p className="text-sm text-destructive">{errors.year.message}</p>
-              )}
-            </div>
+                          <Form.Item
+                            label={<Typography.Text strong>Bölüm</Typography.Text>}
+                            validateStatus={errors.department ? "error" : undefined}
+                            help={errors.department?.message}
+                            style={{ flex: "1 1 250px" }}
+                          >
+                            <Controller
+                              name="department"
+                              control={control}
+                              render={({ field }) => <Input size="large" {...field} />}
+                            />
+                          </Form.Item>
+                        </Flex>
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Biyografi</Label>
-              <textarea
-                id="bio"
-                rows={4}
-                {...register("bio")}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
-              />
-              {errors.bio && (
-                <p className="text-sm text-destructive">{errors.bio.message}</p>
-              )}
-            </div>
+                        <Form.Item
+                          label={<Typography.Text strong>Sınıf</Typography.Text>}
+                          validateStatus={errors.year ? "error" : undefined}
+                          help={errors.year?.message}
+                        >
+                          <Controller
+                            name="year"
+                            control={control}
+                            render={({ field }) => (
+                              <Select
+                                size="large"
+                                {...field}
+                                placeholder="Seçiniz"
+                                options={Array.from({ length: 8 }, (_, i) => ({
+                                  value: String(i + 1),
+                                  label: `${i + 1}. sınıf`,
+                                }))}
+                              />
+                            )}
+                          />
+                        </Form.Item>
 
-            {submitError && (
-              <p className="text-sm text-destructive">{submitError}</p>
-            )}
+                        <Form.Item
+                          label={<Typography.Text strong>Hakkımda (Bio)</Typography.Text>}
+                          validateStatus={errors.bio ? "error" : undefined}
+                          help={errors.bio?.message}
+                        >
+                          <Controller
+                            name="bio"
+                            control={control}
+                            render={({ field }) => (
+                              <Input.TextArea
+                                {...field}
+                                size="large"
+                                rows={4}
+                                maxLength={500}
+                                showCount
+                                autoSize={{ minRows: 3, maxRows: 6 }}
+                              />
+                            )}
+                          />
+                        </Form.Item>
 
-            <Button type="submit" size="sm" disabled={updateProfileMutation.isPending}>
-              {updateProfileMutation.isPending
-                ? "Kaydediliyor..."
-                : profileSaved
-                  ? (
-                      <>
-                        <Check className="w-4 h-4 mr-1.5" />
-                        Kaydedildi
-                      </>
-                    )
-                  : "Degisiklikleri Kaydet"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+                        {submitError && (
+                          <Alert type="error" showIcon message={submitError} style={{ marginBottom: 24, borderRadius: 8 }} />
+                        )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Palette className="w-5 h-5 text-primary" />
-            Gorunum
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              {darkMode ? (
-                <Moon className="w-5 h-5 text-muted-foreground" />
-              ) : (
-                <Sun className="w-5 h-5 text-muted-foreground" />
-              )}
-              <div>
-                <p className="text-sm font-medium">
-                  {darkMode ? "Karanlik Mod" : "Aydinlik Mod"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Tema tercihi sadece bu tarayicida saklanir.
-                </p>
-              </div>
-            </div>
-            <Toggle checked={darkMode} onChange={toggleDarkMode} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Button variant="destructive" className="gap-2" onClick={() => void logout()}>
-        <LogOut className="w-4 h-4" />
-        Cikis Yap
-      </Button>
+                        <div style={{ 
+                          position: "sticky", 
+                          bottom: 0, 
+                          padding: "16px 0", 
+                          background: `linear-gradient(to bottom, rgba(255,255,255,0) 0%, ${token.colorBgContainer} 20%)`,
+                          zIndex: 10,
+                          marginTop: 16
+                        }}>
+                          <Button
+                            type="primary"
+                            htmlType="submit"
+                            size="large"
+                            loading={updateProfileMutation.isPending}
+                            icon={profileSaved ? <Check size={16} /> : undefined}
+                            style={{ borderRadius: 8, padding: "0 32px", boxShadow: `0 4px 12px ${token.colorPrimary}40` }}
+                          >
+                            {updateProfileMutation.isPending ? "Kaydediliyor..." : profileSaved ? "Kaydedildi" : "Değişiklikleri Kaydet"}
+                          </Button>
+                        </div>
+                      </Form>
+                    </Flex>
+                  </Card>
+                </div>
+              )
+            },
+            {
+              key: "appearance",
+              label: (
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Palette size={16} /> Görünüm
+                </span>
+              ),
+              children: (
+                <div style={{ paddingLeft: screens.lg ? 32 : 0 }}>
+                  <Card bordered={false} style={{ borderRadius: 16, boxShadow: "0 4px 24px rgba(0,0,0,0.02)" }}>
+                    <Flex vertical gap={24}>
+                      <div>
+                        <Typography.Title level={5} style={{ margin: 0 }}>Tema Tercihi</Typography.Title>
+                        <Typography.Text type="secondary">
+                          Arayüzün görünümünü kendi göz zevkinize göre özelleştirin.
+                        </Typography.Text>
+                      </div>
+                      
+                      <div style={{ padding: 24, background: token.colorFillQuaternary, borderRadius: 12 }}>
+                        <Segmented
+                          size="large"
+                          block
+                          value={isDark ? "dark" : "light"}
+                          onChange={(val) => {
+                            if ((val === "dark") !== isDark) toggleTheme();
+                          }}
+                          options={[
+                            {
+                              label: (
+                                <Flex align="center" justify="center" gap={8} style={{ padding: "4px 0" }}>
+                                  <Sun size={16} /> Aydınlık
+                                </Flex>
+                              ),
+                              value: "light",
+                            },
+                            {
+                              label: (
+                                <Flex align="center" justify="center" gap={8} style={{ padding: "4px 0" }}>
+                                  <Moon size={16} /> Karanlık
+                                </Flex>
+                              ),
+                              value: "dark",
+                            },
+                          ]}
+                        />
+                      </div>
+                    </Flex>
+                  </Card>
+                </div>
+              )
+            },
+            {
+              key: "security",
+              label: (
+                <span style={{ display: "flex", alignItems: "center", gap: 8, color: token.colorError }}>
+                  <ShieldAlert size={16} /> Hesap
+                </span>
+              ),
+              children: (
+                <div style={{ paddingLeft: screens.lg ? 32 : 0 }}>
+                  <Card 
+                    bordered={false} 
+                    style={{ borderRadius: 16, border: `1px solid ${token.colorErrorBorder}`, boxShadow: "0 4px 24px rgba(0,0,0,0.02)" }}
+                  >
+                    <Flex vertical gap={24}>
+                      <div>
+                        <Typography.Title level={5} type="danger" style={{ margin: 0 }}>Tehlikeli Bölge</Typography.Title>
+                        <Typography.Text type="secondary">
+                          Oturumu sonlandırmak veya hesap verilerinizle ilgili kritik işlemleri buradan yapabilirsiniz.
+                        </Typography.Text>
+                      </div>
+                      
+                      <div style={{ padding: 20, background: token.colorErrorBg, borderRadius: 12, border: `1px solid ${token.colorErrorBorder}` }}>
+                        <Flex justify="space-between" align="center" wrap="wrap" gap={16}>
+                          <div>
+                            <Typography.Text strong style={{ display: "block" }}>Platformdan Çıkış Yap</Typography.Text>
+                            <Typography.Text type="secondary" style={{ fontSize: 13 }}>Giriş yapmak için e-posta ve şifrenizi tekrar girmeniz gerekecek.</Typography.Text>
+                          </div>
+                          
+                          <Popconfirm
+                            title="Oturumu kapatıyorsunuz"
+                            description="Çıkış yapmak istediğinize emin misiniz?"
+                            onConfirm={() => void logout()}
+                            okText="Evet, Çıkış Yap"
+                            cancelText="İptal"
+                            okButtonProps={{ danger: true }}
+                            placement="topRight"
+                          >
+                            <Button danger type="primary" size="large" icon={<LogOut size={16} />} style={{ borderRadius: 8 }}>
+                              Çıkış Yap
+                            </Button>
+                          </Popconfirm>
+                        </Flex>
+                      </div>
+                    </Flex>
+                  </Card>
+                </div>
+              )
+            }
+          ]}
+        />
+      </Flex>
     </div>
   );
 }

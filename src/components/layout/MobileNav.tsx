@@ -1,125 +1,200 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Avatar, Button, Drawer, Flex, Grid, Menu, Typography, theme } from "antd";
+import { LogOut, Menu as MenuIcon, MoreHorizontal } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
-  Home,
-  MessageSquare,
-  Compass,
-  Search,
-  Menu,
-  User,
-  Settings,
-  LogOut,
-  X,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  getSelectedShellKey,
+  getUserInitials,
+  shellMainNavItems,
+  shellSecondaryNavItems,
+} from "@/components/layout/shellNavigation";
 import { useAuthStore } from "@/store/authStore";
-
-const tabs = [
-  { to: "/", icon: Home, label: "Anasayfa" },
-  { to: "/feed", icon: MessageSquare, label: "Feed" },
-  { to: "/explore", icon: Compass, label: "Keşfet" },
-  { to: "/visual-search", icon: Search, label: "Arama" },
-];
-
-const moreLinks = [
-  { to: "/profile", icon: User, label: "Profil" },
-  { to: "/settings", icon: Settings, label: "Ayarlar" },
-];
 
 export default function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false);
-  const { logout } = useAuthStore();
+  const screens = Grid.useBreakpoint();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { token } = theme.useToken();
+  const selectedKey = getSelectedShellKey(location.pathname);
+
+  if (screens.lg) {
+    return null;
+  }
 
   return (
     <>
-      {moreOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-          onClick={() => setMoreOpen(false)}
+      <Drawer
+        open={moreOpen}
+        onClose={() => setMoreOpen(false)}
+        placement="bottom"
+        height={300}
+        title="Daha Fazla"
+        destroyOnHidden
+        styles={{
+          body: {
+            padding: 12,
+          },
+        }}
+      >
+        <Flex align="center" gap={12} style={{ padding: "4px 4px 16px" }}>
+          <Avatar
+            src={user?.avatarUrl}
+            alt={user?.fullName}
+            size={44}
+            style={{
+              backgroundColor: token.colorPrimaryBg,
+              color: token.colorPrimary,
+            }}
+          >
+            {getUserInitials(user?.fullName)}
+          </Avatar>
+
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <Typography.Text strong ellipsis style={{ display: "block" }}>
+              {user?.fullName ?? "Kullanici"}
+            </Typography.Text>
+            <Typography.Text
+              type="secondary"
+              ellipsis
+              style={{ display: "block", fontSize: 12 }}
+            >
+              {user?.department ?? user?.email ?? "EduConnect"}
+            </Typography.Text>
+          </div>
+        </Flex>
+
+        <Menu
+          mode="inline"
+          selectedKeys={[selectedKey]}
+          items={shellSecondaryNavItems.map((item) => ({
+            key: item.key,
+            icon: <item.icon size={18} />,
+            label: item.label,
+          }))}
+          onClick={({ key }) => {
+            navigate(String(key));
+            setMoreOpen(false);
+          }}
+          style={{
+            borderInlineEnd: "none",
+            background: "transparent",
+          }}
         />
-      )}
+
+        <Button
+          block
+          type="text"
+          danger
+          icon={<LogOut size={18} />}
+          onClick={() => {
+            void logout();
+            setMoreOpen(false);
+          }}
+          style={{
+            justifyContent: "flex-start",
+            height: 44,
+            marginTop: 4,
+            borderRadius: token.borderRadiusLG,
+          }}
+        >
+          Cikis Yap
+        </Button>
+      </Drawer>
 
       <div
-        className={cn(
-          "lg:hidden fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300",
-          moreOpen ? "translate-y-0" : "",
-        )}
+        style={{
+          position: "fixed",
+          insetInline: 0,
+          bottom: 0,
+          zIndex: 50,
+          background: token.colorBgContainer,
+          borderTop: `1px solid ${token.colorBorderSecondary}`,
+          backdropFilter: "blur(16px)",
+          padding: `8px 12px calc(8px + env(safe-area-inset-bottom))`,
+        }}
       >
-        {moreOpen && (
-          <div className="mx-3 mb-2 rounded-2xl border bg-background shadow-2xl p-3 space-y-1 animate-in slide-in-from-bottom-4 duration-200">
-            {moreLinks.map((link) => (
-              <button
-                key={link.to}
+        <Flex gap={4} align="stretch">
+          {shellMainNavItems.map((item) => {
+            const isActive = selectedKey === item.key;
+
+            return (
+              <Button
+                key={item.key}
+                type="text"
                 onClick={() => {
-                  navigate(link.to);
+                  navigate(item.to);
                   setMoreOpen(false);
                 }}
-                className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-secondary transition-colors cursor-pointer text-left"
+                style={{
+                  flex: 1,
+                  height: 56,
+                  paddingInline: 4,
+                  color: isActive ? token.colorPrimary : token.colorTextSecondary,
+                  borderRadius: token.borderRadiusLG,
+                }}
               >
-                <link.icon className="w-5 h-5 text-muted-foreground" />
-                {link.label}
-              </button>
-            ))}
-            <button
-              onClick={() => {
-                void logout();
-                setMoreOpen(false);
-              }}
-              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-            >
-              <LogOut className="w-5 h-5" />
-              Çıkış Yap
-            </button>
-          </div>
-        )}
+                <Flex
+                  vertical
+                  align="center"
+                  justify="center"
+                  gap={4}
+                  style={{ width: "100%" }}
+                >
+                  <item.icon size={20} strokeWidth={isActive ? 2.4 : 2} />
+                  <Typography.Text
+                    style={{
+                      fontSize: 11,
+                      lineHeight: 1,
+                      color: "inherit",
+                      margin: 0,
+                    }}
+                  >
+                    {item.label}
+                  </Typography.Text>
+                </Flex>
+              </Button>
+            );
+          })}
 
-        <nav className="bg-background/95 backdrop-blur-md border-t pb-[env(safe-area-inset-bottom)]">
-          <div className="flex items-center justify-around h-16">
-            {tabs.map((tab) => (
-              <NavLink
-                key={tab.to}
-                to={tab.to}
-                end={tab.to === "/"}
-                onClick={() => setMoreOpen(false)}
-                className={({ isActive }) =>
-                  cn(
-                    "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-colors min-w-[56px]",
-                    isActive ? "text-primary" : "text-muted-foreground",
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <tab.icon
-                      className={cn(
-                        "w-5 h-5",
-                        isActive && "stroke-[2.5px]",
-                      )}
-                    />
-                    <span className="text-[10px] font-medium">
-                      {tab.label}
-                    </span>
-                  </>
-                )}
-              </NavLink>
-            ))}
-            <button
-              onClick={() => setMoreOpen(!moreOpen)}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-colors min-w-[56px] cursor-pointer",
-                moreOpen ? "text-primary" : "text-muted-foreground",
-              )}
+          <Button
+            type="text"
+            onClick={() => setMoreOpen(true)}
+            style={{
+              flex: 1,
+              height: 56,
+              paddingInline: 4,
+              color: moreOpen ? token.colorPrimary : token.colorTextSecondary,
+              borderRadius: token.borderRadiusLG,
+            }}
+          >
+            <Flex
+              vertical
+              align="center"
+              justify="center"
+              gap={4}
+              style={{ width: "100%" }}
             >
               {moreOpen ? (
-                <X className="w-5 h-5 stroke-[2.5px]" />
+                <MoreHorizontal size={20} strokeWidth={2.4} />
               ) : (
-                <Menu className="w-5 h-5" />
+                <MenuIcon size={20} />
               )}
-              <span className="text-[10px] font-medium">Daha</span>
-            </button>
-          </div>
-        </nav>
+              <Typography.Text
+                style={{
+                  fontSize: 11,
+                  lineHeight: 1,
+                  color: "inherit",
+                  margin: 0,
+                }}
+              >
+                Daha
+              </Typography.Text>
+            </Flex>
+          </Button>
+        </Flex>
       </div>
     </>
   );

@@ -12,12 +12,13 @@ import VisualSearchPage from "@/pages/VisualSearch/VisualSearchPage";
 import ExplorePage from "@/pages/Explore/ExplorePage";
 import ProfilePage from "@/pages/Profile/ProfilePage";
 import SettingsPage from "@/pages/Settings/SettingsPage";
+import { Spin, Flex } from "antd";
 
 function RouteLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-      Yukleniyor...
-    </div>
+    <Flex align="center" justify="center" style={{ minHeight: "100vh" }}>
+      <Spin size="large" />
+    </Flex>
   );
 }
 

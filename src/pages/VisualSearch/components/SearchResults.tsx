@@ -1,16 +1,18 @@
 import {
-  AspectRatio,
+  Alert,
   Badge,
-  Group,
-  Loader,
-  Paper,
-  SimpleGrid,
+  Card,
+  Col,
+  Empty,
+  Flex,
+  Row,
   Skeleton,
-  Stack,
-  Text,
-  Title,
-  UnstyledButton,
-} from "@mantine/core";
+  Spin,
+  Tag,
+  Typography,
+  theme,
+} from "antd";
+import { Clock, Filter, Layers, TrendingUp } from "lucide-react";
 import { formatPrice } from "../helpers";
 import type { SearchSession } from "../types";
 
@@ -29,156 +31,205 @@ export function SearchResults({
   session,
   onSelect,
 }: SearchResultsProps) {
-  const surfaceStyle = {
-    background: "linear-gradient(180deg, rgba(255,255,255,0.94) 0%, #ffffff 100%)",
-    borderColor: "rgba(23, 24, 28, 0.08)",
-    boxShadow: "0 24px 70px rgba(20, 28, 45, 0.06)",
-  } as const;
+  const { token } = theme.useToken();
 
+  /* ── Skeleton State ── */
   if (searching) {
     return (
-      <Paper withBorder radius={32} p={{ base: 18, md: 24 }} style={surfaceStyle}>
-        <Stack gap="lg">
-          <Group gap="xs">
-            <Loader size="sm" color="ink" />
-            <Text size="sm" c="dimmed">
-              Araniyor
-            </Text>
-          </Group>
-
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
-            {[0, 1, 2].map((item) => (
-              <Paper
-                key={item}
-                withBorder
-                radius={28}
-                p="md"
-                style={{ borderColor: "rgba(23, 24, 28, 0.08)" }}
+      <Flex vertical gap={24}>
+        <Row gutter={[20, 20]}>
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Col key={i} xs={24} sm={12} xl={8}>
+              <Card
+                style={{ borderRadius: token.borderRadiusLG * 1.5, overflow: "hidden" }}
+                styles={{ body: { padding: 0 } }}
               >
-                <Skeleton radius={22} height={250} />
-                <Skeleton mt="md" height={22} radius="xl" width="65%" />
-                <Skeleton mt="sm" height={16} radius="xl" width="35%" />
-              </Paper>
-            ))}
-          </SimpleGrid>
-        </Stack>
-      </Paper>
+                <Skeleton.Image active style={{ width: "100%", height: 200, display: "block" }} />
+                <div style={{ padding: 16 }}>
+                  <Skeleton active paragraph={{ rows: 2 }} />
+                </div>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      </Flex>
     );
   }
 
+  /* ── Error State ── */
   if (error) {
-    return (
-      <Paper withBorder radius={32} p={{ base: 18, md: 24 }} style={surfaceStyle}>
-        <Text c="red.6">{error}</Text>
-      </Paper>
-    );
+    return <Alert type="error" showIcon message={error} style={{ borderRadius: 12 }} />;
   }
 
+  /* ── Loaded Image but not Searched yet ── */
   if (!session) {
     return (
-      <Paper withBorder radius={32} p={{ base: 24, md: 32 }} style={surfaceStyle}>
-        <Text c="dimmed">Gorsel sec ve ara.</Text>
-      </Paper>
+      <Flex 
+        align="center" 
+        justify="center" 
+        style={{ height: "100%", minHeight: 400 }}
+      >
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            <span style={{ color: token.colorTextSecondary }}>
+              Aramayı başlatmak için "Benzer İlanları Bul" veya Enter'a basın
+            </span>
+          }
+        />
+      </Flex>
     );
   }
 
+  /* ── Results State ── */
   return (
-    <Stack gap="lg">
-      <Group justify="space-between" gap="md" wrap="wrap">
-        <Group gap="xs" wrap="wrap">
-          <Badge radius="xl" variant="light" color="ink">
-            {session.analysis.categoryLabel}
-          </Badge>
-          <Badge radius="xl" variant="outline">
-            {session.analysis.conditionLabel}
-          </Badge>
-          <Badge radius="xl" variant="light" color="gray">
-            {session.analysis.estimatedPriceRange}
-          </Badge>
-          <Badge radius="xl" variant="light" color="dark">
-            %{session.analysis.confidence}
-          </Badge>
-        </Group>
+    <Flex vertical gap={24}>
+      {/* ── Summary Info Bar ── */}
+      <Card
+        style={{
+          borderRadius: token.borderRadiusLG * 1.5,
+          border: `1px solid ${token.colorBorder}`,
+        }}
+        styles={{ body: { padding: "12px 20px" } }}
+      >
+        <Flex justify="space-between" align="center" wrap="wrap" gap={16}>
+          <Flex gap={8} wrap="wrap" align="center">
+            <Typography.Text strong style={{ fontSize: 13, marginRight: 8 }}>
+              AI Analizi:
+            </Typography.Text>
+            <Tag color={token.colorPrimary} style={{ borderRadius: 6, margin: 0 }}>
+              {session.analysis.categoryLabel}
+            </Tag>
+            <Tag style={{ borderRadius: 6, margin: 0 }}>{session.analysis.conditionLabel}</Tag>
+            <Tag style={{ borderRadius: 6, margin: 0 }}>{session.analysis.estimatedPriceRange}</Tag>
+            <Typography.Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+              %{session.analysis.confidence} Güven
+            </Typography.Text>
+          </Flex>
 
-        <Text size="sm" c="dimmed">
-          {session.results.length} sonuc · {(session.elapsedMs / 1000).toFixed(1)} sn ·{" "}
-          {session.filteredCount}/{session.candidateCount}
-        </Text>
-      </Group>
+          <Flex gap={16} align="center">
+            <Flex gap={6} align="center">
+              <Layers size={14} color={token.colorTextTertiary} />
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                {session.results.length} sonuç
+              </Typography.Text>
+            </Flex>
+            <Flex gap={6} align="center">
+              <Clock size={14} color={token.colorTextTertiary} />
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                {(session.elapsedMs / 1000).toFixed(1)}s
+              </Typography.Text>
+            </Flex>
+          </Flex>
+        </Flex>
+      </Card>
 
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+      {/* ── Result Cards Grid ── */}
+      <Row gutter={[20, 20]}>
         {session.results.map((result) => {
-          const active = result.id === activeResultId;
+          const isActive = result.id === activeResultId;
 
           return (
-            <UnstyledButton
-              key={result.id}
-              onClick={() => onSelect(result.id)}
-              className="block transition-transform duration-150 hover:-translate-y-1"
-            >
-              <Paper
-                withBorder
-                radius={28}
-                p={0}
-                style={{
-                  overflow: "hidden",
-                  background: "rgba(255,255,255,0.94)",
-                  borderColor: active ? "var(--mantine-color-ink-5)" : "rgba(23, 24, 28, 0.08)",
-                  boxShadow: active
-                    ? "0 24px 60px rgba(79, 99, 221, 0.16)"
-                    : "0 16px 40px rgba(20, 28, 45, 0.07)",
-                }}
+            <Col key={result.id} xs={24} sm={12} xl={8}>
+              <Badge.Ribbon
+                text={`#${result.rank}`}
+                color={result.rank <= 3 ? token.colorPrimary : "default"}
               >
-                <div style={{ position: "relative" }}>
-                  <AspectRatio ratio={4 / 3}>
-                    <img
-                      src={result.imageUrl}
-                      alt={result.title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    />
-                  </AspectRatio>
+                <Card
+                  hoverable
+                  onClick={() => onSelect(result.id)}
+                  className="search-result-card"
+                  style={{
+                    borderRadius: token.borderRadiusLG * 1.5,
+                    overflow: "hidden",
+                    border: "none",
+                    boxShadow: isActive 
+                      ? `0 0 0 2px ${token.colorPrimary}, 0 8px 24px rgba(0,0,0,0.12)` 
+                      : "0 4px 16px rgba(0,0,0,0.06)",
+                    transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                    transform: isActive ? "translateY(-4px)" : "none",
+                  }}
+                  styles={{ body: { padding: 0 } }}
+                >
+                  {/* Image Area */}
+                  <div style={{ position: "relative" }}>
+                    <div style={{ aspectRatio: "4/3", overflow: "hidden" }}>
+                      <img
+                        src={result.imageUrl}
+                        alt={result.title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    </div>
 
-                  <Group
-                    justify="space-between"
-                    style={{ position: "absolute", inset: "16px 16px auto 16px" }}
-                  >
-                    <Badge radius="xl" variant="filled" color="dark">
-                      #{result.rank}
-                    </Badge>
-                    <Badge radius="xl" variant="white">
-                      %{result.score}
-                    </Badge>
-                  </Group>
-                </div>
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 12,
+                        right: 12,
+                        background: result.rank <= 3 
+                          ? `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorInfo})` 
+                          : "rgba(255, 255, 255, 0.9)",
+                        backdropFilter: "blur(8px)",
+                        borderRadius: 10,
+                        padding: "6px 10px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        boxShadow: result.rank <= 3 ? `0 4px 12px ${token.colorPrimary}60` : "0 4px 12px rgba(0,0,0,0.1)",
+                        border: result.rank <= 3 ? "none" : "1px solid rgba(0,0,0,0.05)"
+                      }}
+                    >
+                      <TrendingUp size={14} color={result.rank <= 3 ? "#fff" : token.colorPrimary} />
+                      <span style={{ fontSize: 13, fontWeight: 800, color: result.rank <= 3 ? "#fff" : token.colorText }}>
+                        %{result.score}
+                      </span>
+                    </div>
+                  </div>
 
-                <Stack gap="md" p="lg">
-                  <Group justify="space-between" align="flex-start" gap="md">
-                    <Stack gap={4} style={{ flex: 1 }}>
-                      <Title order={3} size="1.05rem" lineClamp={2}>
+                  {/* Content Area */}
+                  <div style={{ padding: 16 }}>
+                    <Flex justify="space-between" align="flex-start" gap={8} style={{ marginBottom: 4 }}>
+                      <Typography.Text
+                        strong
+                        ellipsis
+                        style={{ fontSize: 14, flex: 1, minWidth: 0 }}
+                      >
                         {result.title}
-                      </Title>
-                      <Text size="sm" c="dimmed">
-                        {result.city} · {result.conditionLabel}
-                      </Text>
-                    </Stack>
-                    <Text fw={800} size="lg" c="ink.7">
-                      {formatPrice(result.price)}
-                    </Text>
-                  </Group>
+                      </Typography.Text>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: token.colorText, whiteSpace: "nowrap" }}>
+                        {formatPrice(result.price)}
+                      </div>
+                    </Flex>
+                    
+                    <Typography.Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 12 }}>
+                      {result.city}
+                    </Typography.Text>
 
-                  <Group gap="xs" wrap="wrap">
-                    {result.matchedSignals.slice(0, 3).map((signal) => (
-                      <Badge key={signal} radius="xl" variant="light" color="gray">
-                        {signal}
-                      </Badge>
-                    ))}
-                  </Group>
-                </Stack>
-              </Paper>
-            </UnstyledButton>
+                    <Flex gap={4} wrap="wrap">
+                      {result.matchedSignals.slice(0, 3).map((signal) => (
+                        <Tag key={signal} style={{ borderRadius: 4, fontSize: 11, margin: 0, border: "none", background: token.colorFillQuaternary }}>
+                          {signal}
+                        </Tag>
+                      ))}
+                    </Flex>
+                  </div>
+                </Card>
+              </Badge.Ribbon>
+            </Col>
           );
         })}
-      </SimpleGrid>
-    </Stack>
+      </Row>
+      <style>{`
+        .search-result-card:hover {
+          transform: translateY(-6px) !important;
+          box-shadow: 0 16px 32px rgba(0,0,0,0.1) !important;
+        }
+      `}</style>
+    </Flex>
   );
 }

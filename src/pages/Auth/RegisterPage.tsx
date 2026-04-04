@@ -1,18 +1,12 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { Eye, EyeOff, GraduationCap } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  getApiErrorMessage,
-  getUniversities,
-  register as registerRequest,
-} from "@/features/auth/api";
+import { Alert, Button, Col, Flex, Form, Input, Row, Select } from "antd";
+import { getApiErrorMessage, getUniversities, register as registerRequest } from "@/features/auth/api";
+import { AuthPageFooter, AuthPageIntro } from "@/pages/Auth/AuthPageParts";
 import { useAuthStore } from "@/store/authStore";
 
 const registerSchema = z
@@ -32,8 +26,15 @@ const registerSchema = z
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
+const yearOptions = [
+  { value: "1", label: "1. Sinif" },
+  { value: "2", label: "2. Sinif" },
+  { value: "3", label: "3. Sinif" },
+  { value: "4", label: "4. Sinif" },
+  { value: "5", label: "5. Sinif+" },
+];
+
 export default function RegisterPage() {
-  const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
@@ -42,18 +43,33 @@ export default function RegisterPage() {
     data: universities = [],
     isLoading: isUniversitiesLoading,
     isError: isUniversitiesError,
-  } = useQuery({
-    queryKey: ["universities"],
-    queryFn: getUniversities,
-  });
+  } = useQuery({ queryKey: ["universities"], queryFn: getUniversities });
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      universityId: "",
+      department: "",
+      year: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
+
+  const universityOptions = useMemo(
+    () =>
+      universities.map((university) => ({
+        value: university.id,
+        label: `${university.name}${university.city ? ` - ${university.city}` : ""}`,
+      })),
+    [universities],
+  );
 
   const onSubmit = async (data: RegisterForm) => {
     setSubmitError(null);
@@ -76,167 +92,204 @@ export default function RegisterPage() {
   };
 
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-8 lg:hidden">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary text-primary-foreground">
-          <GraduationCap className="w-5 h-5" />
-        </div>
-        <span className="text-2xl font-bold">
-          Edu<span className="text-primary">Connect</span>
-        </span>
-      </div>
+    <Flex vertical gap={32}>
+      <AuthPageIntro
+        title="Hesap Olustur"
+        description="Temel bilgilerinizi ekleyin, universitenizi secin ve topluluk akisina hemen katilin."
+      />
 
-      <div className="space-y-2 mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Hesap Olustur</h1>
-        <p className="text-muted-foreground">
-          Sadece gerekli alanlari doldurup kayit olabilirsiniz
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="fullName">Ad Soyad</Label>
-          <Input
-            id="fullName"
-            placeholder="Adiniz Soyadiniz"
-            autoComplete="name"
-            {...register("fullName")}
+      <Form
+        layout="vertical"
+        requiredMark={false}
+        size="large"
+        onFinish={handleSubmit(onSubmit)}
+      >
+        <Form.Item
+          label="Ad Soyad"
+          validateStatus={errors.fullName ? "error" : undefined}
+          help={errors.fullName?.message}
+        >
+          <Controller
+            name="fullName"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                autoFocus
+                allowClear
+                autoComplete="name"
+                placeholder="Adiniz Soyadiniz"
+                status={errors.fullName ? "error" : undefined}
+              />
+            )}
           />
-          {errors.fullName && (
-            <p className="text-sm text-destructive">{errors.fullName.message}</p>
-          )}
-        </div>
+        </Form.Item>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">E-posta</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="ornek@universite.edu.tr"
-            autoComplete="email"
-            {...register("email")}
+        <Form.Item
+          label="E-posta"
+          validateStatus={errors.email ? "error" : undefined}
+          help={errors.email?.message}
+        >
+          <Controller
+            name="email"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                allowClear
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="ornek@universite.edu.tr"
+                status={errors.email ? "error" : undefined}
+              />
+            )}
           />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
-          )}
-        </div>
+        </Form.Item>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="universityId">Universite</Label>
-            <select
-              id="universityId"
-              disabled={isUniversitiesLoading}
-              {...register("universityId")}
-              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Universite"
+              validateStatus={errors.universityId ? "error" : undefined}
+              help={errors.universityId?.message}
             >
-              <option value="">
-                {isUniversitiesLoading ? "Yukleniyor..." : "Seciniz"}
-              </option>
-              {universities.map((university) => (
-                <option key={university.id} value={university.id}>
-                  {university.name}
-                </option>
-              ))}
-            </select>
-            {errors.universityId && (
-              <p className="text-sm text-destructive">
-                {errors.universityId.message}
-              </p>
-            )}
-            {isUniversitiesError && (
-              <p className="text-sm text-destructive">
-                Universiteler yuklenemedi.
-              </p>
-            )}
-          </div>
+              <Controller
+                name="universityId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    allowClear
+                    showSearch={{ optionFilterProp: "label" }}
+                    placeholder="Universite seciniz"
+                    loading={isUniversitiesLoading}
+                    options={universityOptions}
+                    notFoundContent={
+                      isUniversitiesLoading ? "Yukleniyor..." : "Sonuc bulunamadi"
+                    }
+                    status={errors.universityId ? "error" : undefined}
+                    value={field.value || undefined}
+                    onChange={(value) => field.onChange(value ?? "")}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
 
-          <div className="space-y-2">
-            <Label htmlFor="department">Bolum</Label>
-            <Input
-              id="department"
-              placeholder="Bilgisayar Muhendisligi"
-              {...register("department")}
-            />
-            {errors.department && (
-              <p className="text-sm text-destructive">{errors.department.message}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="year">Sinif</Label>
-          <select
-            id="year"
-            {...register("year")}
-            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <option value="">Seciniz</option>
-            <option value="1">1. Sinif</option>
-            <option value="2">2. Sinif</option>
-            <option value="3">3. Sinif</option>
-            <option value="4">4. Sinif</option>
-            <option value="5">5. Sinif+</option>
-          </select>
-          {errors.year && (
-            <p className="text-sm text-destructive">{errors.year.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="password">Sifre</Label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="********"
-              autoComplete="new-password"
-              {...register("password")}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((current) => !current)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Bolum"
+              validateStatus={errors.department ? "error" : undefined}
+              help={errors.department?.message}
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-          {errors.password && (
-            <p className="text-sm text-destructive">{errors.password.message}</p>
-          )}
-        </div>
+              <Controller
+                name="department"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    allowClear
+                    autoComplete="organization-title"
+                    placeholder="Bilgisayar Muhendisligi"
+                    status={errors.department ? "error" : undefined}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Sifre Tekrar</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="********"
-            autoComplete="new-password"
-            {...register("confirmPassword")}
+        {isUniversitiesError && (
+          <Alert
+            type="warning"
+            showIcon
+            title="Universiteler yuklenemedi."
+            description="Liste tekrar alinamadi. Sayfayi yenileyip yeniden deneyin."
+            style={{ marginBottom: 24 }}
           />
-          {errors.confirmPassword && (
-            <p className="text-sm text-destructive">
-              {errors.confirmPassword.message}
-            </p>
-          )}
-        </div>
-
-        {submitError && (
-          <p className="text-sm text-destructive">{submitError}</p>
         )}
 
-        <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+        <Form.Item
+          label="Sinif"
+          validateStatus={errors.year ? "error" : undefined}
+          help={errors.year?.message}
+        >
+          <Controller
+            name="year"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                placeholder="Sinif seciniz"
+                options={yearOptions}
+                status={errors.year ? "error" : undefined}
+                value={field.value || undefined}
+                onChange={(value) => field.onChange(value ?? "")}
+              />
+            )}
+          />
+        </Form.Item>
+
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Sifre"
+              validateStatus={errors.password ? "error" : undefined}
+              help={errors.password?.message}
+            >
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    autoComplete="new-password"
+                    placeholder="********"
+                    status={errors.password ? "error" : undefined}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Sifre Tekrar"
+              validateStatus={errors.confirmPassword ? "error" : undefined}
+              help={errors.confirmPassword?.message}
+            >
+              <Controller
+                name="confirmPassword"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    autoComplete="new-password"
+                    placeholder="********"
+                    status={errors.confirmPassword ? "error" : undefined}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {submitError && (
+          <Alert
+            type="error"
+            showIcon
+            title={submitError}
+            style={{ marginBottom: 24 }}
+          />
+        )}
+
+        <Button type="primary" htmlType="submit" block loading={isSubmitting} size="large">
           {isSubmitting ? "Kayit yapiliyor..." : "Kayit Ol"}
         </Button>
-      </form>
+      </Form>
 
-      <p className="text-center text-sm text-muted-foreground mt-6">
-        Zaten hesabiniz var mi?{" "}
-        <Link to="/login" className="text-primary font-medium hover:underline">
-          Giris Yap
-        </Link>
-      </p>
-    </div>
+      <AuthPageFooter prompt="Zaten hesabiniz var mi?" to="/login" linkText="Giris Yap" />
+    </Flex>
   );
 }

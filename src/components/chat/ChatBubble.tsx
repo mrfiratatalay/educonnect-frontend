@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, Bot, Sparkles, ThumbsUp, ThumbsDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+import { Avatar, Button, Flex, Input, Tag, Typography, theme } from "antd";
+import type { InputRef } from "antd";
 import { useChatStore } from "@/store/chatStore";
 import { chatBotResponses, mockChatMessages } from "@/data/mock";
 import type { ChatMessage } from "@/types";
@@ -21,8 +19,9 @@ export default function ChatBubble() {
   const [input, setInput] = useState("");
   const [feedbackGiven, setFeedbackGiven] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<InputRef>(null);
   const seeded = useRef(false);
+  const { token } = theme.useToken();
 
   useEffect(() => {
     if (!seeded.current && messages.length === 0) {
@@ -122,165 +121,278 @@ export default function ChatBubble() {
 
   return (
     <>
+      {/* Floating toggle button */}
       <button
         onClick={toggleChat}
         aria-label={isOpen ? "Sohbeti kapat" : "AI Asistanı aç"}
-        className={cn(
-          "fixed bottom-20 lg:bottom-6 right-4 lg:right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 cursor-pointer",
-          isOpen
-            ? "bg-muted text-muted-foreground hover:bg-muted/80 scale-90"
-            : "bg-primary text-primary-foreground hover:scale-105 hover:shadow-xl",
-        )}
+        style={{
+          position: "fixed",
+          bottom: 80,
+          right: 24,
+          zIndex: 1050,
+          width: 56,
+          height: 56,
+          borderRadius: "50%",
+          border: "none",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: isOpen ? token.colorFillSecondary : token.colorPrimary,
+          color: isOpen ? token.colorTextSecondary : "#fff",
+          boxShadow: isOpen
+            ? token.boxShadowSecondary
+            : `0 8px 24px ${token.colorPrimary}44`,
+          transition: "all 0.3s ease",
+          transform: isOpen ? "scale(0.9)" : "scale(1)",
+        }}
       >
-        {isOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <MessageCircle className="w-6 h-6" />
-        )}
+        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </button>
 
+      {/* Chat panel */}
       <div
-        className={cn(
-          "fixed z-50 transition-all duration-300 ease-out",
-          "bottom-36 lg:bottom-24 right-4 lg:right-6",
-          "w-[calc(100vw-2rem)] sm:w-96",
-          isOpen
-            ? "opacity-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 translate-y-4 pointer-events-none",
-        )}
+        style={{
+          position: "fixed",
+          bottom: 148,
+          right: 24,
+          zIndex: 1050,
+          width: 384,
+          maxWidth: "calc(100vw - 2rem)",
+          transition: "all 0.3s ease",
+          opacity: isOpen ? 1 : 0,
+          transform: isOpen ? "translateY(0)" : "translateY(16px)",
+          pointerEvents: isOpen ? "auto" : "none",
+        }}
       >
-        <div className="flex flex-col h-[500px] rounded-2xl border bg-background shadow-2xl overflow-hidden">
-          <div className="flex items-center gap-3 px-4 py-3 bg-primary text-primary-foreground">
-            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-white/20">
-              <Bot className="w-5 h-5" />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            height: 500,
+            borderRadius: token.borderRadiusLG * 2,
+            border: `1px solid ${token.colorBorder}`,
+            background: token.colorBgContainer,
+            boxShadow: token.boxShadow,
+            overflow: "hidden",
+          }}
+        >
+          {/* Header */}
+          <Flex
+            align="center"
+            gap={12}
+            style={{
+              padding: "14px 16px",
+              background: token.colorPrimary,
+              color: "#fff",
+            }}
+          >
+            <Avatar
+              size={36}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.2)",
+                color: "#fff",
+              }}
+            >
+              <Bot size={18} />
+            </Avatar>
+            <div style={{ flex: 1 }}>
+              <Typography.Text strong style={{ color: "#fff", display: "block", fontSize: 14 }}>
+                EduConnect Asistan
+              </Typography.Text>
+              <Typography.Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+                Her zaman burada
+              </Typography.Text>
             </div>
-            <div className="flex-1">
-              <p className="font-semibold text-sm">EduConnect Asistan</p>
-              <p className="text-xs text-white/70">Her zaman burada</p>
-            </div>
-            <Sparkles className="w-5 h-5 text-white/60" />
-          </div>
+            <Sparkles size={18} style={{ opacity: 0.6 }} />
+          </Flex>
 
+          {/* Messages */}
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide"
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}
           >
             {messages.map((msg) => (
               <div key={msg.id}>
-                <div
-                  className={cn(
-                    "flex gap-2 max-w-[85%]",
-                    msg.senderType === "user"
-                      ? "ml-auto flex-row-reverse"
-                      : "",
-                  )}
+                <Flex
+                  gap={8}
+                  style={{
+                    maxWidth: "85%",
+                    ...(msg.senderType === "user"
+                      ? { marginLeft: "auto", flexDirection: "row-reverse" }
+                      : {}),
+                  }}
                 >
                   {msg.senderType === "bot" && (
-                    <Avatar className="w-7 h-7 shrink-0 mt-1">
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                        <Bot className="w-4 h-4" />
-                      </AvatarFallback>
+                    <Avatar
+                      size={28}
+                      style={{
+                        backgroundColor: token.colorPrimaryBg,
+                        color: token.colorPrimary,
+                        flexShrink: 0,
+                        marginTop: 4,
+                        fontSize: 12,
+                      }}
+                    >
+                      <Bot size={14} />
                     </Avatar>
                   )}
                   <div
-                    className={cn(
-                      "rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
-                      msg.senderType === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-secondary text-secondary-foreground rounded-bl-md",
-                    )}
+                    style={{
+                      borderRadius: 16,
+                      padding: "10px 14px",
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      ...(msg.senderType === "user"
+                        ? {
+                            background: token.colorPrimary,
+                            color: "#fff",
+                            borderBottomRightRadius: 4,
+                          }
+                        : {
+                            background: token.colorFillQuaternary,
+                            color: token.colorText,
+                            borderBottomLeftRadius: 4,
+                          }),
+                    }}
                   >
                     {msg.content}
                   </div>
-                </div>
-                {/* Feedback buttons for bot messages */}
+                </Flex>
+
                 {msg.senderType === "bot" && msg.id !== "cm1" && (
-                  <div className="flex items-center gap-1 ml-9 mt-1">
+                  <Flex gap={4} style={{ marginLeft: 36, marginTop: 4 }}>
                     {feedbackGiven.has(msg.id) ? (
-                      <span className="text-[10px] text-muted-foreground">
+                      <Typography.Text type="secondary" style={{ fontSize: 10 }}>
                         Geri bildiriminiz alındı
-                      </span>
+                      </Typography.Text>
                     ) : (
                       <>
-                        <button
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<ThumbsUp size={12} />}
                           onClick={() => giveFeedback(msg.id)}
-                          className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                          aria-label="Faydalı"
-                        >
-                          <ThumbsUp className="w-3 h-3" />
-                        </button>
-                        <button
+                          style={{ padding: "0 4px", height: 20 }}
+                        />
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<ThumbsDown size={12} />}
                           onClick={() => giveFeedback(msg.id)}
-                          className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                          aria-label="Faydalı değil"
-                        >
-                          <ThumbsDown className="w-3 h-3" />
-                        </button>
+                          style={{ padding: "0 4px", height: 20 }}
+                        />
                       </>
                     )}
-                  </div>
+                  </Flex>
                 )}
               </div>
             ))}
 
             {isTyping && (
-              <div className="flex gap-2 max-w-[85%]">
-                <Avatar className="w-7 h-7 shrink-0 mt-1">
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                    <Bot className="w-4 h-4" />
-                  </AvatarFallback>
+              <Flex gap={8} style={{ maxWidth: "85%" }}>
+                <Avatar
+                  size={28}
+                  style={{
+                    backgroundColor: token.colorPrimaryBg,
+                    color: token.colorPrimary,
+                    flexShrink: 0,
+                    marginTop: 4,
+                    fontSize: 12,
+                  }}
+                >
+                  <Bot size={14} />
                 </Avatar>
-                <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:0ms]" />
-                    <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:150ms]" />
-                    <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:300ms]" />
-                  </div>
+                <div
+                  style={{
+                    borderRadius: 16,
+                    borderBottomLeftRadius: 4,
+                    padding: "12px 16px",
+                    background: token.colorFillQuaternary,
+                    display: "flex",
+                    gap: 4,
+                  }}
+                >
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        background: token.colorTextTertiary,
+                        animation: `chatBounce 1.4s ease-in-out ${i * 0.15}s infinite`,
+                      }}
+                    />
+                  ))}
                 </div>
-              </div>
+              </Flex>
             )}
           </div>
 
+          {/* Quick questions */}
           {messages.length <= 1 && (
-            <div className="px-4 pb-2">
-              <p className="text-xs text-muted-foreground mb-2">
+            <div style={{ padding: "0 16px 8px" }}>
+              <Typography.Text type="secondary" style={{ fontSize: 11, display: "block", marginBottom: 8 }}>
                 Hızlı sorular:
-              </p>
-              <div className="flex flex-wrap gap-1.5">
+              </Typography.Text>
+              <Flex gap={6} wrap="wrap">
                 {quickQuestions.map((q) => (
-                  <button
+                  <Tag
                     key={q}
                     onClick={() => sendMessage(q)}
-                    className="text-xs px-2.5 py-1.5 rounded-full border bg-secondary/50 hover:bg-secondary text-secondary-foreground transition-colors cursor-pointer"
+                    style={{ cursor: "pointer", borderRadius: 20, fontSize: 11 }}
                   >
                     {q}
-                  </button>
+                  </Tag>
                 ))}
-              </div>
+              </Flex>
             </div>
           )}
 
-          <div className="flex items-center gap-2 p-3 border-t">
+          {/* Input */}
+          <Flex
+            gap={8}
+            align="center"
+            style={{
+              padding: 12,
+              borderTop: `1px solid ${token.colorBorder}`,
+            }}
+          >
             <Input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
               placeholder="Bir soru sorun..."
-              className="flex-1 border-0 bg-secondary/50 focus-visible:ring-1"
+              variant="filled"
+              style={{ flex: 1 }}
             />
             <Button
-              size="icon"
+              type="primary"
+              shape="circle"
+              icon={<Send size={16} />}
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || isTyping}
-              className="shrink-0 rounded-full"
-              aria-label="Mesaj gönder"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+            />
+          </Flex>
         </div>
       </div>
+
+      {/* Bounce animation keyframes */}
+      <style>{`
+        @keyframes chatBounce {
+          0%, 80%, 100% { transform: scale(0); }
+          40% { transform: scale(1); }
+        }
+      `}</style>
     </>
   );
 }

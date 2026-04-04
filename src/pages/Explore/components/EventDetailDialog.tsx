@@ -1,22 +1,17 @@
-import { Calendar, MapPin, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  CalendarOutlined,
+  EnvironmentOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
+import { Alert, Button, Descriptions, Drawer, Flex, Grid, Spin, Tag, Typography } from "antd";
 import { useEventDetailQuery } from "@/features/events/hooks";
 import type { AppEvent } from "@/features/events/types";
-import {
-  formatEventDateTime,
-  isEventFull,
-} from "@/features/events/utils";
+import { formatEventDateTime, isEventFull } from "@/features/events/utils";
 
 interface EventDetailDialogProps {
   actingEventId?: string;
   errorMessage?: string | null;
+  event?: AppEvent | null;
   eventId: string | null;
   onClose: () => void;
   onToggleRegistration: (event: AppEvent) => void;
@@ -25,78 +20,103 @@ interface EventDetailDialogProps {
 export default function EventDetailDialog({
   actingEventId,
   errorMessage,
+  event: previewEvent,
   eventId,
   onClose,
   onToggleRegistration,
 }: EventDetailDialogProps) {
-  const eventQuery = useEventDetailQuery(eventId ?? undefined, Boolean(eventId));
-  const event = eventQuery.data;
-
+  const screens = Grid.useBreakpoint();
+  const eventQuery = useEventDetailQuery(eventId ?? undefined, Boolean(eventId) && !previewEvent);
+  const event = previewEvent ?? eventQuery.data;
+  const queryError = !previewEvent && eventQuery.error instanceof Error ? eventQuery.error : null;
+  const isLoading = !previewEvent && eventQuery.isLoading;
   const full = event ? isEventFull(event) : false;
   const isActionDisabled = !event || actingEventId === event.id || (!event.isRegistered && full);
 
   return (
-    <Dialog open={Boolean(eventId)} onOpenChange={onClose}>
-      <DialogContent>
-        {eventQuery.isLoading && <p className="text-sm text-muted-foreground">Etkinlik detayi yukleniyor...</p>}
-        {eventQuery.error instanceof Error && <p className="text-sm text-destructive">{eventQuery.error.message}</p>}
+    <Drawer
+      destroyOnHidden
+      open={Boolean(eventId)}
+      onClose={onClose}
+      title={event?.title ?? "Etkinlik Detayı"}
+      width={screens.md ? 520 : "100%"}
+    >
+      {isLoading && (
+        <Flex justify="center" style={{ padding: 32 }}>
+          <Spin />
+        </Flex>
+      )}
 
-        {event && (
-          <>
-            <DialogHeader>
-              <DialogTitle>{event.title}</DialogTitle>
-            </DialogHeader>
+      {queryError && <Alert type="error" showIcon message={queryError.message} />}
 
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{event.category}</Badge>
-                {event.groupName && <Badge variant="outline">{event.groupName}</Badge>}
-                {event.isRegistered && <Badge variant="success">Kayitli</Badge>}
-              </div>
+      {event && (
+        <Flex vertical gap={16}>
+          <Flex gap={8} wrap="wrap">
+            <Tag color="blue">{event.category}</Tag>
+            {event.groupName && <Tag>{event.groupName}</Tag>}
+            {event.isRegistered && <Tag color="success">Kayıtlı</Tag>}
+          </Flex>
 
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {event.description}
-              </p>
+          <Typography.Paragraph type="secondary" style={{ lineHeight: 1.7, marginBottom: 0 }}>
+            {event.description}
+          </Typography.Paragraph>
 
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  {formatEventDateTime(event.startDate)} - {formatEventDateTime(event.endDate)}
-                </p>
-                <p className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  {event.location}
-                </p>
-                <p className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-primary" />
-                  {event.participantCount}/{event.maxParticipants} katilimci
-                </p>
-                <p className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-primary" />
-                  Duzenleyen: {event.creatorName}
-                </p>
-              </div>
+          <Descriptions
+            column={1}
+            items={[
+              {
+                label: (
+                  <>
+                    <CalendarOutlined style={{ marginRight: 6 }} />
+                    Tarih
+                  </>
+                ),
+                children: `${formatEventDateTime(event.startDate)} - ${formatEventDateTime(event.endDate)}`,
+              },
+              {
+                label: (
+                  <>
+                    <EnvironmentOutlined style={{ marginRight: 6 }} />
+                    Konum
+                  </>
+                ),
+                children: event.location,
+              },
+              {
+                label: (
+                  <>
+                    <TeamOutlined style={{ marginRight: 6 }} />
+                    Katılımcı
+                  </>
+                ),
+                children: `${event.participantCount}/${event.maxParticipants}`,
+              },
+              {
+                label: "Düzenleyen",
+                children: event.creatorName,
+              },
+            ]}
+            size="small"
+          />
 
-              {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+          {errorMessage && <Alert type="error" showIcon message={errorMessage} />}
 
-              <Button
-                variant={event.isRegistered ? "outline" : "default"}
-                className="w-full"
-                disabled={isActionDisabled}
-                onClick={() => onToggleRegistration(event)}
-              >
-                {actingEventId === event.id
-                  ? "Isleniyor"
-                  : event.isRegistered
-                    ? "Kaydi Iptal Et"
-                    : full
-                      ? "Kontenjan Dolu"
-                      : "Etkinlige Kayit Ol"}
-              </Button>
-            </div>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+          <Button
+            type={event.isRegistered ? "default" : "primary"}
+            loading={actingEventId === event.id}
+            disabled={isActionDisabled}
+            onClick={() => onToggleRegistration(event)}
+          >
+            {actingEventId === event.id
+              ? "İşleniyor"
+              : event.isRegistered
+                ? "Kaydı İptal Et"
+                : full
+                  ? "Kontenjan Dolu"
+                  : "Etkinliğe Kayıt Ol"}
+          </Button>
+        </Flex>
+      )}
+    </Drawer>
   );
 }

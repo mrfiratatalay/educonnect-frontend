@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Alert, Card, Col, Empty, Row, Skeleton } from "antd";
 import type { AppGroup } from "@/features/groups/types";
 import GroupCard from "@/pages/Explore/components/GroupCard";
 
@@ -20,28 +20,39 @@ export default function GroupGrid({
   onToggleMembership,
 }: GroupGridProps) {
   if (isLoading) {
-    return <Card><CardContent className="p-6 text-sm text-muted-foreground">Gruplar yukleniyor...</CardContent></Card>;
+    return (
+      <Row gutter={[16, 16]}>
+        {[0, 1, 2].map((item) => (
+          <Col key={item} xs={24} sm={12} xl={8}>
+            <Card>
+              <Skeleton active paragraph={{ rows: 5 }} title={{ width: "48%" }} />
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    );
   }
 
   if (errorMessage) {
-    return <Card><CardContent className="p-6 text-sm text-destructive">{errorMessage}</CardContent></Card>;
+    return <Alert type="error" showIcon message={errorMessage} />;
   }
 
   if (groups.length === 0) {
-    return <Card><CardContent className="p-6 text-sm text-muted-foreground">Aramana uygun grup bulunamadi.</CardContent></Card>;
+    return <Empty description="Aramana uygun grup bulunamadı." />;
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <Row gutter={[16, 16]}>
       {groups.map((group) => (
-        <GroupCard
-          key={group.id}
-          group={group}
-          isActing={actingGroupId === group.id}
-          onOpen={onOpen}
-          onToggleMembership={onToggleMembership}
-        />
+        <Col key={group.id} xs={24} sm={12} xl={8}>
+          <GroupCard
+            group={group}
+            isActing={actingGroupId === group.id}
+            onOpen={onOpen}
+            onToggleMembership={onToggleMembership}
+          />
+        </Col>
       ))}
-    </div>
+    </Row>
   );
 }

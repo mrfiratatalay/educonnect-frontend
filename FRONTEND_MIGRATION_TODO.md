@@ -1,6 +1,6 @@
 # Frontend Migration Todo
 
-Last updated: 2026-04-04
+Last updated: 2026-04-05
 
 This file is the working checklist for the Ant Design migration.
 When a task is completed, mark it by crossing it out with Markdown strikethrough.
@@ -37,38 +37,38 @@ Do not silently finish work without updating this file.
 - ~~Move existing font, radius, and primary color decisions into Ant Design tokens~~
 - ~~Define base tokens for background, border, text, and surface behavior~~
 - ~~Decide dark mode strategy for the Ant Design migration~~
-- [ ] Remove or neutralize global styling that conflicts with Ant Design defaults
+- ~~Remove or neutralize global styling that conflicts with Ant Design defaults~~
 - ~~Verify the app still boots after the provider and theme changes~~
-- [ ] Update this todo after foundation work is complete
+- ~~Update this todo after foundation work is complete~~
 
 ## Wave 2: App Shell
 
-- [ ] Refactor `src/components/layout/AppLayout.tsx` around Ant Design layout primitives
-- [ ] Refactor `src/components/layout/Header.tsx`
-- [ ] Refactor `src/components/layout/Sidebar.tsx`
-- [ ] Refactor `src/components/layout/MobileNav.tsx`
-- [ ] Replace custom dropdown usage in shell components with Ant Design equivalents where appropriate
-- [ ] Replace custom avatar and badge usage in shell components with Ant Design equivalents where appropriate
-- [ ] Remove Tailwind-heavy layout styling from shell components
+- ~~Refactor `src/components/layout/AppLayout.tsx` around Ant Design layout primitives~~
+- ~~Refactor `src/components/layout/Header.tsx`~~
+- ~~Refactor `src/components/layout/Sidebar.tsx`~~
+- ~~Refactor `src/components/layout/MobileNav.tsx`~~
+- ~~Replace custom dropdown usage in shell components with Ant Design equivalents where appropriate~~
+- ~~Replace custom avatar and badge usage in shell components with Ant Design equivalents where appropriate~~
+- ~~Remove Tailwind-heavy layout styling from shell components~~
 - [ ] Validate desktop layout behavior
 - [ ] Validate mobile navigation behavior
 - [ ] Update this todo after shell migration is complete
 
 ## Wave 3: Auth
 
-- [ ] Refactor `src/pages/Auth/LoginPage.tsx` with Ant Design inputs, buttons, and form layout
-- [ ] Refactor `src/pages/Auth/RegisterPage.tsx`
-- [ ] Refactor `src/pages/Auth/ForgotPasswordPage.tsx`
-- [ ] Keep `react-hook-form` and `zod` integrated with the new UI
-- [ ] Remove custom `src/components/ui` dependencies from auth screens
-- [ ] Remove Tailwind-based form styling from auth screens
+- ~~Refactor `src/pages/Auth/LoginPage.tsx` with Ant Design inputs, buttons, and form layout~~
+- ~~Refactor `src/pages/Auth/RegisterPage.tsx`~~
+- ~~Refactor `src/pages/Auth/ForgotPasswordPage.tsx`~~
+- ~~Keep `react-hook-form` and `zod` integrated with the new UI~~
+- ~~Remove custom `src/components/ui` dependencies from auth screens~~
+- ~~Remove Tailwind-based form styling from auth screens~~
 - [ ] Verify validation states, loading states, and error messages
 - [ ] Update this todo after auth migration is complete
 
 ## Wave 4: Dashboard, Profile, Settings
 
-- [ ] Refactor `src/pages/Dashboard/DashboardPage.tsx`
-- [ ] Refactor dashboard child components under `src/pages/Dashboard/components`
+- ~~Refactor `src/pages/Dashboard/DashboardPage.tsx`~~
+- ~~Refactor dashboard child components under `src/pages/Dashboard/components`~~
 - [ ] Refactor `src/pages/Profile/ProfilePage.tsx`
 - [ ] Refactor profile child components under `src/pages/Profile/components`
 - [ ] Refactor `src/pages/Settings/SettingsPage.tsx`
@@ -89,23 +89,23 @@ Do not silently finish work without updating this file.
 
 ## Wave 6: Explore
 
-- [ ] Refactor `src/pages/Explore/ExplorePage.tsx`
-- [ ] Refactor `src/pages/Explore/components` if needed
-- [ ] Remove custom tabs or filter primitives in favor of Ant Design components
-- [ ] Remove Tailwind-heavy styling from explore views
-- [ ] Update this todo after explore migration is complete
+- ~~Refactor `src/pages/Explore/ExplorePage.tsx`~~
+- ~~Refactor `src/pages/Explore/components` if needed~~
+- ~~Remove custom tabs or filter primitives in favor of Ant Design components~~
+- ~~Remove Tailwind-heavy styling from explore views~~
+- ~~Update this todo after explore migration is complete~~
 
 ## Wave 7: Visual Search
 
-- [ ] Refactor `src/pages/VisualSearch/VisualSearchPage.tsx`
-- [ ] Refactor `src/pages/VisualSearch/components/SearchInputPanel.tsx`
-- [ ] Refactor `src/pages/VisualSearch/components/SearchResults.tsx`
-- [ ] Refactor `src/pages/VisualSearch/components/SearchResultDialog.tsx`
-- [ ] Replace Mantine `Dropzone` usage with an Ant Design-based solution
-- [ ] Replace Mantine layout and display components with Ant Design equivalents
-- [ ] Remove Mantine usage from the visual search flow
-- [ ] Verify image upload, preview, search, and result detail flows
-- [ ] Update this todo after visual search migration is complete
+- ~~Refactor `src/pages/VisualSearch/VisualSearchPage.tsx`~~
+- ~~Refactor `src/pages/VisualSearch/components/SearchInputPanel.tsx`~~
+- ~~Refactor `src/pages/VisualSearch/components/SearchResults.tsx`~~
+- ~~Refactor `src/pages/VisualSearch/components/SearchResultDialog.tsx`~~
+- ~~Replace Mantine `Dropzone` usage with an Ant Design-based solution~~
+- ~~Replace Mantine layout and display components with Ant Design equivalents~~
+- ~~Remove Mantine usage from the visual search flow~~
+- ~~Verify image upload, preview, search, and result detail flows~~
+- ~~Update this todo after visual search migration is complete~~
 
 ## Wave 8: Dependency And Styling Cleanup
 

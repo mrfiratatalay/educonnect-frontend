@@ -1,13 +1,5 @@
-import { type FormEvent, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
+import { Alert, Button, Form, Input, Modal, Select } from "antd";
 
 const groupCategories = ["Akademik", "Teknoloji", "Spor", "Sanat", "Sosyal"];
 
@@ -15,11 +7,7 @@ interface CreateGroupDialogProps {
   isOpen: boolean;
   isSubmitting: boolean;
   onClose: () => void;
-  onSubmit: (input: {
-    name: string;
-    description: string;
-    category: string;
-  }) => Promise<void>;
+  onSubmit: (input: { name: string; description: string; category: string }) => Promise<void>;
 }
 
 export default function CreateGroupDialog({
@@ -42,80 +30,56 @@ export default function CreateGroupDialog({
     }
   }, [isOpen]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  async function handleOk() {
     if (name.trim().length < 3) {
-      setErrorMessage("Grup adi en az 3 karakter olmali.");
+      setErrorMessage("Grup adı en az 3 karakter olmalı.");
       return;
     }
-
     if (description.trim().length < 10) {
-      setErrorMessage("Aciklama en az 10 karakter olmali.");
+      setErrorMessage("Açıklama en az 10 karakter olmalı.");
       return;
     }
 
     try {
       setErrorMessage(null);
-      await onSubmit({
-        name: name.trim(),
-        description: description.trim(),
-        category,
-      });
+      await onSubmit({ name: name.trim(), description: description.trim(), category });
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Grup olusturulamadi.",
-      );
+      setErrorMessage(error instanceof Error ? error.message : "Grup oluşturulamadı.");
     }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Yeni Grup Olustur</DialogTitle>
-        </DialogHeader>
-
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="group-name">Grup Adi</Label>
-            <Input id="group-name" value={name} onChange={(event) => setName(event.target.value)} />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="group-description">Aciklama</Label>
-            <textarea
-              id="group-description"
-              rows={4}
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="group-category">Kategori</Label>
-            <select
-              id="group-category"
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {groupCategories.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Olusturuluyor" : "Grubu Olustur"}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      title="Yeni Grup Oluştur"
+      open={isOpen}
+      onCancel={onClose}
+      footer={
+        <Button type="primary" block loading={isSubmitting} onClick={handleOk}>
+          {isSubmitting ? "Oluşturuluyor" : "Grubu Oluştur"}
+        </Button>
+      }
+      destroyOnHidden
+    >
+      <Form layout="vertical" style={{ marginTop: 16 }}>
+        <Form.Item label="Grup Adı">
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
+        </Form.Item>
+        <Form.Item label="Açıklama">
+          <Input.TextArea
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </Form.Item>
+        <Form.Item label="Kategori">
+          <Select
+            value={category}
+            onChange={setCategory}
+            options={groupCategories.map((c) => ({ value: c, label: c }))}
+          />
+        </Form.Item>
+        {errorMessage && <Alert type="error" showIcon message={errorMessage} />}
+      </Form>
+    </Modal>
   );
 }

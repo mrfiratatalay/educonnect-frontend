@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, Empty, Typography } from "antd";
 
 interface ExplorePlaceholderPanelProps {
   title: string;
@@ -11,10 +11,10 @@ export default function ExplorePlaceholderPanel({
 }: ExplorePlaceholderPanelProps) {
   return (
     <Card>
-      <CardContent className="space-y-2 p-6">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </CardContent>
+      <Empty description={false}>
+        <Typography.Title level={4}>{title}</Typography.Title>
+        <Typography.Text type="secondary">{description}</Typography.Text>
+      </Empty>
     </Card>
   );
 }
