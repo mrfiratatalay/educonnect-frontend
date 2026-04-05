@@ -1,85 +1,97 @@
-import { Avatar, Card, Col, Flex, Grid, Layout, Row, Typography, theme } from "antd";
-import { GraduationCap } from "lucide-react";
-import { Outlet, useLocation } from "react-router-dom";
-import AuthHeroPanel from "@/components/layout/AuthHeroPanel";
+import {
+  Card,
+  ConfigProvider,
+  Flex,
+  Grid,
+  Layout,
+  Tabs,
+  Typography,
+  theme,
+} from "antd";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import AppShellBrand from "@/components/layout/AppShellBrand";
 
-export default function AuthLayout() {
+function AuthLayoutContent() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const screens = Grid.useBreakpoint();
   const { token } = theme.useToken();
-  const heroRadius = token.borderRadiusLG * 2;
-  const panelPadding = screens.xs ? 24 : 40;
+  const showTabs = pathname === "/login" || pathname === "/register";
+  const activeTabKey = pathname === "/register" ? "register" : "login";
 
   return (
     <Layout
       style={{
         minHeight: "100vh",
-        background: screens.lg
-          ? `linear-gradient(135deg, ${token.colorBgLayout} 0%, ${token.colorBgBase} 42%, ${token.colorPrimaryBg} 100%)`
-          : token.colorBgLayout,
+        background: token.colorBgLayout,
       }}
     >
-      <Layout.Content style={{ padding: screens.xs ? 16 : 24 }}>
-        <Row
-          gutter={[24, 24]}
-          align="stretch"
+      <Layout.Content
+        style={{
+          padding: screens.xs ? "24px 16px" : "56px 24px",
+        }}
+      >
+        <Flex
+          align="center"
+          justify="center"
           style={{
-            maxWidth: 1240,
-            minHeight: screens.lg ? "calc(100vh - 48px)" : undefined,
-            margin: "0 auto",
+            minHeight: "100%",
           }}
         >
-          <Col xs={24} lg={11}>
-            <AuthHeroPanel pathname={pathname} />
-          </Col>
+          <Card
+            bordered={false}
+            style={{
+              width: "100%",
+              maxWidth: 560,
+              boxShadow: token.boxShadowSecondary,
+            }}
+            styles={{
+              body: {
+                padding: screens.xs ? 24 : 36,
+              },
+            }}
+          >
+            <Flex vertical gap={28}>
+              <Flex vertical gap={10}>
+                <AppShellBrand compact to="/login" />
+                <Typography.Text type="secondary">
+                  Universite ogrencileri icin hesap erisimi.
+                </Typography.Text>
+              </Flex>
 
-          <Col xs={24} lg={13}>
-            <Flex justify="center" align="center" style={{ height: "100%" }}>
-              <Card
-                variant="outlined"
-                style={{
-                  width: "100%",
-                  maxWidth: 560,
-                  borderRadius: heroRadius,
-                  borderColor: token.colorBorderSecondary,
-                  boxShadow: token.boxShadowSecondary,
-                }}
-                styles={{
-                  body: {
-                    padding: panelPadding,
-                  },
-                }}
-              >
-                {!screens.lg && (
-                  <Flex align="center" gap={14} style={{ marginBottom: 24 }}>
-                    <Avatar
-                      shape="square"
-                      size={44}
-                      style={{
-                        backgroundColor: token.colorPrimary,
-                        color: token.colorTextLightSolid,
-                        borderRadius: token.borderRadiusLG,
-                      }}
-                    >
-                      <GraduationCap size={22} />
-                    </Avatar>
-                    <div>
-                      <Typography.Title level={4} style={{ margin: 0 }}>
-                        EduConnect
-                      </Typography.Title>
-                      <Typography.Text type="secondary">
-                        Kampus aginiza tek giris noktasi
-                      </Typography.Text>
-                    </div>
-                  </Flex>
-                )}
+              {showTabs && (
+                <Tabs
+                  activeKey={activeTabKey}
+                  centered
+                  destroyOnHidden
+                  indicator={{ align: "center", size: (origin) => Math.min(origin, 36) }}
+                  items={[
+                    { key: "login", label: "Giris Yap" },
+                    { key: "register", label: "Kayit Ol" },
+                  ]}
+                  onChange={(key) => navigate(key === "register" ? "/register" : "/login")}
+                  tabBarStyle={{ marginBottom: 0 }}
+                />
+              )}
 
-                <Outlet />
-              </Card>
+              <Outlet />
             </Flex>
-          </Col>
-        </Row>
+          </Card>
+        </Flex>
       </Layout.Content>
     </Layout>
   );
 }
+
+export default function AuthLayout() {
+  return (
+    <ConfigProvider
+      componentSize="large"
+      form={{ requiredMark: false, scrollToFirstError: { focus: true } }}
+      variant="filled"
+    >
+      <AuthLayoutContent />
+    </ConfigProvider>
+  );
+}
+

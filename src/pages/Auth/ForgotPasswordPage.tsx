@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Alert, Button, Flex, Form, Input, Result, Typography, theme } from "antd";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { forgotPassword, getApiErrorMessage } from "@/features/auth/api";
 import { AuthPageIntro } from "@/pages/Auth/AuthPageParts";
 
@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <Flex vertical gap={32}>
+    <Flex vertical gap={28}>
       {sent ? (
         <Result
           status="success"
@@ -58,15 +58,10 @@ export default function ForgotPasswordPage() {
         <>
           <AuthPageIntro
             title="Sifremi Unuttum"
-            description="E-posta adresinizi girin, sifre sifirlama akisini sizin icin baslatalim."
+            description="Kayitli e-posta adresinizi girin, sifre sifirlama akisini baslatalim."
           />
 
-          <Form
-            layout="vertical"
-            requiredMark={false}
-            size="large"
-            onFinish={handleSubmit(onSubmit)}
-          >
+          <Form layout="vertical" size="large" onFinish={handleSubmit(onSubmit)}>
             <Form.Item
               label="E-posta"
               validateStatus={errors.email ? "error" : undefined}
@@ -84,7 +79,6 @@ export default function ForgotPasswordPage() {
                     inputMode="email"
                     autoComplete="email"
                     placeholder="ornek@universite.edu.tr"
-                    prefix={<Mail size={16} />}
                     status={errors.email ? "error" : undefined}
                   />
                 )}

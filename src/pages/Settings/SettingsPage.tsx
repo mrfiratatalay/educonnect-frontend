@@ -25,10 +25,12 @@ import {
 import { getApiErrorMessage, getUniversities } from "@/features/auth/api";
 import {
   useMyProfileQuery,
+  useUploadMyAvatarMutation,
   useUpdateMyProfileMutation,
 } from "@/features/users/hooks";
 import { useAuthStore } from "@/store/authStore";
 import { useThemeStore } from "@/store/themeStore";
+import type { UploadProps } from "antd";
 
 const settingsSchema = z.object({
   fullName: z.string().min(3, "Ad soyad en az 3 karakter olmali"),
@@ -44,6 +46,7 @@ export default function SettingsPage() {
   const logout = useAuthStore((state) => state.logout);
   const profileQuery = useMyProfileQuery();
   const updateProfileMutation = useUpdateMyProfileMutation();
+  const uploadAvatarMutation = useUploadMyAvatarMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [profileSaved, setProfileSaved] = useState(false);
   const isDark = useThemeStore((state) => state.isDark);
@@ -102,6 +105,37 @@ export default function SettingsPage() {
     }
   });
 
+  const avatarUploadProps: UploadProps = {
+    name: "file",
+    showUploadList: false,
+    accept: "image/png,image/jpeg,image/gif",
+    beforeUpload: (file) => {
+      const allowedTypes = ["image/png", "image/jpeg", "image/gif"];
+
+      if (!allowedTypes.includes(file.type)) {
+        setSubmitError("Sadece JPG, PNG veya GIF dosyalari yukleyebilirsiniz.");
+        return Upload.LIST_IGNORE;
+      }
+
+      if (file.size / 1024 / 1024 >= 5) {
+        setSubmitError("Profil fotografi en fazla 5MB olabilir.");
+        return Upload.LIST_IGNORE;
+      }
+
+      setSubmitError(null);
+      return true;
+    },
+    customRequest: async ({ file, onSuccess, onError }) => {
+      try {
+        await uploadAvatarMutation.mutateAsync(file as File);
+        onSuccess?.("ok");
+      } catch (error) {
+        onError?.(error as Error);
+        setSubmitError(getApiErrorMessage(error));
+      }
+    },
+  };
+
   const pagePadding = screens.xs ? 16 : screens.lg ? 32 : 24;
 
   if (profileQuery.isLoading) {
@@ -148,7 +182,7 @@ export default function SettingsPage() {
                   <Card bordered={false} style={{ borderRadius: 16, boxShadow: "0 4px 24px rgba(0,0,0,0.02)" }}>
                     <Flex vertical gap={32}>
                       <Flex gap={24} align="center" wrap="wrap">
-                        <Upload showUploadList={false}>
+                        <Upload {...avatarUploadProps} disabled={uploadAvatarMutation.isPending}>
                           <div style={{ position: "relative", cursor: "pointer", borderRadius: "50%" }}>
                             <Avatar size={96} src={profileQuery.data.avatarUrl} style={{ backgroundColor: token.colorPrimary, fontSize: 32 }}>
                               {profileQuery.data.fullName?.charAt(0)}

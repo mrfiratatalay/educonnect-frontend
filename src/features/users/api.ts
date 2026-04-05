@@ -53,6 +53,19 @@ export async function updateMyProfile(input: UpdateMyProfileInput) {
   return normalizeUser(response.data);
 }
 
+export async function uploadMyAvatar(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await usersApi.post<User>(
+    "/api/users/me/avatar/upload",
+    formData,
+    getAuthorizedConfig(),
+  );
+
+  return normalizeUser(response.data);
+}
+
 function getAuthorizedConfig() {
   const accessToken = getAccessToken();
 

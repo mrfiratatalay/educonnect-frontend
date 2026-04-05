@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { Users, Info, PackageOpen, Bookmark, Ghost } from "lucide-react";
-import { Alert, Button, Empty, Flex, Grid, Spin, Typography, Tabs, Row, Col } from "antd";
+import { Alert, Button, Empty, Flex, Grid, Typography, Tabs, Row, Col } from "antd";
 import { useAuthStore } from "@/store/authStore";
 import {
   useMyProfileQuery,
@@ -36,9 +36,13 @@ export default function ProfilePage() {
 
   if (profileQuery.isLoading) {
     return (
-      <Flex justify="center" align="center" style={{ padding: 80 }}>
-        <Spin size="large" />
-      </Flex>
+      <div style={{ padding: pagePadding, maxWidth: 960, margin: "0 auto" }}>
+        <ProfileSummaryCard
+          profile={{ fullName: "", role: "student" }}
+          isOwnProfile={false}
+          loading
+        />
+      </div>
     );
   }
 

@@ -9,10 +9,22 @@ interface AuthPageIntroProps {
 export function AuthPageIntro({ title, description }: AuthPageIntroProps) {
   return (
     <div>
-      <Typography.Title level={2} style={{ marginBottom: 8 }}>
+      <Typography.Title
+        level={2}
+        style={{
+          letterSpacing: "-0.03em",
+          margin: 0,
+        }}
+      >
         {title}
       </Typography.Title>
-      <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+      <Typography.Paragraph
+        type="secondary"
+        style={{
+          marginBottom: 0,
+          marginTop: 8,
+        }}
+      >
         {description}
       </Typography.Paragraph>
     </div>

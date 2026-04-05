@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 
 interface AppShellBrandProps {
   compact?: boolean;
+  to?: string;
 }
 
 export default function AppShellBrand({
   compact = false,
+  to = "/",
 }: AppShellBrandProps) {
   const navigate = useNavigate();
   const { token } = theme.useToken();
@@ -15,7 +17,7 @@ export default function AppShellBrand({
   return (
     <Button
       type="text"
-      onClick={() => navigate("/")}
+      onClick={() => navigate(to)}
       style={{
         height: "auto",
         padding: 0,

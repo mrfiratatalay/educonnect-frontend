@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Alert, Button, Flex, Form, Input, Typography, theme } from "antd";
 import { getApiErrorMessage, login as loginRequest } from "@/features/auth/api";
-import { AuthPageFooter, AuthPageIntro } from "@/pages/Auth/AuthPageParts";
+import { AuthPageIntro } from "@/pages/Auth/AuthPageParts";
 import { useAuthStore } from "@/store/authStore";
 
 const loginSchema = z.object({
@@ -24,6 +24,7 @@ export default function LoginPage() {
   const {
     control,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -32,6 +33,9 @@ export default function LoginPage() {
       password: "",
     },
   });
+
+  const wEmail = watch("email");
+  const wPassword = watch("password");
 
   const onSubmit = async (data: LoginForm) => {
     setSubmitError(null);
@@ -46,10 +50,10 @@ export default function LoginPage() {
   };
 
   return (
-    <Flex vertical gap={32}>
+    <Flex vertical gap={28}>
       <AuthPageIntro
-        title="Hos Geldiniz"
-        description="Hesabiniza giris yaparak ders, topluluk ve kampus akisini kaldiginiz yerden devam ettirin."
+        title="Hesabina Giris Yap"
+        description="EduConnect hesabinizla devam edin."
       />
 
       <Form
@@ -60,7 +64,8 @@ export default function LoginPage() {
       >
         <Form.Item
           label="E-posta"
-          validateStatus={errors.email ? "error" : undefined}
+          hasFeedback={!!wEmail}
+          validateStatus={errors.email ? "error" : wEmail ? "success" : undefined}
           help={errors.email?.message}
         >
           <Controller
@@ -98,7 +103,8 @@ export default function LoginPage() {
         </div>
 
         <Form.Item
-          validateStatus={errors.password ? "error" : undefined}
+          hasFeedback={!!wPassword}
+          validateStatus={errors.password ? "error" : wPassword ? "success" : undefined}
           help={errors.password?.message}
         >
           <Controller
@@ -129,7 +135,14 @@ export default function LoginPage() {
         </Button>
       </Form>
 
-      <AuthPageFooter prompt="Hesabiniz yok mu?" to="/register" linkText="Kayit Ol" />
+      <Typography.Paragraph
+        type="secondary"
+        style={{
+          marginBottom: 0,
+        }}
+      >
+        Kurumsal veya ogrenci e-posta bilgilerinizle giris yapin.
+      </Typography.Paragraph>
     </Flex>
   );
 }

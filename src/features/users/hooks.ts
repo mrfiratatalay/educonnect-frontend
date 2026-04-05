@@ -3,6 +3,7 @@ import { useAuthStore } from "@/store/authStore";
 import {
   getMyProfile,
   getUserProfile,
+  uploadMyAvatar,
   updateMyProfile,
   type PublicUserProfile,
   type UpdateMyProfileInput,
@@ -38,9 +39,29 @@ export function useUpdateMyProfileMutation() {
   return useMutation({
     mutationFn: (input: UpdateMyProfileInput) => updateMyProfile(input),
     onSuccess: (profile) => {
-      queryClient.setQueryData(userKeys.me(), profile);
-      queryClient.setQueryData(userKeys.detail(profile.id), profile);
-      updateUser(profile);
+      syncProfileCaches(queryClient, updateUser, profile);
     },
   });
+}
+
+export function useUploadMyAvatarMutation() {
+  const queryClient = useQueryClient();
+  const updateUser = useAuthStore((state) => state.updateUser);
+
+  return useMutation({
+    mutationFn: (file: File) => uploadMyAvatar(file),
+    onSuccess: (profile) => {
+      syncProfileCaches(queryClient, updateUser, profile);
+    },
+  });
+}
+
+function syncProfileCaches(
+  queryClient: ReturnType<typeof useQueryClient>,
+  updateUser: (updates: Partial<User>) => void,
+  profile: User,
+) {
+  queryClient.setQueryData(userKeys.me(), profile);
+  queryClient.setQueryData(userKeys.detail(profile.id), profile);
+  updateUser(profile);
 }
