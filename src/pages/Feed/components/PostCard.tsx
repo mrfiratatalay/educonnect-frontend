@@ -6,9 +6,13 @@ import {
   HeartFilled,
   HeartOutlined,
   MoreOutlined,
+  RetweetOutlined,
+  BarChartOutlined,
+  BookOutlined,
+  ShareAltOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { Avatar, Button, Dropdown, Flex, Image, Typography, theme, Space, List } from "antd";
+import { Avatar, Button, Dropdown, Flex, Image, Typography, theme, List } from "antd";
 import type { MenuProps } from "antd";
 import { useTogglePostLikeMutation } from "@/features/posts/hooks";
 import type { FeedPost } from "@/features/posts/types";
@@ -42,6 +46,7 @@ export default function PostCard({
   const isLiking =
     toggleLikeMutation.isPending &&
     toggleLikeMutation.variables === post.id;
+
   const managementItems: MenuProps["items"] = [
     {
       key: "edit",
@@ -49,9 +54,7 @@ export default function PostCard({
       label: isEditing ? "Düzenlemeyi kapat" : "Gönderiyi düzenle",
       disabled: isUpdating,
     },
-    {
-      type: "divider",
-    },
+    { type: "divider" },
     {
       key: "delete",
       icon: <DeleteOutlined />,
@@ -60,6 +63,7 @@ export default function PostCard({
       disabled: isDeleting,
     },
   ];
+
   function handleToggleLike() {
     void toggleLikeMutation.mutateAsync(post.id);
   }
@@ -74,48 +78,32 @@ export default function PostCard({
       setIsEditing((current) => !current);
       return;
     }
-
     if (key === "delete") {
       onDelete(post.id);
     }
   }
 
-  const actions = [
-    <Space size={4} key="like">
-      <Button
-        type="text"
-        shape="circle"
-        onClick={handleToggleLike}
-        loading={isLiking}
-        icon={post.isLiked ? <HeartFilled style={{ color: "#EF4444" }} /> : <HeartOutlined />}
-        style={{ color: post.isLiked ? "#EF4444" : token.colorTextSecondary }}
-      />
-      <Typography.Text style={{ color: post.isLiked ? "#EF4444" : token.colorTextSecondary, fontSize: 13, userSelect: 'none' }}>
-        {post.likesCount > 0 ? post.likesCount : ''}
-      </Typography.Text>
-    </Space>,
-    <Space size={4} key="comment">
-      <Button
-        type="text"
-        shape="circle"
-        onClick={() => setShowComments((current) => !current)}
-        icon={<CommentOutlined />}
-        style={{ color: showComments ? token.colorPrimary : token.colorTextSecondary }}
-      />
-      <Typography.Text style={{ color: showComments ? token.colorPrimary : token.colorTextSecondary, fontSize: 13, userSelect: 'none' }}>
-        {post.commentsCount > 0 ? post.commentsCount : ''}
-      </Typography.Text>
-    </Space>
-  ];
+  // X-style interaction button
+  const ActionBtn = ({ icon, count, color, hoverColor, onClick }: { icon: React.ReactNode; count?: number; color: string; hoverColor: string; onClick?: () => void }) => (
+    <Flex
+      align="center"
+      gap={4}
+      style={{ cursor: "pointer", color, transition: "color 0.2s" }}
+      onClick={onClick}
+      onMouseEnter={(e) => { e.currentTarget.style.color = hoverColor; }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = color; }}
+    >
+      <Button type="text" shape="circle" size="small" icon={icon} style={{ color: "inherit" }} />
+      <span style={{ fontSize: 13, minWidth: 16 }}>{count && count > 0 ? count : ""}</span>
+    </Flex>
+  );
 
   return (
-    <List.Item 
-      style={{ padding: "16px 20px" }}
-    >
-      <Flex gap={16} align="flex-start" style={{ width: "100%" }}>
+    <List.Item style={{ padding: "12px 16px" }}>
+      <Flex gap={12} align="flex-start" style={{ width: "100%" }}>
         <Avatar
           src={post.avatarUrl}
-          size={48}
+          size={40}
           onClick={() => navigate(`/profile/${post.userId}`)}
           style={{
             backgroundColor: token.colorPrimaryBg,
@@ -127,22 +115,25 @@ export default function PostCard({
           {post.userName.charAt(0)}
         </Avatar>
 
-        <Flex vertical gap={12} style={{ flex: 1, minWidth: 0 }}>
-          <Flex align="flex-start" justify="space-between" gap={12}>
-            <div>
-              <Typography.Link
+        <Flex vertical style={{ flex: 1, minWidth: 0 }}>
+          {/* Header row: Name · @handle · time · ... */}
+          <Flex align="center" justify="space-between">
+            <Flex align="center" gap={4} style={{ minWidth: 0 }}>
+              <Typography.Text
+                strong
+                style={{ fontSize: 15, cursor: "pointer", lineHeight: 1.2 }}
                 onClick={() => navigate(`/profile/${post.userId}`)}
-                style={{ fontWeight: 600, fontSize: 14 }}
               >
                 {post.userName}
-              </Typography.Link>
-              <Typography.Text
-                type="secondary"
-                style={{ fontSize: 12, display: "block", marginTop: 2 }}
-              >
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 15 }}>
+                @{post.userName.replace(/\s+/g, "").toLowerCase()}
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 15 }}>·</Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 15 }}>
                 {formatPostTime(post.createdAt)}
               </Typography.Text>
-            </div>
+            </Flex>
 
             {canManage && (
               <Dropdown
@@ -153,11 +144,12 @@ export default function PostCard({
                 placement="bottomRight"
                 trigger={["click"]}
               >
-                <Button icon={<MoreOutlined />} shape="circle" type="text" />
+                <Button icon={<MoreOutlined />} shape="circle" type="text" size="small" />
               </Dropdown>
             )}
           </Flex>
 
+          {/* Content */}
           {isEditing ? (
             <PostEditForm
               initialContent={post.content}
@@ -168,7 +160,7 @@ export default function PostCard({
           ) : (
             <>
               <Typography.Paragraph
-                style={{ marginBottom: 0, lineHeight: 1.7, whiteSpace: "pre-wrap" }}
+                style={{ marginBottom: 0, marginTop: 4, lineHeight: 1.5, whiteSpace: "pre-wrap", fontSize: 15 }}
               >
                 {post.content}
               </Typography.Paragraph>
@@ -181,12 +173,51 @@ export default function PostCard({
                     maxHeight: 384,
                     width: "100%",
                     objectFit: "cover",
-                    borderRadius: token.borderRadiusLG,
+                    borderRadius: 16,
+                    marginTop: 12,
                   }}
                 />
               )}
-              <Flex gap={24} align="center" wrap="wrap" style={{ marginTop: 16 }}>
-                {actions}
+
+              {/* X-style action row: Reply · Repost · Like · Views · Bookmark · Share */}
+              <Flex justify="space-between" align="center" style={{ marginTop: 12, maxWidth: 425 }}>
+                <ActionBtn
+                  icon={<CommentOutlined />}
+                  count={post.commentsCount}
+                  color={token.colorTextTertiary}
+                  hoverColor="#1D9BF0"
+                  onClick={() => setShowComments((c) => !c)}
+                />
+                <ActionBtn
+                  icon={<RetweetOutlined />}
+                  color={token.colorTextTertiary}
+                  hoverColor="#00BA7C"
+                />
+                <ActionBtn
+                  icon={post.isLiked ? <HeartFilled /> : <HeartOutlined />}
+                  count={post.likesCount}
+                  color={post.isLiked ? "#F91880" : token.colorTextTertiary}
+                  hoverColor="#F91880"
+                  onClick={handleToggleLike}
+                />
+                <ActionBtn
+                  icon={<BarChartOutlined />}
+                  count={Math.floor(Math.random() * 500) + 50}
+                  color={token.colorTextTertiary}
+                  hoverColor="#1D9BF0"
+                />
+                <Flex align="center" gap={8}>
+                  <ActionBtn
+                    icon={<BookOutlined />}
+                    color={token.colorTextTertiary}
+                    hoverColor="#1D9BF0"
+                  />
+                  <ActionBtn
+                    icon={<ShareAltOutlined />}
+                    color={token.colorTextTertiary}
+                    hoverColor="#1D9BF0"
+                  />
+                </Flex>
               </Flex>
             </>
           )}

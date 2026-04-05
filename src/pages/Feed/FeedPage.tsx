@@ -6,7 +6,7 @@ import {
   useInfinitePostsQuery,
   useUpdatePostMutation,
 } from "@/features/posts/hooks";
-import { Button, Col, Flex, Grid, Row, Typography, Badge, FloatButton, Drawer, Affix, theme } from "antd";
+import { Button, Col, Flex, Grid, Row, Typography, Badge, FloatButton, Drawer, Affix, theme, Tabs } from "antd";
 import { CompassOutlined } from "@ant-design/icons";
 import FeedSidebar from "@/pages/Feed/components/FeedSidebar";
 import PostComposer from "@/pages/Feed/components/PostComposer";
@@ -57,28 +57,6 @@ export default function FeedPage() {
   return (
     <div style={{ maxWidth: 1050, margin: "0 auto" }}>
       <Flex vertical>
-        <Affix offsetTop={0}>
-          <div style={{
-            padding: `16px 24px`,
-            background: `${token.colorBgLayout}CC`,
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            borderBottom: `1px solid ${token.colorBorderSecondary}`,
-            borderInline: `1px solid ${token.colorBorderSecondary}`,
-            zIndex: 10
-          }}>
-            <Flex align="center" gap={12}>
-              <Typography.Title level={screens.lg ? 2 : 3} style={{ margin: 0, fontWeight: 800, letterSpacing: "-0.5px" }}>
-                Feed
-              </Typography.Title>
-              <Badge status="processing" text="Canlı Akış" styles={{ indicator: { marginTop: 4 }, root: { marginTop: 4 } }} />
-            </Flex>
-            <Typography.Text type="secondary" style={{ marginTop: 6, display: "block", fontSize: 13 }}>
-              Kampüsteki son paylaşımlar burada listelenir.
-            </Typography.Text>
-          </div>
-        </Affix>
-
         <Row gutter={screens.xl ? 32 : 0}>
           <Col xs={24} xl={16}>
             <div style={{ 
@@ -86,6 +64,27 @@ export default function FeedPage() {
               borderInline: `1px solid ${token.colorBorderSecondary}`, 
               minHeight: "100vh"
             }}>
+              <Affix offsetTop={0}>
+                <div style={{
+                  background: `${token.colorBgLayout}CC`,
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  borderBottom: `1px solid ${token.colorBorderSecondary}`,
+                  zIndex: 10
+                }}>
+                  <Tabs
+                    defaultActiveKey="foryou"
+                    centered
+                    size="large"
+                    indicator={{ size: 56, align: 'center' }}
+                    tabBarStyle={{ margin: 0, borderBottom: 'none' }}
+                    items={[
+                      { key: 'foryou', label: <span style={{ fontWeight: 600 }}>Sana özel</span> },
+                      { key: 'following', label: <span style={{ color: token.colorTextSecondary }}>Takip ediliyor</span> }
+                    ]}
+                  />
+                </div>
+              </Affix>
               <PostComposer
                 avatarUrl={user?.avatarUrl}
                 fullName={user?.fullName}

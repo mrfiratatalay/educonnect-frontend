@@ -2,7 +2,6 @@ import type { MenuProps } from "antd";
 import {
   Avatar,
   Button,
-  Divider,
   Flex,
   Grid,
   Layout,
@@ -10,22 +9,19 @@ import {
   Typography,
   theme,
 } from "antd";
-import { LogOut } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import AppShellBrand from "@/components/layout/AppShellBrand";
-import NotificationsMenu from "@/components/layout/NotificationsMenu";
 import {
   getSelectedShellKey,
   getUserInitials,
   shellMainNavItems,
-  shellSecondaryNavItems,
 } from "@/components/layout/shellNavigation";
 import { useAuthStore } from "@/store/authStore";
+import { GraduationCap } from "lucide-react";
 
 export default function Sidebar() {
   const screens = Grid.useBreakpoint();
   const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = theme.useToken();
@@ -37,13 +33,8 @@ export default function Sidebar() {
   const selectedKey = getSelectedShellKey(location.pathname);
   const mainMenuItems: MenuProps["items"] = shellMainNavItems.map((item) => ({
     key: item.key,
-    icon: <item.icon size={18} />,
-    label: item.label,
-  }));
-  const secondaryMenuItems: MenuProps["items"] = shellSecondaryNavItems.map((item) => ({
-    key: item.key,
-    icon: <item.icon size={18} />,
-    label: item.label,
+    icon: <item.icon size={26} />,
+    label: <span style={{ fontSize: 20, fontWeight: selectedKey === item.key ? 700 : 400 }}>{item.label}</span>,
   }));
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     navigate(String(key));
@@ -51,12 +42,12 @@ export default function Sidebar() {
 
   return (
     <Layout.Sider
-      width={272}
+      width={275}
       theme="light"
       trigger={null}
       style={{
         background: "transparent",
-        borderInlineEnd: `1px solid ${token.colorBorderSecondary}`,
+        borderInlineEnd: "none",
         overflow: "auto",
         height: "100vh",
         position: "sticky",
@@ -66,15 +57,21 @@ export default function Sidebar() {
         scrollbarGutter: "stable",
       }}
     >
-      <Flex vertical style={{ minHeight: "100%" }}>
-        <Flex align="center" justify="space-between" style={{ padding: 20 }}>
-          <AppShellBrand />
-          <NotificationsMenu align="end" buttonSize={36} iconSize={16} />
-        </Flex>
+      <Flex vertical justify="space-between" style={{ minHeight: "100%", padding: "12px 12px 20px" }}>
+        {/* Top section: Logo + Nav + Button */}
+        <div>
+          {/* Logo - X uses just an icon at the top */}
+          <div style={{ padding: "12px 16px 8px" }}>
+            <Button
+              type="text"
+              onClick={() => navigate("/")}
+              style={{ height: "auto", padding: 6, borderRadius: 9999 }}
+            >
+              <GraduationCap size={30} strokeWidth={2} />
+            </Button>
+          </div>
 
-        <Divider style={{ margin: 0 }} />
-
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 12px" }}>
+          {/* Navigation Menu */}
           <Menu
             mode="inline"
             selectedKeys={[selectedKey]}
@@ -83,44 +80,53 @@ export default function Sidebar() {
             style={{
               borderInlineEnd: "none",
               background: "transparent",
-            }}
-          />
-        </div>
-
-        <Divider style={{ margin: 0 }} />
-
-        <div style={{ padding: 12 }}>
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            items={secondaryMenuItems}
-            onClick={handleMenuClick}
-            style={{
-              borderInlineEnd: "none",
-              background: "transparent",
+              fontSize: 20,
             }}
           />
 
+          {/* Post Button */}
           <Button
+            type="primary"
             block
-            type="text"
-            danger
-            icon={<LogOut size={18} />}
-            onClick={() => void logout()}
+            size="large"
             style={{
-              justifyContent: "flex-start",
-              height: 44,
-              marginTop: 4,
-              borderRadius: token.borderRadiusLG,
+              marginTop: 16,
+              height: 52,
+              fontSize: 17,
+              fontWeight: 700,
+              letterSpacing: "0.01em",
+            }}
+            onClick={() => {
+              const composer = document.getElementById("feed-composer");
+              composer?.scrollIntoView({ behavior: "smooth", block: "start" });
+              const textarea = composer?.querySelector("textarea");
+              if (textarea instanceof HTMLTextAreaElement) {
+                window.setTimeout(() => textarea.focus(), 150);
+              }
             }}
           >
-            Cikis Yap
+            Gönderi yayınla
           </Button>
         </div>
 
-        <Divider style={{ margin: 0 }} />
-
-        <Flex align="center" gap={12} style={{ padding: "16px 18px 20px" }}>
+        {/* Bottom section: User profile row */}
+        <Flex
+          align="center"
+          gap={12}
+          style={{
+            padding: "12px",
+            borderRadius: 9999,
+            cursor: "pointer",
+            transition: "background 0.2s",
+          }}
+          onClick={() => navigate("/profile")}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = token.colorFillTertiary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
+        >
           <Avatar
             src={user?.avatarUrl}
             alt={user?.fullName}
@@ -128,27 +134,26 @@ export default function Sidebar() {
             style={{
               backgroundColor: token.colorPrimaryBg,
               color: token.colorPrimary,
+              flexShrink: 0,
             }}
           >
             {getUserInitials(user?.fullName)}
           </Avatar>
 
           <div style={{ minWidth: 0, flex: 1 }}>
-            <Typography.Text strong ellipsis style={{ display: "block" }}>
-              {user?.fullName ?? "Kullanici"}
+            <Typography.Text strong ellipsis style={{ display: "block", fontSize: 15 }}>
+              {user?.fullName ?? "Kullanıcı"}
             </Typography.Text>
-
             <Typography.Text
               type="secondary"
               ellipsis
-              style={{
-                display: "block",
-                fontSize: 12,
-              }}
+              style={{ display: "block", fontSize: 15 }}
             >
-              {user?.department ?? user?.email ?? "EduConnect"}
+              @{user?.email?.split("@")[0] ?? "kullanici"}
             </Typography.Text>
           </div>
+
+          <MoreHorizontal size={18} style={{ color: token.colorTextSecondary, flexShrink: 0 }} />
         </Flex>
       </Flex>
     </Layout.Sider>

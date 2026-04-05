@@ -1,9 +1,9 @@
 import { theme, type ThemeConfig } from "antd";
 
 const sharedToken: ThemeConfig["token"] = {
-  colorPrimary: "#6366F1",
-  colorInfo: "#6366F1",
-  colorLink: "#818CF8",
+  colorPrimary: "#1D9BF0",
+  colorInfo: "#1D9BF0",
+  colorLink: "#1D9BF0",
   colorSuccess: "#22C55E",
   colorWarning: "#F59E0B",
   colorError: "#EF4444",
@@ -17,12 +17,12 @@ const sharedToken: ThemeConfig["token"] = {
 
 const lightToken: ThemeConfig["token"] = {
   colorBgBase: "#FFFFFF",
-  colorBgLayout: "#F7F8FA", // Çok hafif kırık beyaz (tam X gibi zifiri beyaz olmaması için)
+  colorBgLayout: "#FFFFFF",
   colorBgContainer: "#FFFFFF",
   colorBgElevated: "#FFFFFF",
-  colorBorder: "#E5E7EB",
-  colorBorderSecondary: "#F0F0F2",
-  colorSplit: "rgba(0, 0, 0, 0.06)",
+  colorBorder: "#EFF3F4",
+  colorBorderSecondary: "#EFF3F4",
+  colorSplit: "rgba(0, 0, 0, 0.04)",
   colorTextBase: "#111827",
   colorText: "#111827",
   colorTextSecondary: "#6B7280",
@@ -35,12 +35,12 @@ const lightToken: ThemeConfig["token"] = {
 };
 
 const darkToken: ThemeConfig["token"] = {
-  colorBgBase: "#0F1117",
-  colorBgLayout: "#080A10", // Derin siyah/lacivert karışımı, salt siyah değil
-  colorBgContainer: "#131620",
-  colorBgElevated: "#1C1F2E",
-  colorBorder: "#2A2D3E",
-  colorBorderSecondary: "#21243A",
+  colorBgBase: "#000000",
+  colorBgLayout: "#000000",
+  colorBgContainer: "#000000",
+  colorBgElevated: "#000000",
+  colorBorder: "#2F3336",
+  colorBorderSecondary: "#2F3336",
   colorSplit: "rgba(255, 255, 255, 0.08)",
   colorTextBase: "#F3F4F6",
   colorText: "#F3F4F6",
@@ -66,26 +66,41 @@ export function getAntdTheme(isDarkMode: boolean): ThemeConfig {
     },
     components: {
       Layout: {
-        siderBg: isDarkMode ? "#161822" : "#FFFFFF",
-        headerBg: isDarkMode ? "#161822" : "#FFFFFF",
-        bodyBg: isDarkMode ? "#0B0D14" : "#F5F5F7",
+        siderBg: "transparent",
+        headerBg: isDarkMode ? "#000000" : "#FFFFFF",
+        bodyBg: isDarkMode ? "#000000" : "#FFFFFF",
       },
       Menu: {
-        itemBorderRadius: 9999, // Pill-shape Twitter(X) stili
-        itemMarginInline: 8,
-        itemHeight: 52,
+        itemBorderRadius: 9999,
+        itemMarginInline: 0,
+        itemMarginBlock: 2,
+        itemPaddingInline: 12,
+        itemHeight: 50,
+        iconSize: 26,
+        fontSize: 20,
         activeBarBorderWidth: 0,
+        itemSelectedBg: "transparent",
+        itemSelectedColor: isDarkMode ? "#FFFFFF" : "#0F1419",
+        itemColor: isDarkMode ? "#E7E9EA" : "#0F1419",
+        itemHoverBg: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(15, 20, 25, 0.1)",
+        itemHoverColor: isDarkMode ? "#FFFFFF" : "#0F1419",
+        subMenuItemBg: "transparent",
+        iconMarginInlineEnd: 20,
       },
       Card: {
         borderRadiusLG: 16,
         paddingLG: 24,
       },
       Button: {
-        borderRadius: 10,
+        borderRadius: 9999,
         controlHeight: 40,
         controlHeightLG: 48,
         controlHeightSM: 32,
-        fontWeight: 600,
+        fontWeight: 700,
+        colorPrimary: isDarkMode ? "#FFFFFF" : "#0F1419",
+        colorPrimaryHover: isDarkMode ? "#E7E9EA" : "#272C30",
+        colorPrimaryActive: isDarkMode ? "#D6D9DB" : "#0F1419",
+        colorTextLightSolid: isDarkMode ? "#0F1419" : "#FFFFFF",
       },
       Input: {
         borderRadius: 10,
@@ -102,8 +117,10 @@ export function getAntdTheme(isDarkMode: boolean): ThemeConfig {
         borderRadiusLG: 20,
       },
       Tabs: {
-        itemActiveColor: isDarkMode ? "#818CF8" : "#6366F1",
-        inkBarColor: isDarkMode ? "#818CF8" : "#6366F1",
+        itemActiveColor: isDarkMode ? "#FFFFFF" : "#0F1419",
+        itemHoverColor: isDarkMode ? "#FFFFFF" : "#0F1419",
+        itemSelectedColor: isDarkMode ? "#FFFFFF" : "#0F1419",
+        inkBarColor: "#1D9BF0",
       },
     },
   };

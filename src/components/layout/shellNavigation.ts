@@ -1,10 +1,12 @@
 import {
-  Compass,
   Home,
-  MessageSquare,
   Search,
-  Settings,
+  Bell,
+  MessageSquare,
+  Sparkles,
+  Bookmark,
   User,
+  MoreHorizontal,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,17 +19,18 @@ export interface ShellNavItem {
 
 export const shellMainNavItems: ShellNavItem[] = [
   { key: "/", to: "/", icon: Home, label: "Anasayfa" },
-  { key: "/feed", to: "/feed", icon: MessageSquare, label: "Feed" },
-  { key: "/explore", to: "/explore", icon: Compass, label: "Kesfet" },
-  { key: "/visual-search", to: "/visual-search", icon: Search, label: "Gorsel Arama" },
-];
-
-export const shellSecondaryNavItems: ShellNavItem[] = [
+  { key: "/explore", to: "/explore", icon: Search, label: "Keşfet" },
+  { key: "/notifications", to: "/notifications", icon: Bell, label: "Bildirimler" },
+  { key: "/messages", to: "/messages", icon: MessageSquare, label: "Sohbet" },
+  { key: "/edu-ai", to: "/edu-ai", icon: Sparkles, label: "EduAI" },
+  { key: "/bookmarks", to: "/bookmarks", icon: Bookmark, label: "Yer İşaretleri" },
   { key: "/profile", to: "/profile", icon: User, label: "Profil" },
-  { key: "/settings", to: "/settings", icon: Settings, label: "Ayarlar" },
+  { key: "/more", to: "/more", icon: MoreHorizontal, label: "Daha fazla" },
 ];
 
-const allShellNavItems = [...shellMainNavItems, ...shellSecondaryNavItems];
+export const shellSecondaryNavItems: ShellNavItem[] = [];
+
+const allShellNavItems = [...shellMainNavItems];
 
 export function getSelectedShellKey(pathname: string) {
   const matchedItem = allShellNavItems.find(

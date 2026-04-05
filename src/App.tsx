@@ -6,7 +6,6 @@ import AuthLayout from "@/components/layout/AuthLayout";
 import LoginPage from "@/pages/Auth/LoginPage";
 import RegisterPage from "@/pages/Auth/RegisterPage";
 import ForgotPasswordPage from "@/pages/Auth/ForgotPasswordPage";
-import DashboardPage from "@/pages/Dashboard/DashboardPage";
 import FeedPage from "@/pages/Feed/FeedPage";
 import VisualSearchPage from "@/pages/VisualSearch/VisualSearchPage";
 import ExplorePage from "@/pages/Explore/ExplorePage";
@@ -84,8 +83,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/feed" element={<FeedPage />} />
+        <Route path="/" element={<FeedPage />} />
         <Route path="/visual-search" element={<VisualSearchPage />} />
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/profile" element={<ProfilePage />} />
