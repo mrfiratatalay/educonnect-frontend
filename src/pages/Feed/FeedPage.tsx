@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CompassOutlined } from "@ant-design/icons";
 import { Button, Drawer, Flex, FloatButton, Grid, Tabs, Typography, theme } from "antd";
 import { useAuthStore } from "@/store/authStore";
+import { useUIStore } from "@/store/uiStore";
 import {
   useCreatePostMutation,
   useDeletePostMutation,
@@ -16,7 +17,9 @@ export default function FeedPage() {
   const { token } = theme.useToken();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const user = useAuthStore((state) => state.user);
+  const openComposeModal = useUIStore((state) => state.openComposeModal);
   const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   const postsQuery = useInfinitePostsQuery(10);
   const createPostMutation = useCreatePostMutation();
   const deletePostMutation = useDeletePostMutation();
@@ -46,6 +49,11 @@ export default function FeedPage() {
   }
 
   function handleCreatePostClick() {
+    if (isMobile) {
+      openComposeModal();
+      return;
+    }
+
     const composer = document.getElementById("feed-composer");
     composer?.scrollIntoView({ behavior: "smooth", block: "start" });
     const textarea = composer?.querySelector("textarea");
@@ -56,42 +64,47 @@ export default function FeedPage() {
   }
 
   return (
-    <div style={{ maxWidth: 990, margin: "0 auto", padding: "0 16px" }}>
+    <div style={{ maxWidth: 990, margin: "0 auto", padding: isMobile ? 0 : "0 16px" }}>
       <Flex>
-        <div style={{ flex: 1, maxWidth: 600, minWidth: 0 }}>
+        <div style={{ flex: 1, maxWidth: isMobile ? "100%" : 600, minWidth: 0 }}>
           <div
             style={{
               background: token.colorBgContainer,
-              borderInline: `1px solid ${token.colorBorderSecondary}`,
-              minHeight: "100vh",
+              borderInline: isMobile ? "none" : `1px solid ${token.colorBorderSecondary}`,
+              minHeight: isMobile ? "calc(100vh - 108px)" : "100vh",
             }}
           >
             <div
               style={{
-                background: `${token.colorBgLayout}CC`,
+                background: isMobile ? "rgba(255, 255, 255, 0.92)" : `${token.colorBgLayout}CC`,
                 backdropFilter: "blur(12px)",
                 WebkitBackdropFilter: "blur(12px)",
                 borderBottom: `1px solid ${token.colorBorderSecondary}`,
                 position: "sticky",
-                top: 0,
+                top: isMobile ? 54 : 0,
                 zIndex: 10,
               }}
             >
               <Tabs
                 defaultActiveKey="foryou"
-                centered
+                centered={!isMobile}
                 size="large"
-                indicator={{ size: 56, align: "center" }}
-                tabBarStyle={{ margin: 0, borderBottom: "none" }}
+                indicator={{ size: isMobile ? 84 : 56, align: "center" }}
+                tabBarGutter={isMobile ? 20 : undefined}
+                tabBarStyle={{
+                  margin: 0,
+                  borderBottom: "none",
+                  paddingInline: isMobile ? 6 : 0,
+                }}
                 items={[
                   {
                     key: "foryou",
-                    label: <span style={{ fontWeight: 600 }}>Sana ozel</span>,
+                    label: <span style={{ fontWeight: 700, fontSize: isMobile ? 18 : undefined }}>Sana ozel</span>,
                   },
                   {
                     key: "following",
                     label: (
-                      <span style={{ color: token.colorTextSecondary }}>
+                      <span style={{ color: token.colorTextSecondary, fontWeight: 700, fontSize: isMobile ? 18 : undefined }}>
                         Takip ediliyor
                       </span>
                     ),
@@ -100,7 +113,7 @@ export default function FeedPage() {
               />
             </div>
 
-            {!screens.xl && (
+            {!isMobile && !screens.xl && (
               <Flex justify="flex-end" style={{ padding: "12px 16px 0" }}>
                 <Button icon={<CompassOutlined />} onClick={() => setDrawerVisible(true)}>
                   Gundem & Kesfet
@@ -108,12 +121,14 @@ export default function FeedPage() {
               </Flex>
             )}
 
-            <PostComposer
-              avatarUrl={user?.avatarUrl}
-              fullName={user?.fullName}
-              isSubmitting={createPostMutation.isPending}
-              onSubmit={handleCreatePost}
-            />
+            {!isMobile ? (
+              <PostComposer
+                avatarUrl={user?.avatarUrl}
+                fullName={user?.fullName}
+                isSubmitting={createPostMutation.isPending}
+                onSubmit={handleCreatePost}
+              />
+            ) : null}
 
             <PostList
               posts={posts}
@@ -159,7 +174,7 @@ export default function FeedPage() {
         )}
       </Flex>
 
-      {!screens.xl && (
+      {!isMobile && !screens.xl && (
         <Drawer
           title="Gundem & Kesfet"
           placement="right"
@@ -172,7 +187,7 @@ export default function FeedPage() {
         </Drawer>
       )}
 
-      <FloatButton.BackTop style={{ right: 24, bottom: 24 }} />
+      {!isMobile ? <FloatButton.BackTop style={{ right: 24, bottom: 24 }} /> : null}
     </div>
   );
 }

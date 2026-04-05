@@ -37,6 +37,22 @@ export const shellMoreNavItems: ShellNavItem[] = [
   { key: "/settings", to: "/settings", icon: Settings, label: "Ayarlar ve gizlilik" },
 ];
 
+export const shellMobileBottomNavItems: ShellNavItem[] = [
+  shellMainNavItems[0],
+  shellMainNavItems[1],
+  shellMainNavItems[7],
+  shellMainNavItems[5],
+  shellMainNavItems[6],
+];
+
+export const shellMobileDrawerNavItems: ShellNavItem[] = [
+  shellMainNavItems[8],
+  shellMainNavItems[2],
+  shellMainNavItems[3],
+  shellMainNavItems[4],
+  ...shellMoreNavItems,
+];
+
 export const shellSecondaryNavItems: ShellNavItem[] = shellMoreNavItems;
 
 const allShellNavItems = [...shellMainNavItems, ...shellMoreNavItems];
@@ -57,6 +73,16 @@ export function isMoreNavPath(pathname: string) {
       pathname === item.to ||
       (item.to !== "/" && pathname.startsWith(`${item.to}/`)),
   );
+}
+
+export function getShellLabel(pathname: string) {
+  const matchedItem = allShellNavItems.find(
+    (item) =>
+      pathname === item.to ||
+      (item.to !== "/" && pathname.startsWith(`${item.to}/`)),
+  );
+
+  return matchedItem?.label ?? "";
 }
 
 export function getUserInitials(fullName?: string) {

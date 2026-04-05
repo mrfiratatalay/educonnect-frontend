@@ -1,17 +1,17 @@
 import { type FormEvent, useState } from "react";
-import { Avatar, Button, Dropdown, Flex, Input, Typography, theme, Tooltip } from "antd";
+import { Avatar, Button, Dropdown, Flex, Input, Tooltip, Typography, theme } from "antd";
 import type { MenuProps } from "antd";
 import {
-  FileImageOutlined,
-  FileGifOutlined,
-  UnorderedListOutlined,
-  SmileOutlined,
-  ScheduleOutlined,
-  EnvironmentOutlined,
-  GlobalOutlined,
-  TeamOutlined,
-  LockOutlined,
   DownOutlined,
+  EnvironmentOutlined,
+  FileGifOutlined,
+  FileImageOutlined,
+  GlobalOutlined,
+  LockOutlined,
+  ScheduleOutlined,
+  SmileOutlined,
+  TeamOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 
 interface PostComposerProps {
@@ -22,6 +22,29 @@ interface PostComposerProps {
   isInModal?: boolean;
 }
 
+type Audience = "everyone" | "followers" | "verified";
+
+const audienceLabels: Record<Audience, string> = {
+  everyone: "Herkes",
+  followers: "Takipciler",
+  verified: "Onayli hesaplar",
+};
+
+const audienceMenuItems: MenuProps["items"] = [
+  { key: "everyone", icon: <GlobalOutlined />, label: "Herkes" },
+  { key: "followers", icon: <TeamOutlined />, label: "Takipciler" },
+  { key: "verified", icon: <LockOutlined />, label: "Onayli hesaplar" },
+];
+
+const mediaIcons = [
+  { icon: <FileImageOutlined />, tip: "Medya" },
+  { icon: <FileGifOutlined />, tip: "GIF" },
+  { icon: <UnorderedListOutlined />, tip: "Anket" },
+  { icon: <SmileOutlined />, tip: "Emoji" },
+  { icon: <ScheduleOutlined />, tip: "Planla" },
+  { icon: <EnvironmentOutlined />, tip: "Konum" },
+];
+
 export default function PostComposer({
   avatarUrl,
   fullName,
@@ -31,27 +54,15 @@ export default function PostComposer({
 }: PostComposerProps) {
   const [content, setContent] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [audience, setAudience] = useState<"everyone" | "followers" | "verified">("everyone");
+  const [audience, setAudience] = useState<Audience>("everyone");
   const { token } = theme.useToken();
-
-  const audienceLabels = {
-    everyone: "Herkes",
-    followers: "Takipçiler",
-    verified: "Onaylı hesaplar",
-  };
-
-  const audienceMenuItems: MenuProps["items"] = [
-    { key: "everyone", icon: <GlobalOutlined />, label: "Herkes" },
-    { key: "followers", icon: <TeamOutlined />, label: "Takipçiler" },
-    { key: "verified", icon: <LockOutlined />, label: "Onaylı hesaplar" },
-  ];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedContent = content.trim();
     if (!trimmedContent) {
-      setErrorMessage("Paylaşım metni boş olamaz.");
+      setErrorMessage("Paylasim metni bos olamaz.");
       return;
     }
 
@@ -60,31 +71,20 @@ export default function PostComposer({
       await onSubmit(trimmedContent);
       setContent("");
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Paylaşım gönderilemedi.",
-      );
+      setErrorMessage(error instanceof Error ? error.message : "Paylasim gonderilemedi.");
     }
   }
-
-  const mediaIcons = [
-    { icon: <FileImageOutlined />, tip: "Medya" },
-    { icon: <FileGifOutlined />, tip: "GIF" },
-    { icon: <UnorderedListOutlined />, tip: "Anket" },
-    { icon: <SmileOutlined />, tip: "Emoji" },
-    { icon: <ScheduleOutlined />, tip: "Planla" },
-    { icon: <EnvironmentOutlined />, tip: "Konum" },
-  ];
 
   return (
     <div
       id={isInModal ? undefined : "feed-composer"}
       style={{
-        padding: isInModal ? "0 16px" : "16px 16px 8px",
+        padding: isInModal ? "8px 16px 16px" : "16px 16px 8px",
         borderBottom: isInModal ? "none" : `1px solid ${token.colorBorderSecondary}`,
       }}
     >
-      <form onSubmit={handleSubmit}>
-        <Flex gap={12} align="flex-start">
+      <form id={isInModal ? "compose-modal-form" : undefined} onSubmit={handleSubmit}>
+        <Flex align="flex-start" gap={12}>
           <Avatar
             src={avatarUrl}
             size={40}
@@ -98,12 +98,11 @@ export default function PostComposer({
           </Avatar>
 
           <Flex vertical gap={4} style={{ flex: 1 }}>
-            {/* Audience selector pill */}
             <Dropdown
               menu={{
                 items: audienceMenuItems,
                 selectedKeys: [audience],
-                onClick: ({ key }) => setAudience(key as "everyone" | "followers" | "verified"),
+                onClick: ({ key }) => setAudience(key as Audience),
               }}
               trigger={["click"]}
             >
@@ -141,14 +140,13 @@ export default function PostComposer({
                 minHeight: 56,
               }}
               maxLength={1500}
-              autoSize={{ minRows: isInModal ? 3 : 1, maxRows: 8 }}
+              autoSize={{ minRows: isInModal ? 4 : 1, maxRows: 8 }}
             />
 
-            {/* Reply audience info */}
             <Flex align="center" gap={6} style={{ marginTop: 4, marginBottom: 12 }}>
               <GlobalOutlined style={{ color: "#1D9BF0", fontSize: 14 }} />
               <Typography.Text style={{ color: "#1D9BF0", fontSize: 14, fontWeight: 500 }}>
-                Herkes yanıtlayabilir
+                Herkes yanitlayabilir
               </Typography.Text>
             </Flex>
 
@@ -156,8 +154,8 @@ export default function PostComposer({
 
             <Flex align="center" justify="space-between">
               <Flex align="center" gap={2}>
-                {mediaIcons.map((item, i) => (
-                  <Tooltip title={item.tip} key={i}>
+                {mediaIcons.map((item, index) => (
+                  <Tooltip key={index} title={item.tip}>
                     <Button
                       type="text"
                       shape="circle"
@@ -169,29 +167,32 @@ export default function PostComposer({
               </Flex>
 
               <Flex align="center" gap={12}>
-                {errorMessage && (
+                {errorMessage ? (
                   <Typography.Text type="danger" style={{ fontSize: 13 }}>
                     {errorMessage}
                   </Typography.Text>
-                )}
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={isSubmitting}
-                  disabled={!content.trim()}
-                  shape="round"
-                  style={{
-                    padding: "0 20px",
-                    fontWeight: 700,
-                    height: 36,
-                    backgroundColor: "#1D9BF0",
-                    color: "#FFFFFF",
-                    opacity: !content.trim() ? 0.5 : 1,
-                    borderColor: "transparent",
-                  }}
-                >
-                  Gönderi yayınla
-                </Button>
+                ) : null}
+
+                {!isInModal ? (
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={isSubmitting}
+                    disabled={!content.trim()}
+                    shape="round"
+                    style={{
+                      padding: "0 20px",
+                      fontWeight: 700,
+                      height: 36,
+                      backgroundColor: "#1D9BF0",
+                      color: "#FFFFFF",
+                      opacity: !content.trim() ? 0.5 : 1,
+                      borderColor: "transparent",
+                    }}
+                  >
+                    Gonderi yayinla
+                  </Button>
+                ) : null}
               </Flex>
             </Flex>
           </Flex>

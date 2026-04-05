@@ -1,26 +1,55 @@
-import { useState } from "react";
-import { Avatar, Button, Drawer, Flex, Grid, Menu, Typography, theme } from "antd";
-import { LogOut, Menu as MenuIcon, MoreHorizontal } from "lucide-react";
+import { Avatar, Button, Drawer, Flex, FloatButton, Grid, Typography, theme } from "antd";
+import { LogOut, Plus } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getSelectedShellKey,
-  isMoreNavPath,
   getUserInitials,
-  shellMainNavItems,
-  shellSecondaryNavItems,
+  shellMobileBottomNavItems,
+  shellMobileDrawerNavItems,
 } from "@/components/layout/shellNavigation";
 import { useAuthStore } from "@/store/authStore";
+import { useUIStore } from "@/store/uiStore";
+
+function ComposeFabIcon() {
+  return (
+    <div style={{ position: "relative", width: 22, height: 22 }}>
+      <Plus size={12} strokeWidth={2.5} style={{ position: "absolute", top: -2, left: -1 }} />
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          right: 0,
+          bottom: 0,
+          width: 18,
+          height: 18,
+          fill: "none",
+          stroke: "currentColor",
+          strokeWidth: 2,
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+        }}
+      >
+        <path d="M12 3c-2.5 0-5 1.2-6.6 3.2C3.8 8.2 3 10.8 3.3 13.4c.3 2.7 1.9 5.1 4.2 6.5l.5.3 1-.8c1.3-1.1 2.7-2.4 3.7-3.8 1.7-2.3 2.9-4.8 3.5-7.5l.2-.7-.6-.4C14.7 3.7 13.4 3 12 3Z" />
+        <path d="M14.2 4.1c2.9.3 5.2 2.7 5.5 5.6.3 3.4-1.8 6.5-5 7.5" />
+      </svg>
+    </div>
+  );
+}
 
 export default function MobileNav() {
-  const [moreOpen, setMoreOpen] = useState(false);
   const screens = Grid.useBreakpoint();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const isMobileDrawerOpen = useUIStore((state) => state.isMobileDrawerOpen);
+  const closeMobileDrawer = useUIStore((state) => state.closeMobileDrawer);
+  const openComposeModal = useUIStore((state) => state.openComposeModal);
+  const isComposeModalOpen = useUIStore((state) => state.isComposeModalOpen);
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = theme.useToken();
   const selectedKey = getSelectedShellKey(location.pathname);
-  const isMoreSelected = isMoreNavPath(location.pathname);
+  const userHandle = user?.email?.split("@")[0] ?? "kullanici";
 
   if (screens.lg) {
     return null;
@@ -29,82 +58,137 @@ export default function MobileNav() {
   return (
     <>
       <Drawer
-        open={moreOpen}
-        onClose={() => setMoreOpen(false)}
-        placement="bottom"
-        height={300}
-        title="Daha Fazla"
+        open={isMobileDrawerOpen}
+        onClose={closeMobileDrawer}
+        placement="left"
+        width="82vw"
+        closable={false}
         destroyOnHidden
         styles={{
           body: {
-            padding: 12,
+            padding: 0,
           },
         }}
       >
-        <Flex align="center" gap={12} style={{ padding: "4px 4px 16px" }}>
-          <Avatar
-            src={user?.avatarUrl}
-            alt={user?.fullName}
-            size={44}
-            style={{
-              backgroundColor: token.colorPrimaryBg,
-              color: token.colorPrimary,
-            }}
-          >
-            {getUserInitials(user?.fullName)}
-          </Avatar>
+        <div style={{ padding: "14px 16px 20px" }}>
+          <Flex align="flex-start" justify="space-between" gap={12}>
+            <div>
+              <Avatar
+                src={user?.avatarUrl}
+                alt={user?.fullName}
+                size={42}
+                style={{
+                  backgroundColor: token.colorPrimaryBg,
+                  color: token.colorPrimary,
+                }}
+              >
+                {getUserInitials(user?.fullName)}
+              </Avatar>
 
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <Typography.Text strong ellipsis style={{ display: "block" }}>
-              {user?.fullName ?? "Kullanici"}
-            </Typography.Text>
-            <Typography.Text
-              type="secondary"
-              ellipsis
-              style={{ display: "block", fontSize: 12 }}
+              <div style={{ marginTop: 14 }}>
+                <Typography.Text strong style={{ display: "block", fontSize: 20, lineHeight: 1.15 }}>
+                  {user?.fullName ?? "Kullanici"}
+                </Typography.Text>
+                <Typography.Text type="secondary" style={{ display: "block", marginTop: 4, fontSize: 16 }}>
+                  @{userHandle}
+                </Typography.Text>
+              </div>
+
+              <Flex align="center" gap={24} style={{ marginTop: 16 }}>
+                <Typography.Text style={{ fontSize: 15 }}>
+                  <span style={{ fontWeight: 700, color: token.colorText }}>0</span>{" "}
+                  <span style={{ color: token.colorTextSecondary }}>Takip edilen</span>
+                </Typography.Text>
+                <Typography.Text style={{ fontSize: 15 }}>
+                  <span style={{ fontWeight: 700, color: token.colorText }}>0</span>{" "}
+                  <span style={{ color: token.colorTextSecondary }}>Takipçi</span>
+                </Typography.Text>
+              </Flex>
+            </div>
+
+            <Button
+              type="text"
+              shape="circle"
+              icon={<Plus size={18} />}
+              onClick={() => {
+                closeMobileDrawer();
+                openComposeModal();
+              }}
+              style={{
+                width: 36,
+                height: 36,
+                border: `1px solid ${token.colorBorder}`,
+                color: token.colorText,
+              }}
+            />
+          </Flex>
+
+          <Flex vertical gap={2} style={{ marginTop: 24 }}>
+            {shellMobileDrawerNavItems.map((item) => {
+              const isActive = selectedKey === item.key;
+
+              return (
+                <Button
+                  key={item.key}
+                  type="text"
+                  onClick={() => {
+                    navigate(item.to);
+                    closeMobileDrawer();
+                  }}
+                  style={{
+                    justifyContent: "flex-start",
+                    height: "auto",
+                    padding: "12px 4px",
+                    borderRadius: 14,
+                    color: token.colorText,
+                    fontWeight: isActive ? 700 : 600,
+                  }}
+                >
+                  <Flex align="center" gap={18}>
+                    <item.icon size={24} />
+                    <span style={{ fontSize: 18, lineHeight: 1.2 }}>{item.label}</span>
+                  </Flex>
+                </Button>
+              );
+            })}
+
+            <Button
+              type="text"
+              danger
+              onClick={() => {
+                closeMobileDrawer();
+                void logout();
+              }}
+              style={{
+                justifyContent: "flex-start",
+                height: "auto",
+                padding: "14px 4px 10px",
+                marginTop: 4,
+                borderRadius: 14,
+                fontWeight: 700,
+              }}
+              icon={<LogOut size={22} />}
             >
-              {user?.department ?? user?.email ?? "EduConnect"}
-            </Typography.Text>
-          </div>
-        </Flex>
+              <span style={{ fontSize: 18 }}>Çıkış yap</span>
+            </Button>
+          </Flex>
+        </div>
+      </Drawer>
 
-        <Menu
-          mode="inline"
-          selectedKeys={[selectedKey]}
-          items={shellSecondaryNavItems.map((item) => ({
-            key: item.key,
-            icon: <item.icon size={18} />,
-            label: item.label,
-          }))}
-          onClick={({ key }) => {
-            navigate(String(key));
-            setMoreOpen(false);
-          }}
+      {!isComposeModalOpen && (
+        <FloatButton
+          type="primary"
+          icon={<ComposeFabIcon />}
+          onClick={openComposeModal}
           style={{
-            borderInlineEnd: "none",
-            background: "transparent",
+            right: 18,
+            bottom: 84,
+            width: 54,
+            height: 54,
+            boxShadow: "0 8px 24px rgba(29, 155, 240, 0.35)",
           }}
         />
-
-        <Button
-          block
-          type="text"
-          danger
-          icon={<LogOut size={18} />}
-          onClick={() => {
-            void logout();
-            setMoreOpen(false);
-          }}
-          style={{
-            justifyContent: "flex-start",
-            height: 44,
-            marginTop: 4,
-            borderRadius: token.borderRadiusLG,
-          }}
-        >
-          Cikis Yap
-        </Button>
-      </Drawer>
+      )}
 
       <div
         style={{
@@ -112,90 +196,34 @@ export default function MobileNav() {
           insetInline: 0,
           bottom: 0,
           zIndex: 50,
-          background: token.colorBgContainer,
+          background: "rgba(255, 255, 255, 0.96)",
           borderTop: `1px solid ${token.colorBorderSecondary}`,
-          backdropFilter: "blur(16px)",
-          padding: `8px 12px calc(8px + env(safe-area-inset-bottom))`,
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          padding: `4px 10px calc(4px + env(safe-area-inset-bottom))`,
         }}
       >
-        <Flex gap={4} align="stretch">
-          {shellMainNavItems.map((item) => {
+        <Flex align="center" justify="space-between" gap={2}>
+          {shellMobileBottomNavItems.map((item) => {
             const isActive = selectedKey === item.key;
 
             return (
               <Button
                 key={item.key}
                 type="text"
-                onClick={() => {
-                  navigate(item.to);
-                  setMoreOpen(false);
-                }}
+                onClick={() => navigate(item.to)}
                 style={{
                   flex: 1,
-                  height: 56,
-                  paddingInline: 4,
-                  color: isActive ? token.colorPrimary : token.colorTextSecondary,
-                  borderRadius: token.borderRadiusLG,
+                  height: 48,
+                  borderRadius: 999,
+                  color: isActive ? token.colorText : token.colorTextSecondary,
+                  padding: 0,
                 }}
               >
-                <Flex
-                  vertical
-                  align="center"
-                  justify="center"
-                  gap={4}
-                  style={{ width: "100%" }}
-                >
-                  <item.icon size={20} strokeWidth={isActive ? 2.4 : 2} />
-                  <Typography.Text
-                    style={{
-                      fontSize: 11,
-                      lineHeight: 1,
-                      color: "inherit",
-                      margin: 0,
-                    }}
-                  >
-                    {item.label}
-                  </Typography.Text>
-                </Flex>
+                <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} />
               </Button>
             );
           })}
-
-          <Button
-            type="text"
-            onClick={() => setMoreOpen(true)}
-            style={{
-              flex: 1,
-              height: 56,
-              paddingInline: 4,
-              color: moreOpen || isMoreSelected ? token.colorPrimary : token.colorTextSecondary,
-              borderRadius: token.borderRadiusLG,
-            }}
-          >
-            <Flex
-              vertical
-              align="center"
-              justify="center"
-              gap={4}
-              style={{ width: "100%" }}
-            >
-              {moreOpen ? (
-                <MoreHorizontal size={20} strokeWidth={2.4} />
-              ) : (
-                <MenuIcon size={20} />
-              )}
-              <Typography.Text
-                style={{
-                  fontSize: 11,
-                  lineHeight: 1,
-                  color: "inherit",
-                  margin: 0,
-                }}
-              >
-                Daha
-              </Typography.Text>
-            </Flex>
-          </Button>
         </Flex>
       </div>
     </>
