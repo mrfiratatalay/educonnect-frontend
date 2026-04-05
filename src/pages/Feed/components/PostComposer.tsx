@@ -41,7 +41,7 @@ export default function PostComposer({
   }
 
   return (
-    <div id="feed-composer" style={{ padding: "20px 24px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
+    <div id="feed-composer" style={{ padding: "16px 20px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
       <form onSubmit={handleSubmit}>
         <Flex gap={16} align="flex-start">
           <Avatar

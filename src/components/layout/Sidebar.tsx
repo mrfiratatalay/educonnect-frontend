@@ -55,8 +55,8 @@ export default function Sidebar() {
       theme="light"
       trigger={null}
       style={{
-        background: token.colorBgContainer,
-        borderInlineEnd: `1px solid ${token.colorBorder}`,
+        background: "transparent",
+        borderInlineEnd: `1px solid ${token.colorBorderSecondary}`,
         overflow: "auto",
         height: "100vh",
         position: "sticky",

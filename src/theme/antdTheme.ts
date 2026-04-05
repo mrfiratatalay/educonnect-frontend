@@ -17,7 +17,7 @@ const sharedToken: ThemeConfig["token"] = {
 
 const lightToken: ThemeConfig["token"] = {
   colorBgBase: "#FFFFFF",
-  colorBgLayout: "#F5F5F7",
+  colorBgLayout: "#F7F8FA", // Çok hafif kırık beyaz (tam X gibi zifiri beyaz olmaması için)
   colorBgContainer: "#FFFFFF",
   colorBgElevated: "#FFFFFF",
   colorBorder: "#E5E7EB",
@@ -36,8 +36,8 @@ const lightToken: ThemeConfig["token"] = {
 
 const darkToken: ThemeConfig["token"] = {
   colorBgBase: "#0F1117",
-  colorBgLayout: "#0B0D14",
-  colorBgContainer: "#161822",
+  colorBgLayout: "#080A10", // Derin siyah/lacivert karışımı, salt siyah değil
+  colorBgContainer: "#131620",
   colorBgElevated: "#1C1F2E",
   colorBorder: "#2A2D3E",
   colorBorderSecondary: "#21243A",
@@ -71,9 +71,9 @@ export function getAntdTheme(isDarkMode: boolean): ThemeConfig {
         bodyBg: isDarkMode ? "#0B0D14" : "#F5F5F7",
       },
       Menu: {
-        itemBorderRadius: 10,
-        itemMarginInline: 4,
-        itemHeight: 44,
+        itemBorderRadius: 9999, // Pill-shape Twitter(X) stili
+        itemMarginInline: 8,
+        itemHeight: 52,
         activeBarBorderWidth: 0,
       },
       Card: {

@@ -54,19 +54,17 @@ export default function FeedPage() {
     }
   }
 
-  const pagePadding = screens.xs ? 16 : screens.lg ? 32 : 24;
-
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: pagePadding }}>
-      <Flex vertical gap={24}>
+    <div style={{ maxWidth: 1050, margin: "0 auto" }}>
+      <Flex vertical>
         <Affix offsetTop={0}>
           <div style={{
-            margin: `-${pagePadding}px -${pagePadding}px 0`,
-            padding: `${pagePadding}px ${pagePadding}px 16px`,
+            padding: `16px 24px`,
             background: `${token.colorBgLayout}CC`,
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
+            borderInline: `1px solid ${token.colorBorderSecondary}`,
             zIndex: 10
           }}>
             <Flex align="center" gap={12}>
@@ -75,19 +73,18 @@ export default function FeedPage() {
               </Typography.Title>
               <Badge status="processing" text="Canlı Akış" styles={{ indicator: { marginTop: 4 }, root: { marginTop: 4 } }} />
             </Flex>
-            <Typography.Text type="secondary" style={{ marginTop: 6, display: "block", fontSize: 15 }}>
+            <Typography.Text type="secondary" style={{ marginTop: 6, display: "block", fontSize: 13 }}>
               Kampüsteki son paylaşımlar burada listelenir.
             </Typography.Text>
           </div>
         </Affix>
 
-        <Row gutter={24}>
+        <Row gutter={screens.xl ? 32 : 0}>
           <Col xs={24} xl={16}>
             <div style={{ 
               background: token.colorBgContainer, 
-              border: `1px solid ${token.colorBorderSecondary}`, 
-              borderRadius: screens.xs ? 0 : 12,
-              overflow: 'hidden'
+              borderInline: `1px solid ${token.colorBorderSecondary}`, 
+              minHeight: "100vh"
             }}>
               <PostComposer
                 avatarUrl={user?.avatarUrl}

@@ -110,7 +110,7 @@ export default function PostCard({
 
   return (
     <List.Item 
-      style={{ padding: "24px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}
+      style={{ padding: "16px 20px" }}
     >
       <Flex gap={16} align="flex-start" style={{ width: "100%" }}>
         <Avatar
