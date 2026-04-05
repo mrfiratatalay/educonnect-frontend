@@ -4,6 +4,7 @@ import {
   getMyProfile,
   getUserProfile,
   uploadMyAvatar,
+  uploadMyCover,
   updateMyProfile,
   type PublicUserProfile,
   type UpdateMyProfileInput,
@@ -50,6 +51,18 @@ export function useUploadMyAvatarMutation() {
 
   return useMutation({
     mutationFn: (file: File) => uploadMyAvatar(file),
+    onSuccess: (profile) => {
+      syncProfileCaches(queryClient, updateUser, profile);
+    },
+  });
+}
+
+export function useUploadMyCoverMutation() {
+  const queryClient = useQueryClient();
+  const updateUser = useAuthStore((state) => state.updateUser);
+
+  return useMutation({
+    mutationFn: (file: File) => uploadMyCover(file),
     onSuccess: (profile) => {
       syncProfileCaches(queryClient, updateUser, profile);
     },

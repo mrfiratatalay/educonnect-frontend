@@ -9,6 +9,7 @@ import {
   useInfinitePostsQuery,
   useUpdatePostMutation,
 } from "@/features/posts/hooks";
+import type { CreatePostInput } from "@/features/posts/types";
 import FeedSidebar from "@/pages/Feed/components/FeedSidebar";
 import PostComposer from "@/pages/Feed/components/PostComposer";
 import PostList from "@/pages/Feed/components/PostList";
@@ -36,8 +37,8 @@ export default function FeedPage() {
   const updatingPostId =
     updatePostMutation.isPending ? updatePostMutation.variables?.postId : undefined;
 
-  async function handleCreatePost(content: string) {
-    await createPostMutation.mutateAsync({ content });
+  async function handleCreatePost(input: CreatePostInput) {
+    await createPostMutation.mutateAsync(input);
   }
 
   async function handleUpdatePost(postId: string, content: string) {

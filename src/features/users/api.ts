@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { User, UserRole } from "@/types";
-import { getAccessToken } from "@/features/auth/token";
+import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
 
@@ -17,6 +17,7 @@ export interface PublicUserProfile {
   year?: number;
   bio?: string;
   avatarUrl?: string;
+  coverImageUrl?: string;
   universityId?: string;
   universityName?: string;
 }
@@ -30,24 +31,42 @@ export interface UpdateMyProfileInput {
 }
 
 export async function getMyProfile() {
-  const response = await usersApi.get<User>("/api/users/me", getAuthorizedConfig());
+  const response = await executeAuthorizedRequest((accessToken) =>
+    usersApi.get<User>("/api/users/me", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }),
+  );
   return normalizeUser(response.data);
 }
 
 export async function getUserProfile(userId: string) {
-  const response = await usersApi.get<PublicUserProfile>(
-    `/api/users/${userId}`,
-    getAuthorizedConfig(),
+  const response = await executeAuthorizedRequest((accessToken) =>
+    usersApi.get<PublicUserProfile>(
+      `/api/users/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    ),
   );
 
   return normalizePublicProfile(response.data);
 }
 
 export async function updateMyProfile(input: UpdateMyProfileInput) {
-  const response = await usersApi.put<User>(
-    "/api/users/me",
-    input,
-    getAuthorizedConfig(),
+  const response = await executeAuthorizedRequest((accessToken) =>
+    usersApi.put<User>(
+      "/api/users/me",
+      input,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    ),
   );
 
   return normalizeUser(response.data);
@@ -57,27 +76,38 @@ export async function uploadMyAvatar(file: File) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await usersApi.post<User>(
-    "/api/users/me/avatar/upload",
-    formData,
-    getAuthorizedConfig(),
+  const response = await executeAuthorizedRequest((accessToken) =>
+    usersApi.post<User>(
+      "/api/users/me/avatar/upload",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    ),
   );
 
   return normalizeUser(response.data);
 }
 
-function getAuthorizedConfig() {
-  const accessToken = getAccessToken();
+export async function uploadMyCover(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
 
-  if (!accessToken) {
-    throw new Error("Oturum bulunamadi. Lutfen yeniden giris yapin.");
-  }
+  const response = await executeAuthorizedRequest((accessToken) =>
+    usersApi.post<User>(
+      "/api/users/me/cover/upload",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    ),
+  );
 
-  return {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  };
+  return normalizeUser(response.data);
 }
 
 function normalizeUser(user: User): User {
@@ -87,6 +117,7 @@ function normalizeUser(user: User): User {
     year: user.year || undefined,
     bio: user.bio || undefined,
     avatarUrl: user.avatarUrl || undefined,
+    coverImageUrl: user.coverImageUrl || undefined,
     universityId: user.universityId || undefined,
     universityName: user.universityName || undefined,
   };
@@ -99,6 +130,7 @@ function normalizePublicProfile(profile: PublicUserProfile): PublicUserProfile {
     year: profile.year || undefined,
     bio: profile.bio || undefined,
     avatarUrl: profile.avatarUrl || undefined,
+    coverImageUrl: profile.coverImageUrl || undefined,
     universityId: profile.universityId || undefined,
     universityName: profile.universityName || undefined,
   };

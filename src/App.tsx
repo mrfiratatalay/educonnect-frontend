@@ -6,6 +6,7 @@ import AuthLayout from "@/components/layout/AuthLayout";
 import LoginPage from "@/pages/Auth/LoginPage";
 import RegisterPage from "@/pages/Auth/RegisterPage";
 import ForgotPasswordPage from "@/pages/Auth/ForgotPasswordPage";
+import VerifyEmailPage from "@/pages/Auth/VerifyEmailPage";
 import FeedPage from "@/pages/Feed/FeedPage";
 import PostDetailPage from "@/pages/Feed/PostDetailPage";
 import BookmarksPage from "@/pages/Bookmarks/BookmarksPage";
@@ -99,6 +100,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
       </Route>
 
       <Route

@@ -74,10 +74,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
   logout: async () => {
-    const { accessToken } = get();
-
     try {
-      await requestLogout(accessToken);
+      await requestLogout();
     } catch {
       // Logout should still clear the local session even if the request fails.
     } finally {

@@ -1,17 +1,33 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createGroup,
+  getDiscoverGroups,
   getGroup,
+  getGroupBySlug,
+  getGroupPosts,
   getGroups,
+  getJoinedGroups,
+  getJoinedGroupsFeed,
   joinGroup,
   leaveGroup,
 } from "@/features/groups/api";
-import type { AppGroup, CreateGroupInput } from "@/features/groups/types";
+import type {
+  AppGroup,
+  AppGroupDetail,
+  CreateGroupInput,
+  DiscoverGroupsInput,
+} from "@/features/groups/types";
+import type { PostsPage } from "@/features/posts/types";
 
 export const groupKeys = {
   all: ["groups"] as const,
   list: () => [...groupKeys.all, "list"] as const,
+  joined: (limit: number) => [...groupKeys.all, "joined", limit] as const,
+  discover: (query: string, limit: number) => [...groupKeys.all, "discover", query, limit] as const,
   detail: (groupId: string) => [...groupKeys.all, "detail", groupId] as const,
+  detailBySlug: (slug: string) => [...groupKeys.all, "detail-by-slug", slug] as const,
+  posts: (groupId: string, pageSize: number) => [...groupKeys.all, "posts", groupId, pageSize] as const,
+  feed: (pageSize: number) => [...groupKeys.all, "feed", pageSize] as const,
 };
 
 export function useGroupsQuery(enabled = true) {
@@ -22,10 +38,73 @@ export function useGroupsQuery(enabled = true) {
   });
 }
 
+export function useJoinedGroupsQuery(limit = 12, enabled = true) {
+  return useQuery({
+    queryKey: groupKeys.joined(limit),
+    queryFn: (): Promise<AppGroup[]> => getJoinedGroups(limit),
+    enabled,
+  });
+}
+
+export function useDiscoverGroupsQuery(input: DiscoverGroupsInput = {}, enabled = true) {
+  const limit = input.limit ?? 12;
+  const query = input.query?.trim() ?? "";
+
+  return useQuery({
+    queryKey: groupKeys.discover(query, limit),
+    queryFn: (): Promise<AppGroup[]> => getDiscoverGroups({ query, limit }),
+    enabled,
+  });
+}
+
 export function useGroupDetailQuery(groupId?: string, enabled = true) {
   return useQuery({
     queryKey: groupId ? groupKeys.detail(groupId) : [...groupKeys.all, "detail"],
     queryFn: (): Promise<AppGroup> => getGroup(groupId!),
+    enabled: enabled && Boolean(groupId),
+  });
+}
+
+export function useGroupBySlugQuery(slug?: string, enabled = true) {
+  return useQuery({
+    queryKey: slug ? groupKeys.detailBySlug(slug) : [...groupKeys.all, "detail-by-slug"],
+    queryFn: (): Promise<AppGroupDetail> => getGroupBySlug(slug!),
+    enabled: enabled && Boolean(slug),
+  });
+}
+
+export function useInfiniteJoinedGroupsFeedQuery(pageSize = 10, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: groupKeys.feed(pageSize),
+    queryFn: ({ pageParam }): Promise<PostsPage> =>
+      getJoinedGroupsFeed({ page: Number(pageParam ?? 1), pageSize }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      const loadedCount = pages.reduce(
+        (count, page) => count + page.items.length,
+        0,
+      );
+
+      return loadedCount >= lastPage.totalCount ? undefined : pages.length + 1;
+    },
+    enabled,
+  });
+}
+
+export function useInfiniteGroupPostsQuery(groupId?: string, pageSize = 10, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: groupId ? groupKeys.posts(groupId, pageSize) : [...groupKeys.all, "posts", pageSize],
+    queryFn: ({ pageParam }): Promise<PostsPage> =>
+      getGroupPosts(groupId!, { page: Number(pageParam ?? 1), pageSize }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      const loadedCount = pages.reduce(
+        (count, page) => count + page.items.length,
+        0,
+      );
+
+      return loadedCount >= lastPage.totalCount ? undefined : pages.length + 1;
+    },
     enabled: enabled && Boolean(groupId),
   });
 }

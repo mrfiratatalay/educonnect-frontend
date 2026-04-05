@@ -16,7 +16,11 @@ export default function Header() {
   const location = useLocation();
   const { token } = theme.useToken();
 
-  if (screens.lg) {
+  if (
+    screens.lg ||
+    location.pathname === "/profile" ||
+    location.pathname.startsWith("/profile/")
+  ) {
     return null;
   }
 
@@ -31,7 +35,7 @@ export default function Header() {
         zIndex: 60,
         height: 54,
         paddingInline: 12,
-        background: "rgba(255, 255, 255, 0.86)",
+        background: token.colorBgContainer,
         borderBottom: `1px solid ${token.colorBorderSecondary}`,
         display: "flex",
         alignItems: "center",

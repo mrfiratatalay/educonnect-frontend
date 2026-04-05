@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getApiErrorMessage } from "@/features/auth/api";
-import { getAccessToken } from "@/features/auth/token";
+import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
 import type {
   CreatePostInput,
   CreatePostCommentInput,
@@ -22,13 +22,19 @@ const postsApi = axios.create({
 interface ApiPostResponse {
   id: string;
   userId: string;
+  groupId?: string | null;
+  groupName?: string | null;
+  groupSlug?: string | null;
+  groupAvatarUrl?: string | null;
   userName: string;
   avatarUrl?: string | null;
   content: string;
   imageUrl?: string | null;
   likesCount: number;
   commentsCount: number;
+  viewsCount: number;
   likedByCurrentUser: boolean;
+  bookmarkedByCurrentUser: boolean;
   createdAtUtc: string;
 }
 
@@ -53,17 +59,57 @@ interface ApiPostDetailResponse {
   comments: ApiPostCommentResponse[];
 }
 
+interface ApiPostBookmarkStateResponse {
+  isBookmarked: boolean;
+}
+
+interface ApiPostViewTrackingResponse {
+  viewsCount: number;
+}
+
 export async function getPosts(input: GetPostsInput = {}): Promise<PostsPage> {
   const page = input.page ?? 1;
   const pageSize = input.pageSize ?? 20;
 
   try {
-    const response = await postsApi.get<ApiPagedResponse<ApiPostResponse>>(
-      "/api/posts",
-      {
-        ...getAuthorizedConfig(),
-        params: { page, pageSize },
-      },
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPagedResponse<ApiPostResponse>>(
+        "/api/posts",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: { page, pageSize },
+        },
+      ),
+    );
+
+    return {
+      items: response.data.items.map(normalizePost),
+      page: response.data.page,
+      pageSize: response.data.pageSize,
+      totalCount: response.data.totalCount,
+    };
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function getBookmarkedPosts(input: GetPostsInput = {}): Promise<PostsPage> {
+  const page = input.page ?? 1;
+  const pageSize = input.pageSize ?? 20;
+
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPagedResponse<ApiPostResponse>>(
+        "/api/posts/bookmarks",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: { page, pageSize },
+        },
+      ),
     );
 
     return {
@@ -79,9 +125,15 @@ export async function getPosts(input: GetPostsInput = {}): Promise<PostsPage> {
 
 export async function getPostDetail(postId: string): Promise<PostDetail> {
   try {
-    const response = await postsApi.get<ApiPostDetailResponse>(
-      `/api/posts/${postId}`,
-      getAuthorizedConfig(),
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPostDetailResponse>(
+        `/api/posts/${postId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
 
     return {
@@ -95,10 +147,27 @@ export async function getPostDetail(postId: string): Promise<PostDetail> {
 
 export async function createPost(input: CreatePostInput): Promise<FeedPost> {
   try {
-    const response = await postsApi.post<ApiPostResponse>(
-      "/api/posts",
-      input,
-      getAuthorizedConfig(),
+    const formData = new FormData();
+    formData.append("content", input.content);
+
+    if (input.groupId) {
+      formData.append("groupId", input.groupId);
+    }
+
+    if (input.imageFile) {
+      formData.append("image", input.imageFile);
+    }
+
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.post<ApiPostResponse>(
+        "/api/posts",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
 
     return normalizePost(response.data);
@@ -109,13 +178,19 @@ export async function createPost(input: CreatePostInput): Promise<FeedPost> {
 
 export async function updatePost(input: UpdatePostInput): Promise<FeedPost> {
   try {
-    const response = await postsApi.put<ApiPostResponse>(
-      `/api/posts/${input.postId}`,
-      {
-        content: input.content,
-        imageUrl: input.imageUrl,
-      },
-      getAuthorizedConfig(),
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.put<ApiPostResponse>(
+        `/api/posts/${input.postId}`,
+        {
+          content: input.content,
+          imageUrl: input.imageUrl,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
 
     return normalizePost(response.data);
@@ -126,11 +201,57 @@ export async function updatePost(input: UpdatePostInput): Promise<FeedPost> {
 
 export async function togglePostLike(postId: string) {
   try {
-    await postsApi.post(
-      `/api/posts/${postId}/like`,
-      undefined,
-      getAuthorizedConfig(),
+    await executeAuthorizedRequest((accessToken) =>
+      postsApi.post(
+        `/api/posts/${postId}/like`,
+        undefined,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function togglePostBookmark(postId: string): Promise<boolean> {
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.post<ApiPostBookmarkStateResponse>(
+        `/api/posts/${postId}/bookmark`,
+        undefined,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
+    );
+
+    return response.data.isBookmarked;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function trackPostView(postId: string): Promise<number> {
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.post<ApiPostViewTrackingResponse>(
+        `/api/posts/${postId}/view`,
+        undefined,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
+    );
+
+    return response.data.viewsCount;
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
   }
@@ -138,10 +259,16 @@ export async function togglePostLike(postId: string) {
 
 export async function addPostComment(input: CreatePostCommentInput): Promise<PostComment> {
   try {
-    const response = await postsApi.post<ApiPostCommentResponse>(
-      `/api/posts/${input.postId}/comments`,
-      { content: input.content },
-      getAuthorizedConfig(),
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.post<ApiPostCommentResponse>(
+        `/api/posts/${input.postId}/comments`,
+        { content: input.content },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
 
     return normalizeComment(response.data);
@@ -152,37 +279,35 @@ export async function addPostComment(input: CreatePostCommentInput): Promise<Pos
 
 export async function deletePost(postId: string) {
   try {
-    await postsApi.delete(`/api/posts/${postId}`, getAuthorizedConfig());
+    await executeAuthorizedRequest((accessToken) =>
+      postsApi.delete(`/api/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }),
+    );
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
   }
-}
-
-function getAuthorizedConfig() {
-  const accessToken = getAccessToken();
-
-  if (!accessToken) {
-    throw new Error("Oturum bulunamadi. Lutfen yeniden giris yapin.");
-  }
-
-  return {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  };
 }
 
 function normalizePost(post: ApiPostResponse): FeedPost {
   return {
     id: post.id,
     userId: post.userId,
+    groupId: post.groupId || undefined,
+    groupName: post.groupName || undefined,
+    groupSlug: post.groupSlug || undefined,
+    groupAvatarUrl: post.groupAvatarUrl || undefined,
     userName: post.userName,
     avatarUrl: post.avatarUrl || undefined,
     content: post.content,
     imageUrl: post.imageUrl || undefined,
     likesCount: post.likesCount,
     commentsCount: post.commentsCount,
+    viewsCount: post.viewsCount,
     isLiked: post.likedByCurrentUser,
+    isBookmarked: post.bookmarkedByCurrentUser,
     createdAt: post.createdAtUtc,
   };
 }

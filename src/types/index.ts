@@ -10,6 +10,7 @@ export interface User {
   createdAt?: string;
   isActive?: boolean;
   avatarUrl?: string;
+  coverImageUrl?: string;
   department?: string;
   year?: number;
   bio?: string;

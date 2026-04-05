@@ -52,10 +52,10 @@ export default function Sidebar() {
           fontSize: 16,
           fontWeight: 700,
           lineHeight: 1.2,
-          color: "#1F2937",
+          color: token.colorText,
           cursor: "pointer",
           outline: "none",
-          background: "#FFFFFF",
+          background: token.colorBgElevated,
         }}
       >
         Var olan bir hesap ekle
@@ -79,13 +79,13 @@ export default function Sidebar() {
           padding: "14px 22px 22px",
           cursor: "pointer",
           outline: "none",
-          background: "#FFFFFF",
+          background: token.colorBgElevated,
         }}
       >
-        <div style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.18, color: "#111827" }}>
+        <div style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.18, color: token.colorText }}>
           @{userHandle} hesabindan
         </div>
-        <div style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.18, color: "#111827", marginTop: 2 }}>
+        <div style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.18, color: token.colorText, marginTop: 2 }}>
           cikis yap
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function Sidebar() {
             borderRadius: 18,
             fontSize: 17,
             fontWeight: selectedKey === item.key ? 700 : 600,
-            color: "#111827",
+            color: token.colorText,
           }}
         >
           <Flex align="center" gap={16}>
@@ -195,8 +195,9 @@ export default function Sidebar() {
               overlayInnerStyle={{
                 padding: 10,
                 borderRadius: 24,
-                border: "1px solid #E5EAF1",
-                boxShadow: "0 12px 36px rgba(15, 23, 42, 0.14), 0 4px 14px rgba(15, 23, 42, 0.08)",
+                border: `1px solid ${token.colorBorderSecondary}`,
+                boxShadow: token.boxShadowSecondary,
+                background: token.colorBgElevated,
               }}
             >
               <div style={{ display: "flex", justifyContent: isMessages ? "center" : "flex-start" }}>
@@ -285,9 +286,9 @@ export default function Sidebar() {
           overlayInnerStyle={{
             padding: 0,
             borderRadius: 22,
-            border: "1px solid #E5EAF1",
-            boxShadow: "0 10px 28px rgba(15, 23, 42, 0.12), 0 3px 12px rgba(15, 23, 42, 0.08)",
-            background: "#FFFFFF",
+            border: `1px solid ${token.colorBorderSecondary}`,
+            boxShadow: token.boxShadowSecondary,
+            background: token.colorBgElevated,
           }}
         >
           <Flex

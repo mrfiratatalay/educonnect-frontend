@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { App as AntdApp, ConfigProvider } from "antd";
 import { BrowserRouter } from "react-router-dom";
@@ -19,6 +19,24 @@ const queryClient = new QueryClient({
 
 function ThemedApp() {
   const isDark = useThemeStore((state) => state.isDark);
+
+  useLayoutEffect(() => {
+    const themeName = isDark ? "dark" : "light";
+    const backgroundColor = isDark ? "#000000" : "#FFFFFF";
+    const textColor = isDark ? "#F3F4F6" : "#111827";
+    const root = document.getElementById("root");
+
+    document.documentElement.dataset.theme = themeName;
+    document.documentElement.style.backgroundColor = backgroundColor;
+    document.documentElement.style.colorScheme = themeName;
+    document.body.style.backgroundColor = backgroundColor;
+    document.body.style.color = textColor;
+    document.body.style.colorScheme = themeName;
+
+    if (root) {
+      root.style.backgroundColor = backgroundColor;
+    }
+  }, [isDark]);
 
   return (
     <ConfigProvider theme={getAntdTheme(isDark)}>

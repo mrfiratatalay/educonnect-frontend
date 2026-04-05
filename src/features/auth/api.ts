@@ -22,6 +22,18 @@ export interface RegisterInput {
   year: number;
 }
 
+export interface EmailVerificationChallenge {
+  email: string;
+  verificationExpiresAtUtc: string;
+  canResendAtUtc: string;
+  message: string;
+}
+
+export interface VerifyEmailInput {
+  email: string;
+  code: string;
+}
+
 export interface ForgotPasswordInput {
   email: string;
 }
@@ -45,7 +57,17 @@ export async function login(request: LoginInput) {
 }
 
 export async function register(request: RegisterInput) {
-  const response = await authApi.post<AuthSession>("/api/auth/register", request);
+  const response = await authApi.post<EmailVerificationChallenge>("/api/auth/register", request);
+  return response.data;
+}
+
+export async function verifyEmail(request: VerifyEmailInput) {
+  const response = await authApi.post<{ message: string }>("/api/auth/verify-email", request);
+  return response.data;
+}
+
+export async function resendEmailVerification(email: string) {
+  const response = await authApi.post<EmailVerificationChallenge>("/api/auth/resend-verification", { email });
   return response.data;
 }
 
@@ -54,16 +76,8 @@ export async function refreshSession() {
   return response.data;
 }
 
-export async function logout(accessToken: string | null) {
-  if (!accessToken) {
-    return;
-  }
-
-  await authApi.post("/api/auth/logout", undefined, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+export async function logout() {
+  await authApi.post("/api/auth/logout");
 }
 
 export async function forgotPassword(request: ForgotPasswordInput) {

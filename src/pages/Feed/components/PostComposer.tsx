@@ -1,49 +1,17 @@
-import { type FormEvent, useState } from "react";
-import { Avatar, Button, Dropdown, Flex, Input, Tooltip, Typography, theme } from "antd";
-import type { MenuProps } from "antd";
-import {
-  DownOutlined,
-  EnvironmentOutlined,
-  FileGifOutlined,
-  FileImageOutlined,
-  GlobalOutlined,
-  LockOutlined,
-  ScheduleOutlined,
-  SmileOutlined,
-  TeamOutlined,
-  UnorderedListOutlined,
-} from "@ant-design/icons";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { Avatar, Button, Flex, Image, Input, Typography, Upload, theme } from "antd";
+import type { UploadProps } from "antd";
+import { DeleteOutlined, FileImageOutlined } from "@ant-design/icons";
+import type { CreatePostInput } from "@/features/posts/types";
+import { usePostComposerStore } from "@/store/postComposerStore";
 
 interface PostComposerProps {
   avatarUrl?: string;
   fullName?: string;
   isSubmitting: boolean;
-  onSubmit: (content: string) => Promise<void>;
+  onSubmit: (input: CreatePostInput) => Promise<void>;
   isInModal?: boolean;
 }
-
-type Audience = "everyone" | "followers" | "verified";
-
-const audienceLabels: Record<Audience, string> = {
-  everyone: "Herkes",
-  followers: "Takipciler",
-  verified: "Onayli hesaplar",
-};
-
-const audienceMenuItems: MenuProps["items"] = [
-  { key: "everyone", icon: <GlobalOutlined />, label: "Herkes" },
-  { key: "followers", icon: <TeamOutlined />, label: "Takipciler" },
-  { key: "verified", icon: <LockOutlined />, label: "Onayli hesaplar" },
-];
-
-const mediaIcons = [
-  { icon: <FileImageOutlined />, tip: "Medya" },
-  { icon: <FileGifOutlined />, tip: "GIF" },
-  { icon: <UnorderedListOutlined />, tip: "Anket" },
-  { icon: <SmileOutlined />, tip: "Emoji" },
-  { icon: <ScheduleOutlined />, tip: "Planla" },
-  { icon: <EnvironmentOutlined />, tip: "Konum" },
-];
 
 export default function PostComposer({
   avatarUrl,
@@ -52,10 +20,64 @@ export default function PostComposer({
   onSubmit,
   isInModal = false,
 }: PostComposerProps) {
-  const [content, setContent] = useState("");
+  const content = usePostComposerStore((state) => state.content);
+  const imageFile = usePostComposerStore((state) => state.imageFile);
+  const setContent = usePostComposerStore((state) => state.setContent);
+  const setImageFile = usePostComposerStore((state) => state.setImageFile);
+  const clearDraft = usePostComposerStore((state) => state.clearDraft);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [audience, setAudience] = useState<Audience>("everyone");
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | undefined>();
   const { token } = theme.useToken();
+  const remainingCharacterCount = 1500 - content.length;
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreviewUrl(undefined);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(imageFile);
+    setImagePreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [imageFile]);
+
+  useEffect(() => {
+    if (content.trim() || imageFile) {
+      setErrorMessage(null);
+    }
+  }, [content, imageFile]);
+
+  const uploadProps = useMemo<UploadProps>(
+    () => ({
+      accept: "image/png,image/jpeg,image/gif",
+      maxCount: 1,
+      showUploadList: false,
+      beforeUpload: (file) => {
+        const allowedTypes = ["image/png", "image/jpeg", "image/gif"];
+
+        if (!allowedTypes.includes(file.type)) {
+          setErrorMessage("Sadece JPG, PNG veya GIF gorseller yukleyebilirsiniz.");
+          return Upload.LIST_IGNORE;
+        }
+
+        if (file.size / 1024 / 1024 >= 5) {
+          setErrorMessage("Gorsel en fazla 5MB olabilir.");
+          return Upload.LIST_IGNORE;
+        }
+
+        setImageFile(file);
+        setErrorMessage(null);
+        return false;
+      },
+      onRemove: () => {
+        setImageFile(null);
+      },
+    }),
+    [setImageFile],
+  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -68,8 +90,12 @@ export default function PostComposer({
 
     try {
       setErrorMessage(null);
-      await onSubmit(trimmedContent);
-      setContent("");
+      await onSubmit({
+        content: trimmedContent,
+        imageFile,
+        imagePreviewUrl,
+      });
+      clearDraft();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Paylasim gonderilemedi.");
     }
@@ -98,39 +124,10 @@ export default function PostComposer({
           </Avatar>
 
           <Flex vertical gap={4} style={{ flex: 1 }}>
-            <Dropdown
-              menu={{
-                items: audienceMenuItems,
-                selectedKeys: [audience],
-                onClick: ({ key }) => setAudience(key as Audience),
-              }}
-              trigger={["click"]}
-            >
-              <Button
-                size="small"
-                shape="round"
-                style={{
-                  color: "#1D9BF0",
-                  borderColor: "#1D9BF0",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  padding: "0 12px",
-                  height: 24,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  width: "fit-content",
-                  marginBottom: 4,
-                }}
-              >
-                {audienceLabels[audience]} <DownOutlined style={{ fontSize: 10 }} />
-              </Button>
-            </Dropdown>
-
             <Input.TextArea
               value={content}
               onChange={(event) => setContent(event.target.value)}
-              placeholder="Neler oluyor?"
+              placeholder="Kampusunde neler oluyor?"
               bordered={false}
               style={{
                 fontSize: 20,
@@ -140,30 +137,69 @@ export default function PostComposer({
                 minHeight: 56,
               }}
               maxLength={1500}
+              showCount={false}
               autoSize={{ minRows: isInModal ? 4 : 1, maxRows: 8 }}
             />
 
-            <Flex align="center" gap={6} style={{ marginTop: 4, marginBottom: 12 }}>
-              <GlobalOutlined style={{ color: "#1D9BF0", fontSize: 14 }} />
-              <Typography.Text style={{ color: "#1D9BF0", fontSize: 14, fontWeight: 500 }}>
-                Herkes yanitlayabilir
+            {imagePreviewUrl ? (
+              <div
+                style={{
+                  marginTop: 8,
+                  borderRadius: 18,
+                  overflow: "hidden",
+                  border: `1px solid ${token.colorBorderSecondary}`,
+                }}
+              >
+                <Image
+                  src={imagePreviewUrl}
+                  alt="Secilen gorsel"
+                  preview
+                  style={{
+                    width: "100%",
+                    maxHeight: 320,
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+              </div>
+            ) : null}
+
+            <Flex align="center" justify="space-between" style={{ marginTop: 8, marginBottom: 12 }}>
+              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                En fazla 1500 karakter. Istersen tek bir gorsel ekleyebilirsin.
+              </Typography.Text>
+              <Typography.Text
+                type={remainingCharacterCount < 100 ? "warning" : "secondary"}
+                style={{ fontSize: 13, fontVariantNumeric: "tabular-nums" }}
+              >
+                {remainingCharacterCount}
               </Typography.Text>
             </Flex>
 
             <div style={{ height: 1, background: token.colorBorderSecondary, marginBottom: 12 }} />
 
             <Flex align="center" justify="space-between">
-              <Flex align="center" gap={2}>
-                {mediaIcons.map((item, index) => (
-                  <Tooltip key={index} title={item.tip}>
-                    <Button
-                      type="text"
-                      shape="circle"
-                      icon={item.icon}
-                      style={{ color: "#1D9BF0", fontSize: 18, width: 36, height: 36 }}
-                    />
-                  </Tooltip>
-                ))}
+              <Flex align="center" gap={8}>
+                <Upload {...uploadProps}>
+                  <Button
+                    type="text"
+                    shape="circle"
+                    icon={<FileImageOutlined />}
+                    disabled={isSubmitting}
+                    style={{ color: "#1D9BF0", fontSize: 18, width: 36, height: 36 }}
+                  />
+                </Upload>
+
+                {imageFile ? (
+                  <Button
+                    type="text"
+                    shape="circle"
+                    icon={<DeleteOutlined />}
+                    disabled={isSubmitting}
+                    onClick={() => setImageFile(null)}
+                    style={{ color: token.colorError, width: 36, height: 36 }}
+                  />
+                ) : null}
               </Flex>
 
               <Flex align="center" gap={12}>

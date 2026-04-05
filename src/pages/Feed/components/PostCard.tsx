@@ -1,21 +1,32 @@
-import { useState } from "react";
+import { useState, type MouseEvent, type ReactNode } from "react";
 import {
-  MessageCircle,
-  Repeat2,
-  Heart,
-  BarChart2,
   Bookmark,
-  Upload,
+  ChartColumn,
+  Heart,
+  MessageCircle,
   MoreHorizontal,
   Pencil,
-  Trash2
+  Share2,
+  Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Avatar, Button, Dropdown, Flex, Image, Typography, theme, List } from "antd";
+import {
+  Avatar,
+  Dropdown,
+  Flex,
+  Image,
+  List,
+  Typography,
+  message,
+  theme,
+} from "antd";
 import type { MenuProps } from "antd";
-import { useTogglePostLikeMutation } from "@/features/posts/hooks";
+import {
+  useTogglePostBookmarkMutation,
+  useTogglePostLikeMutation,
+} from "@/features/posts/hooks";
 import type { FeedPost } from "@/features/posts/types";
-import { formatPostTime } from "@/features/posts/utils";
+import { formatPostMetric, formatPostTime } from "@/features/posts/utils";
 import PostCommentsPanel from "@/pages/Feed/components/PostCommentsPanel";
 import PostEditForm from "@/pages/Feed/components/PostEditForm";
 
@@ -24,34 +35,41 @@ interface PostCardProps {
   canManage: boolean;
   isDeleting: boolean;
   isUpdating: boolean;
+  mode?: "feed" | "detail";
   onDelete: (postId: string) => void;
   onUpdate: (postId: string, content: string) => Promise<void>;
 }
 
-const ActionBtn = ({
+interface ActionBtnProps {
+  icon: ReactNode;
+  count?: number;
+  color: string;
+  hoverColor: string;
+  hoverBgColor: string;
+  onClick?: (event: MouseEvent) => void;
+}
+
+function ActionBtn({
   icon,
   count,
   color,
   hoverColor,
   hoverBgColor,
   onClick,
-}: {
-  icon: React.ReactNode;
-  count?: number;
-  color: string;
-  hoverColor: string;
-  hoverBgColor: string;
-  onClick?: (e: React.MouseEvent) => void;
-}) => {
+}: ActionBtnProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <Flex
       align="center"
-      style={{ cursor: "pointer", color: isHovered ? hoverColor : color, transition: "color 0.2s" }}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.(e);
+      style={{
+        cursor: "pointer",
+        color: isHovered ? hoverColor : color,
+        transition: "color 0.2s",
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick?.(event);
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -71,49 +89,115 @@ const ActionBtn = ({
         {icon}
       </div>
       {count !== undefined && (
-        <span style={{ fontSize: 13, minWidth: 16 }}>{count > 0 ? count : ""}</span>
+        <span style={{ fontSize: 13, minWidth: 16 }}>
+          {count > 0 ? formatPostMetric(count) : ""}
+        </span>
       )}
     </Flex>
   );
-};
+}
+
+function ActionStat({
+  icon,
+  value,
+  color,
+}: {
+  icon: ReactNode;
+  value: number;
+  color: string;
+}) {
+  return (
+    <Flex align="center" gap={6} style={{ color }}>
+      <span style={{ display: "inline-flex", alignItems: "center" }}>{icon}</span>
+      <span style={{ fontSize: 13 }}>{formatPostMetric(value)}</span>
+    </Flex>
+  );
+}
 
 export default function PostCard({
   post,
   canManage,
   isDeleting,
   isUpdating,
+  mode = "feed",
   onDelete,
   onUpdate,
 }: PostCardProps) {
   const navigate = useNavigate();
+  const [messageApi, messageContextHolder] = message.useMessage();
   const [isEditing, setIsEditing] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const toggleLikeMutation = useTogglePostLikeMutation();
+  const toggleBookmarkMutation = useTogglePostBookmarkMutation();
   const { token } = theme.useToken();
-
-  const isLiking =
-    toggleLikeMutation.isPending &&
-    toggleLikeMutation.variables === post.id;
+  const isFeedMode = mode === "feed";
 
   const managementItems: MenuProps["items"] = [
     {
       key: "edit",
       icon: <Pencil size={16} />,
-      label: isEditing ? "Düzenlemeyi kapat" : "Gönderiyi düzenle",
+      label: isEditing ? "Duzenlemeyi kapat" : "Gonderiyi duzenle",
       disabled: isUpdating,
     },
     { type: "divider" },
     {
       key: "delete",
       icon: <Trash2 size={16} />,
-      label: isDeleting ? "Siliniyor..." : "Gönderiyi sil",
+      label: isDeleting ? "Siliniyor..." : "Gonderiyi sil",
       danger: true,
       disabled: isDeleting,
     },
   ];
 
+  function handleOpenPost() {
+    if (!isFeedMode || isEditing) {
+      return;
+    }
+
+    navigate(`/post/${post.id}`);
+  }
+
+  function handleProfileClick(event?: MouseEvent<HTMLElement>) {
+    if (!event) {
+      return;
+    }
+
+    event.stopPropagation();
+    navigate(`/profile/${post.userId}`);
+  }
+
+  function handleDropdownTriggerClick(event: MouseEvent) {
+    event.stopPropagation();
+  }
+
   function handleToggleLike() {
     void toggleLikeMutation.mutateAsync(post.id);
+  }
+
+  function handleToggleBookmark() {
+    void toggleBookmarkMutation.mutateAsync(post.id);
+  }
+
+  async function handleShare() {
+    const postUrl = `${window.location.origin}/post/${post.id}`;
+
+    try {
+      await copyTextToClipboard(postUrl);
+      messageApi.success("Gonderi baglantisi kopyalandi.");
+    } catch {
+      messageApi.error("Baglanti kopyalanamadi.");
+    }
+  }
+
+  function handleCommentClick() {
+    if (isFeedMode) {
+      setShowComments((current) => !current);
+      return;
+    }
+
+    document
+      .getElementById("post-comment-composer")
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   async function handleUpdate(content: string) {
@@ -126,151 +210,225 @@ export default function PostCard({
       setIsEditing((current) => !current);
       return;
     }
+
     if (key === "delete") {
       onDelete(post.id);
     }
   }
 
-  // ActionBtn is now globally defined above
-
   return (
-    <List.Item style={{ padding: "12px 16px" }}>
-      <Flex gap={12} align="flex-start" style={{ width: "100%" }}>
-        <Avatar
-          src={post.avatarUrl}
-          size={40}
-          onClick={() => navigate(`/profile/${post.userId}`)}
-          style={{
-            backgroundColor: token.colorPrimaryBg,
-            color: token.colorPrimary,
-            flexShrink: 0,
-            cursor: "pointer",
-          }}
-        >
-          {post.userName.charAt(0)}
-        </Avatar>
+    <>
+      {messageContextHolder}
+      <List.Item style={{ padding: "12px 16px" }}>
+        <Flex gap={12} align="flex-start" style={{ width: "100%" }}>
+          <Avatar
+            src={post.avatarUrl}
+            size={40}
+            onClick={handleProfileClick}
+            style={{
+              backgroundColor: token.colorPrimaryBg,
+              color: token.colorPrimary,
+              flexShrink: 0,
+              cursor: "pointer",
+            }}
+          >
+            {post.userName.charAt(0)}
+          </Avatar>
 
-        <Flex vertical style={{ flex: 1, minWidth: 0 }}>
-          {/* Header row: Name · @handle · time · ... */}
-          <Flex align="center" justify="space-between">
-            <Flex align="center" gap={4} style={{ minWidth: 0 }}>
-              <Typography.Text
-                strong
-                style={{ fontSize: 15, cursor: "pointer", lineHeight: 1.2 }}
-                onClick={() => navigate(`/profile/${post.userId}`)}
-              >
-                {post.userName}
-              </Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 15 }}>
-                @{post.userName.replace(/\s+/g, "").toLowerCase()}
-              </Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 15 }}>·</Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 15 }}>
-                {formatPostTime(post.createdAt)}
-              </Typography.Text>
-            </Flex>
+          <Flex vertical style={{ flex: 1, minWidth: 0 }}>
+            {isEditing ? (
+              <>
+                <Flex align="center" justify="space-between">
+                  <Flex align="center" gap={4} style={{ minWidth: 0 }}>
+                    <Typography.Text
+                      strong
+                      style={{ fontSize: 15, lineHeight: 1.2, cursor: "pointer" }}
+                      onClick={handleProfileClick}
+                    >
+                      {post.userName}
+                    </Typography.Text>
+                    <Typography.Text type="secondary" style={{ fontSize: 15 }}>
+                      @{post.userName.replace(/\s+/g, "").toLowerCase()}
+                    </Typography.Text>
+                  </Flex>
+                </Flex>
 
-            {canManage && (
-              <Dropdown
-                menu={{
-                  items: managementItems,
-                  onClick: ({ key }) => handleManagementClick(String(key)),
-                }}
-                placement="bottomRight"
-                trigger={["click"]}
-              >
-                <div style={{ cursor: "pointer", display: "flex", alignItems: "center", padding: 4 }}>
-                  <MoreHorizontal size={18} style={{ color: token.colorTextTertiary }} />
+                <div style={{ marginTop: 8 }}>
+                  <PostEditForm
+                    initialContent={post.content}
+                    isSubmitting={isUpdating}
+                    onCancel={() => setIsEditing(false)}
+                    onSubmit={handleUpdate}
+                  />
                 </div>
-              </Dropdown>
+              </>
+            ) : (
+              <>
+                <div
+                  onClick={handleOpenPost}
+                  style={{ cursor: isFeedMode ? "pointer" : "default" }}
+                >
+                  <Flex align="center" justify="space-between">
+                    <Flex align="center" gap={4} style={{ minWidth: 0 }}>
+                      <Typography.Text
+                        strong
+                        style={{ fontSize: 15, lineHeight: 1.2, cursor: "pointer" }}
+                        onClick={handleProfileClick}
+                      >
+                        {post.userName}
+                      </Typography.Text>
+                      <Typography.Text type="secondary" style={{ fontSize: 15 }}>
+                        @{post.userName.replace(/\s+/g, "").toLowerCase()}
+                      </Typography.Text>
+                      <Typography.Text type="secondary" style={{ fontSize: 15 }}>
+                        .
+                      </Typography.Text>
+                      <Typography.Text type="secondary" style={{ fontSize: 15 }}>
+                        {formatPostTime(post.createdAt)}
+                      </Typography.Text>
+                    </Flex>
+
+                    {canManage && (
+                      <Dropdown
+                        menu={{
+                          items: managementItems,
+                          onClick: ({ key }) => handleManagementClick(String(key)),
+                        }}
+                        placement="bottomRight"
+                        trigger={["click"]}
+                      >
+                        <div
+                          style={{
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            padding: 4,
+                          }}
+                          onClick={handleDropdownTriggerClick}
+                        >
+                          <MoreHorizontal
+                            size={18}
+                            style={{ color: token.colorTextTertiary }}
+                          />
+                        </div>
+                      </Dropdown>
+                    )}
+                  </Flex>
+
+                  <Typography.Paragraph
+                    style={{
+                      marginBottom: 0,
+                      marginTop: 4,
+                      lineHeight: 1.5,
+                      whiteSpace: "pre-wrap",
+                      fontSize: 15,
+                    }}
+                  >
+                    {post.content}
+                  </Typography.Paragraph>
+
+                  {post.imageUrl && (
+                    <Image
+                      src={post.imageUrl}
+                      alt="Gonderi gorseli"
+                      preview
+                      style={{
+                        maxHeight: 384,
+                        width: "100%",
+                        objectFit: "cover",
+                        borderRadius: 16,
+                        marginTop: 12,
+                      }}
+                      onClick={(event) => event.stopPropagation()}
+                    />
+                  )}
+                </div>
+
+                <Flex
+                  align="center"
+                  justify="space-between"
+                  gap={12}
+                  style={{ marginTop: 4, width: "100%" }}
+                >
+                  <Flex align="center" gap={12} wrap>
+                    <ActionBtn
+                      icon={<MessageCircle size={18} />}
+                      count={post.commentsCount}
+                      color={token.colorTextTertiary}
+                      hoverColor="#1D9BF0"
+                      hoverBgColor="rgba(29, 155, 240, 0.1)"
+                      onClick={handleCommentClick}
+                    />
+                    <ActionBtn
+                      icon={
+                        <Heart size={18} fill={post.isLiked ? "#F91880" : "transparent"} />
+                      }
+                      count={post.likesCount}
+                      color={post.isLiked ? "#F91880" : token.colorTextTertiary}
+                      hoverColor="#F91880"
+                      hoverBgColor="rgba(249, 24, 128, 0.1)"
+                      onClick={handleToggleLike}
+                    />
+                    <ActionBtn
+                      icon={
+                        <Bookmark
+                          size={18}
+                          fill={post.isBookmarked ? token.colorPrimary : "transparent"}
+                        />
+                      }
+                      color={post.isBookmarked ? token.colorPrimary : token.colorTextTertiary}
+                      hoverColor={token.colorPrimary}
+                      hoverBgColor={token.colorPrimaryBg}
+                      onClick={handleToggleBookmark}
+                    />
+                    <ActionBtn
+                      icon={<Share2 size={18} />}
+                      color={token.colorTextTertiary}
+                      hoverColor="#1D9BF0"
+                      hoverBgColor="rgba(29, 155, 240, 0.1)"
+                      onClick={() => {
+                        void handleShare();
+                      }}
+                    />
+                  </Flex>
+
+                  <ActionStat
+                    icon={<ChartColumn size={18} />}
+                    value={post.viewsCount}
+                    color={token.colorTextTertiary}
+                  />
+                </Flex>
+              </>
+            )}
+
+            {!isEditing && isFeedMode && (
+              <PostCommentsPanel postId={post.id} isOpen={showComments} />
             )}
           </Flex>
-
-          {/* Content */}
-          {isEditing ? (
-            <PostEditForm
-              initialContent={post.content}
-              isSubmitting={isUpdating}
-              onCancel={() => setIsEditing(false)}
-              onSubmit={handleUpdate}
-            />
-          ) : (
-            <>
-              <Typography.Paragraph
-                style={{ marginBottom: 0, marginTop: 4, lineHeight: 1.5, whiteSpace: "pre-wrap", fontSize: 15 }}
-              >
-                {post.content}
-              </Typography.Paragraph>
-
-              {post.imageUrl && (
-                <Image
-                  src={post.imageUrl}
-                  alt="Gönderi görseli"
-                  style={{
-                    maxHeight: 384,
-                    width: "100%",
-                    objectFit: "cover",
-                    borderRadius: 16,
-                    marginTop: 12,
-                  }}
-                />
-              )}
-
-              {/* X-style action row */}
-              <Flex justify="space-between" align="center" style={{ marginTop: 4, width: "100%" }}>
-                <Flex align="center" justify="space-between" style={{ flex: 1, maxWidth: 425, paddingRight: 20 }}>
-                  <ActionBtn
-                    icon={<MessageCircle size={18} />}
-                    count={post.commentsCount}
-                    color={token.colorTextTertiary}
-                    hoverColor="#1D9BF0"
-                    hoverBgColor="rgba(29, 155, 240, 0.1)"
-                    onClick={() => setShowComments((c) => !c)}
-                  />
-                  <ActionBtn
-                    icon={<Repeat2 size={18} />}
-                    color={token.colorTextTertiary}
-                    hoverColor="#00BA7C"
-                    hoverBgColor="rgba(0, 186, 124, 0.1)"
-                  />
-                  <ActionBtn
-                    icon={<Heart size={18} fill={post.isLiked ? "#F91880" : "transparent"} />}
-                    count={post.likesCount}
-                    color={post.isLiked ? "#F91880" : token.colorTextTertiary}
-                    hoverColor="#F91880"
-                    hoverBgColor="rgba(249, 24, 128, 0.1)"
-                    onClick={handleToggleLike}
-                  />
-                  <ActionBtn
-                    icon={<BarChart2 size={18} />}
-                    count={Math.floor(Math.random() * 500) + 50}
-                    color={token.colorTextTertiary}
-                    hoverColor="#1D9BF0"
-                    hoverBgColor="rgba(29, 155, 240, 0.1)"
-                  />
-                </Flex>
-                
-                <Flex align="center" gap={0}>
-                  <ActionBtn
-                    icon={<Bookmark size={18} />}
-                    color={token.colorTextTertiary}
-                    hoverColor="#1D9BF0"
-                    hoverBgColor="rgba(29, 155, 240, 0.1)"
-                  />
-                  <ActionBtn
-                    icon={<Upload size={18} />}
-                    color={token.colorTextTertiary}
-                    hoverColor="#1D9BF0"
-                    hoverBgColor="rgba(29, 155, 240, 0.1)"
-                  />
-                </Flex>
-              </Flex>
-            </>
-          )}
-
-          {!isEditing && <PostCommentsPanel postId={post.id} isOpen={showComments} />}
         </Flex>
-      </Flex>
-    </List.Item>
+      </List.Item>
+    </>
   );
+}
+
+async function copyTextToClipboard(value: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  const hasCopied = document.execCommand("copy");
+  document.body.removeChild(textarea);
+
+  if (!hasCopied) {
+    throw new Error("copy_failed");
+  }
 }

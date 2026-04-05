@@ -196,7 +196,7 @@ export default function MobileNav() {
           insetInline: 0,
           bottom: 0,
           zIndex: 50,
-          background: "rgba(255, 255, 255, 0.96)",
+          background: token.colorBgContainer,
           borderTop: `1px solid ${token.colorBorderSecondary}`,
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",

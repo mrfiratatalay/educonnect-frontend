@@ -1,13 +1,19 @@
 export interface FeedPost {
   id: string;
   userId: string;
+  groupId?: string;
+  groupName?: string;
+  groupSlug?: string;
+  groupAvatarUrl?: string;
   userName: string;
   avatarUrl?: string;
   content: string;
   imageUrl?: string;
   likesCount: number;
   commentsCount: number;
+  viewsCount: number;
   isLiked: boolean;
+  isBookmarked: boolean;
   createdAt: string;
 }
 
@@ -39,7 +45,9 @@ export interface GetPostsInput {
 
 export interface CreatePostInput {
   content: string;
-  imageUrl?: string;
+  groupId?: string;
+  imageFile?: File | null;
+  imagePreviewUrl?: string;
 }
 
 export interface UpdatePostInput {

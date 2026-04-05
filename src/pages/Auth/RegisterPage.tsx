@@ -1,64 +1,61 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import {
-  Alert,
-  Button,
-  Flex,
-  Form,
-  Input,
-  Select,
-  Typography,
-} from "antd";
+import { Alert, Button, Flex, Form, Input, Select } from "antd";
 import { getApiErrorMessage, getUniversities, register as registerRequest } from "@/features/auth/api";
-import { useAuthStore } from "@/store/authStore";
+import {
+  AuthPageFooter,
+  AuthPageIntro,
+  AuthStepLabel,
+  authAlertStyle,
+  authInputStyle,
+  authPrimaryButtonStyle,
+  authSecondaryButtonStyle,
+  authSelectStyle,
+  authWarningAlertStyle,
+} from "./AuthPageParts";
 
 const registerSchema = z
   .object({
-    fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalı"),
-    email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-    universityId: z.string().min(1, "Üniversite seçiniz"),
-    department: z.string().min(2, "Bölüm en az 2 karakter olmalı"),
-    year: z.string().min(1, "Sınıf seçiniz"),
-    password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
+    fullName: z.string().min(3, "Ad soyad en az 3 karakter olmali"),
+    email: z.string().email("Gecerli bir e-posta adresi girin"),
+    universityId: z.string().min(1, "Universite secin"),
+    department: z.string().min(2, "Bolum en az 2 karakter olmali"),
+    year: z.string().min(1, "Sinif secin"),
+    password: z.string().min(8, "Sifre en az 8 karakter olmali"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Şifreler eşleşmiyor",
+    message: "Sifreler eslesmiyor",
     path: ["confirmPassword"],
   });
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
+const stepOneFields = ["fullName", "email"] as const;
+const stepTwoFields = [
+  "universityId",
+  "department",
+  "year",
+  "password",
+  "confirmPassword",
+] as const;
+
 const yearOptions = [
-  { value: "1", label: "1. Sınıf" },
-  { value: "2", label: "2. Sınıf" },
-  { value: "3", label: "3. Sınıf" },
-  { value: "4", label: "4. Sınıf" },
-  { value: "5", label: "5. Sınıf+" },
+  { value: "1", label: "1. Sinif" },
+  { value: "2", label: "2. Sinif" },
+  { value: "3", label: "3. Sinif" },
+  { value: "4", label: "4. Sinif" },
+  { value: "5", label: "5. Sinif+" },
 ];
-
-const inputStyle = {
-  height: 56,
-  borderRadius: 4,
-  background: "transparent",
-  borderColor: "#333639",
-  color: "#E7E9EA",
-  fontSize: 17,
-};
-
-const selectStyle = {
-  height: 56,
-};
 
 export default function RegisterPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
-  const setSession = useAuthStore((state) => state.setSession);
 
   const {
     data: universities = [],
@@ -69,6 +66,7 @@ export default function RegisterPage() {
   const {
     control,
     handleSubmit,
+    setFocus,
     trigger,
     formState: { errors, isSubmitting },
   } = useForm<RegisterForm>({
@@ -97,7 +95,7 @@ export default function RegisterPage() {
     setSubmitError(null);
 
     try {
-      const session = await registerRequest({
+      const challenge = await registerRequest({
         fullName: data.fullName,
         email: data.email,
         password: data.password,
@@ -106,15 +104,41 @@ export default function RegisterPage() {
         year: Number(data.year),
       });
 
-      setSession(session);
-      navigate("/", { replace: true });
+      navigate(`/verify-email?email=${encodeURIComponent(challenge.email)}`, {
+        replace: true,
+        state: { message: challenge.message },
+      });
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
     }
   };
 
+  const handleInvalidSubmit = (formErrors: FieldErrors<RegisterForm>) => {
+    const firstStepInvalidField = stepOneFields.find((field) => formErrors[field]);
+    const secondStepInvalidField = stepTwoFields.find((field) => formErrors[field]);
+    const firstInvalidField = firstStepInvalidField ?? secondStepInvalidField;
+
+    if (firstStepInvalidField) {
+      setCurrentStep(0);
+    } else if (secondStepInvalidField) {
+      setCurrentStep(1);
+    }
+
+    if (firstInvalidField) {
+      window.setTimeout(() => {
+        setFocus(firstInvalidField);
+      }, 0);
+    }
+
+    setSubmitError("Devam etmeden once tum zorunlu alanlari doldurun.");
+  };
+
+  const submitRegistration = handleSubmit(onSubmit, handleInvalidSubmit);
+
   const handleContinue = async () => {
-    const isValid = await trigger(["fullName", "email", "password", "confirmPassword"], {
+    setSubmitError(null);
+
+    const isValid = await trigger(stepOneFields, {
       shouldFocus: true,
     });
 
@@ -124,38 +148,35 @@ export default function RegisterPage() {
   };
 
   return (
-    <Flex vertical style={{ width: "100%", maxWidth: 440 }}>
-      <Typography.Title
-        level={2}
-        style={{
-          color: "#E7E9EA",
-          fontSize: 31,
-          fontWeight: 800,
-          letterSpacing: "-0.03em",
-          margin: "0 0 8px 0",
+    <Flex vertical style={{ width: "100%", maxWidth: 420 }}>
+      <AuthStepLabel
+        current={currentStep + 1}
+        total={2}
+        label={currentStep === 0 ? "Temel bilgiler" : "Profil ve sifre"}
+      />
+
+      <AuthPageIntro
+        title="Hesap olustur"
+        description={
+          currentStep === 0
+            ? "Adini ve universiteye ait kurumsal e-posta adresini gir. Sonraki adimda profilini ve sifreni tamamlayacaksin."
+            : "Universiteni ekle, profilini tamamla ve hesabin icin sifre belirle. Kayit sonrasi dogrulama kodu e-posta adresine gonderilecek."
+        }
+      />
+
+      <Form
+        layout="vertical"
+        size="large"
+        onSubmitCapture={(event) => {
+          event.preventDefault();
+          void submitRegistration(event);
         }}
       >
-        Hesabını oluştur
-      </Typography.Title>
-
-      {/* Step indicator */}
-      <Typography.Text
-        style={{
-          color: "#71767B",
-          fontSize: 15,
-          marginBottom: 24,
-        }}
-      >
-        {currentStep === 0 ? "Adım 1/2 — Hesap bilgileri" : "Adım 2/2 — Akademik bilgiler"}
-      </Typography.Text>
-
-      <Form layout="vertical" size="large" onFinish={handleSubmit(onSubmit)}>
         {currentStep === 0 ? (
           <Flex vertical>
             <Form.Item
               validateStatus={errors.fullName ? "error" : undefined}
               help={errors.fullName?.message}
-              style={{ marginBottom: 20 }}
             >
               <Controller
                 name="fullName"
@@ -166,21 +187,16 @@ export default function RegisterPage() {
                     autoFocus
                     allowClear
                     autoComplete="name"
-                    placeholder="Ad Soyad"
+                    placeholder="Ad soyad"
                     status={errors.fullName ? "error" : undefined}
-                    style={inputStyle}
-                    showCount
+                    style={authInputStyle}
                     maxLength={50}
                   />
                 )}
               />
             </Form.Item>
 
-            <Form.Item
-              validateStatus={errors.email ? "error" : undefined}
-              help={errors.email?.message}
-              style={{ marginBottom: 20 }}
-            >
+            <Form.Item validateStatus={errors.email ? "error" : undefined} help={errors.email?.message}>
               <Controller
                 name="email"
                 control={control}
@@ -193,47 +209,7 @@ export default function RegisterPage() {
                     autoComplete="email"
                     placeholder="E-posta"
                     status={errors.email ? "error" : undefined}
-                    style={inputStyle}
-                  />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item
-              validateStatus={errors.password ? "error" : undefined}
-              help={errors.password?.message}
-              style={{ marginBottom: 20 }}
-            >
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    autoComplete="new-password"
-                    placeholder="Şifre"
-                    status={errors.password ? "error" : undefined}
-                    style={inputStyle}
-                  />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item
-              validateStatus={errors.confirmPassword ? "error" : undefined}
-              help={errors.confirmPassword?.message}
-              style={{ marginBottom: 24 }}
-            >
-              <Controller
-                name="confirmPassword"
-                control={control}
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    autoComplete="new-password"
-                    placeholder="Şifre tekrar"
-                    status={errors.confirmPassword ? "error" : undefined}
-                    style={inputStyle}
+                    style={authInputStyle}
                   />
                 )}
               />
@@ -241,17 +217,9 @@ export default function RegisterPage() {
           </Flex>
         ) : (
           <Flex vertical>
-            <Typography.Text
-              style={{ color: "#71767B", fontSize: 14, marginBottom: 20, lineHeight: 1.5 }}
-            >
-              Üniversite, bölüm ve sınıf bilgileriniz öğrenci profilinizin oluşturulması için
-              gereklidir.
-            </Typography.Text>
-
             <Form.Item
               validateStatus={errors.universityId ? "error" : undefined}
               help={errors.universityId?.message}
-              style={{ marginBottom: 20 }}
             >
               <Controller
                 name="universityId"
@@ -261,17 +229,15 @@ export default function RegisterPage() {
                     {...field}
                     allowClear
                     loading={isUniversitiesLoading}
-                    notFoundContent={
-                      isUniversitiesLoading ? "Yükleniyor..." : "Sonuç bulunamadı"
-                    }
-                    optionFilterProp="label"
+                    notFoundContent={isUniversitiesLoading ? "Yukleniyor..." : "Sonuc bulunamadi"}
                     options={universityOptions}
-                    placeholder="Üniversite seçiniz"
-                    showSearch
+                    placeholder="Universite sec"
+                    showSearch={{ optionFilterProp: "label" }}
                     status={errors.universityId ? "error" : undefined}
                     value={field.value || undefined}
                     onChange={(value) => field.onChange(value ?? "")}
-                    style={selectStyle}
+                    getPopupContainer={(node) => node.parentElement ?? node}
+                    style={authSelectStyle}
                   />
                 )}
               />
@@ -280,7 +246,6 @@ export default function RegisterPage() {
             <Form.Item
               validateStatus={errors.department ? "error" : undefined}
               help={errors.department?.message}
-              style={{ marginBottom: 20 }}
             >
               <Controller
                 name="department"
@@ -290,29 +255,25 @@ export default function RegisterPage() {
                     {...field}
                     allowClear
                     autoComplete="organization-title"
-                    placeholder="Bölüm (ör. Bilgisayar Mühendisliği)"
+                    placeholder="Bolum"
                     status={errors.department ? "error" : undefined}
-                    style={inputStyle}
+                    style={authInputStyle}
                   />
                 )}
               />
             </Form.Item>
 
-            {isUniversitiesError && (
+            {isUniversitiesError ? (
               <Alert
                 type="warning"
                 showIcon
-                message="Üniversiteler yüklenemedi."
-                description="Sayfayı yenileyip yeniden deneyin."
-                style={{ marginBottom: 20 }}
+                message="Universiteler yuklenemedi."
+                description="Sayfayi yenileyip yeniden deneyin."
+                style={{ ...authWarningAlertStyle, marginBottom: 18 }}
               />
-            )}
+            ) : null}
 
-            <Form.Item
-              validateStatus={errors.year ? "error" : undefined}
-              help={errors.year?.message}
-              style={{ marginBottom: 24 }}
-            >
+            <Form.Item validateStatus={errors.year ? "error" : undefined} help={errors.year?.message}>
               <Controller
                 name="year"
                 control={control}
@@ -320,11 +281,50 @@ export default function RegisterPage() {
                   <Select
                     {...field}
                     options={yearOptions}
-                    placeholder="Sınıf seçiniz"
+                    placeholder="Sinif sec"
                     status={errors.year ? "error" : undefined}
                     value={field.value || undefined}
                     onChange={(value) => field.onChange(value ?? "")}
-                    style={selectStyle}
+                    getPopupContainer={(node) => node.parentElement ?? node}
+                    style={authSelectStyle}
+                  />
+                )}
+              />
+            </Form.Item>
+
+            <Form.Item
+              validateStatus={errors.password ? "error" : undefined}
+              help={errors.password?.message}
+            >
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    autoComplete="new-password"
+                    placeholder="Sifre"
+                    status={errors.password ? "error" : undefined}
+                    style={authInputStyle}
+                  />
+                )}
+              />
+            </Form.Item>
+
+            <Form.Item
+              validateStatus={errors.confirmPassword ? "error" : undefined}
+              help={errors.confirmPassword?.message}
+            >
+              <Controller
+                name="confirmPassword"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    autoComplete="new-password"
+                    placeholder="Sifreyi tekrar gir"
+                    status={errors.confirmPassword ? "error" : undefined}
+                    style={authInputStyle}
                   />
                 )}
               />
@@ -332,62 +332,47 @@ export default function RegisterPage() {
           </Flex>
         )}
 
-        {submitError && (
+        {submitError ? (
           <Alert
             type="error"
             showIcon
             message={submitError}
-            style={{ marginBottom: 24 }}
+            style={{ ...authAlertStyle, marginBottom: 20 }}
           />
-        )}
+        ) : null}
 
         {currentStep === 0 ? (
           <Button
+            type="primary"
+            htmlType="button"
             block
+            size="large"
             onClick={handleContinue}
-            style={{
-              height: 44,
-              borderRadius: 9999,
-              fontWeight: 700,
-              fontSize: 15,
-              background: "#FFFFFF",
-              color: "#0F1419",
-              border: "none",
-            }}
+            style={authPrimaryButtonStyle}
           >
-            İleri
+            Devam et
           </Button>
         ) : (
           <Flex vertical gap={12}>
             <Button
-              htmlType="submit"
+              type="primary"
+              htmlType="button"
               block
+              size="large"
               loading={isSubmitting}
-              style={{
-                height: 44,
-                borderRadius: 9999,
-                fontWeight: 700,
-                fontSize: 15,
-                background: "#FFFFFF",
-                color: "#0F1419",
-                border: "none",
+              onClick={() => {
+                void submitRegistration();
               }}
+              style={authPrimaryButtonStyle}
             >
-              {isSubmitting ? "Kayıt yapılıyor..." : "Kayıt Ol"}
+              {isSubmitting ? "Hesap olusturuluyor..." : "Hesabi olustur"}
             </Button>
 
             <Button
               block
+              size="large"
               onClick={() => setCurrentStep(0)}
-              style={{
-                height: 44,
-                borderRadius: 9999,
-                fontWeight: 700,
-                fontSize: 15,
-                background: "transparent",
-                color: "#FFFFFF",
-                borderColor: "#536471",
-              }}
+              style={authSecondaryButtonStyle}
             >
               Geri
             </Button>
@@ -395,26 +380,11 @@ export default function RegisterPage() {
         )}
       </Form>
 
-      <Typography.Paragraph
-        style={{
-          marginTop: 32,
-          marginBottom: 0,
-          color: "#71767B",
-          fontSize: 15,
-        }}
-      >
-        Zaten hesabın var mı?{" "}
-        <Typography.Link
-          onClick={() => navigate("/login")}
-          style={{
-            color: "#1D9BF0",
-            fontWeight: 400,
-            fontSize: 15,
-          }}
-        >
-          Giriş yap
-        </Typography.Link>
-      </Typography.Paragraph>
+      <AuthPageFooter
+        prompt="Zaten bir hesabin var mi?"
+        linkText="Giris yap"
+        onClick={() => navigate("/login")}
+      />
     </Flex>
   );
 }

@@ -3,12 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Alert, Button, Flex, Form, Input, Result, Typography } from "antd";
+import { Alert, Button, Flex, Form, Input } from "antd";
 import { ArrowLeft } from "lucide-react";
 import { forgotPassword, getApiErrorMessage } from "@/features/auth/api";
+import {
+  AuthPageFooter,
+  AuthPageIntro,
+  authAlertStyle,
+  authInputStyle,
+  authPrimaryButtonStyle,
+  authSuccessAlertStyle,
+} from "./AuthPageParts";
 
 const schema = z.object({
-  email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+  email: z.string().email("Gecerli bir e-posta adresi girin"),
 });
 
 type ForgotForm = z.infer<typeof schema>;
@@ -41,56 +49,44 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <Flex vertical style={{ width: "100%", maxWidth: 364 }}>
+    <Flex vertical style={{ width: "100%", maxWidth: 380 }}>
       {sent ? (
-        <Result
-          status="success"
-          title="E-posta Gönderildi"
-          subTitle="Eğer hesap mevcutsa şifre sıfırlama adımları e-posta adresinize gönderilecektir."
-          extra={
-            <Button
-              onClick={() => navigate("/login", { replace: true })}
-              icon={<ArrowLeft size={16} />}
-              style={{
-                height: 44,
-                borderRadius: 9999,
-                fontWeight: 700,
-                background: "#FFFFFF",
-                color: "#0F1419",
-                border: "none",
-              }}
-            >
-              Giriş sayfasına dön
-            </Button>
-          }
-        />
+        <>
+          <AuthPageIntro
+            eyebrow="E-posta gonderildi"
+            title="Baglanti hazir"
+            description="Hesap varsa sifre sifirlama adimlarini e-posta adresine gonderdik. Gelen kutunu ve spam klasorunu kontrol et."
+          />
+
+          <Alert
+            type="success"
+            showIcon
+            message="Talep olusturuldu"
+            description="Ayni adresle tekrar denemek istersen birkac dakika beklemen yeterli."
+            style={{ ...authSuccessAlertStyle, marginBottom: 24 }}
+          />
+
+          <Button
+            type="primary"
+            block
+            size="large"
+            onClick={() => navigate("/login", { replace: true })}
+            icon={<ArrowLeft size={16} />}
+            style={authPrimaryButtonStyle}
+          >
+            Giris sayfasina don
+          </Button>
+        </>
       ) : (
         <>
-          <Typography.Title
-            level={2}
-            style={{
-              color: "#E7E9EA",
-              fontSize: 31,
-              fontWeight: 800,
-              letterSpacing: "-0.03em",
-              margin: "0 0 12px 0",
-            }}
-          >
-            Şifreni sıfırla
-          </Typography.Title>
-
-          <Typography.Text
-            style={{ color: "#71767B", fontSize: 15, marginBottom: 28, display: "block" }}
-          >
-            Kayıtlı e-posta adresini gir, şifre sıfırlama bağlantısını gönderelim.
-          </Typography.Text>
+          <AuthPageIntro
+            eyebrow="Hesap erisimi"
+            title="Sifreni sifirla"
+            description="Kayitli e-posta adresini gir. Sifre sifirlama baglantisini oraya gonderelim."
+          />
 
           <Form layout="vertical" size="large" onFinish={handleSubmit(onSubmit)}>
-            <Form.Item
-              validateStatus={errors.email ? "error" : undefined}
-              help={errors.email?.message}
-              style={{ marginBottom: 24 }}
-            >
+            <Form.Item validateStatus={errors.email ? "error" : undefined} help={errors.email?.message}>
               <Controller
                 name="email"
                 control={control}
@@ -104,71 +100,38 @@ export default function ForgotPasswordPage() {
                     autoComplete="email"
                     placeholder="E-posta adresi"
                     status={errors.email ? "error" : undefined}
-                    style={{
-                      height: 56,
-                      borderRadius: 4,
-                      background: "transparent",
-                      borderColor: "#333639",
-                      color: "#E7E9EA",
-                      fontSize: 17,
-                    }}
+                    style={authInputStyle}
                   />
                 )}
               />
             </Form.Item>
 
-            {submitError && (
+            {submitError ? (
               <Alert
                 type="error"
                 showIcon
                 message={submitError}
-                style={{ marginBottom: 24 }}
+                style={{ ...authAlertStyle, marginBottom: 20 }}
               />
-            )}
+            ) : null}
 
             <Button
+              type="primary"
               htmlType="submit"
               block
+              size="large"
               loading={isSubmitting}
-              style={{
-                height: 44,
-                borderRadius: 9999,
-                fontWeight: 700,
-                fontSize: 15,
-                background: "#FFFFFF",
-                color: "#0F1419",
-                border: "none",
-                marginBottom: 16,
-              }}
+              style={authPrimaryButtonStyle}
             >
-              {isSubmitting ? "Gönderiliyor..." : "Sıfırlama bağlantısı gönder"}
+              {isSubmitting ? "Gonderiliyor..." : "Sifirlama baglantisi gonder"}
             </Button>
           </Form>
 
-          <Typography.Paragraph
-            style={{
-              marginTop: 24,
-              marginBottom: 0,
-              color: "#71767B",
-              fontSize: 15,
-              textAlign: "center",
-            }}
-          >
-            <Typography.Link
-              onClick={() => navigate("/login", { replace: true })}
-              style={{
-                color: "#1D9BF0",
-                fontWeight: 400,
-                fontSize: 15,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <ArrowLeft size={14} />
-              Giriş sayfasına dön
-            </Typography.Link>
-          </Typography.Paragraph>
+          <AuthPageFooter
+            prompt="Sifreni hatirladiysan"
+            linkText="giris yap"
+            onClick={() => navigate("/login", { replace: true })}
+          />
         </>
       )}
     </Flex>

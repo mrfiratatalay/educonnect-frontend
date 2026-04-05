@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getApiErrorMessage } from "@/features/auth/api";
-import { getAccessToken } from "@/features/auth/token";
+import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
 import type {
   AppNotification,
   NotificationKind,
@@ -20,13 +20,20 @@ interface ApiNotificationResponse {
   isRead: boolean;
   type: NotificationKind;
   createdAtUtc: string;
+  targetPath?: string | null;
 }
 
 export async function getNotifications(): Promise<AppNotification[]> {
   try {
-    const response = await notificationsApi.get<ApiNotificationResponse[]>(
-      "/api/notifications",
-      getAuthorizedConfig(),
+    const response = await executeAuthorizedRequest((accessToken) =>
+      notificationsApi.get<ApiNotificationResponse[]>(
+        "/api/notifications",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
 
     return response.data.map(normalizeNotification);
@@ -37,10 +44,16 @@ export async function getNotifications(): Promise<AppNotification[]> {
 
 export async function markNotificationRead(notificationId: string) {
   try {
-    await notificationsApi.put(
-      `/api/notifications/${notificationId}/read`,
-      undefined,
-      getAuthorizedConfig(),
+    await executeAuthorizedRequest((accessToken) =>
+      notificationsApi.put(
+        `/api/notifications/${notificationId}/read`,
+        undefined,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
@@ -49,28 +62,20 @@ export async function markNotificationRead(notificationId: string) {
 
 export async function markAllNotificationsRead() {
   try {
-    await notificationsApi.put(
-      "/api/notifications/read-all",
-      undefined,
-      getAuthorizedConfig(),
+    await executeAuthorizedRequest((accessToken) =>
+      notificationsApi.put(
+        "/api/notifications/read-all",
+        undefined,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
   }
-}
-
-function getAuthorizedConfig() {
-  const accessToken = getAccessToken();
-
-  if (!accessToken) {
-    throw new Error("Oturum bulunamadi. Lutfen yeniden giris yapin.");
-  }
-
-  return {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  };
 }
 
 function normalizeNotification(
@@ -83,14 +88,14 @@ function normalizeNotification(
     isRead: notification.isRead,
     type: notification.type,
     createdAt: notification.createdAtUtc,
-    link: getNotificationLink(notification.type),
+    link: notification.targetPath || getNotificationLink(notification.type),
   };
 }
 
 function getNotificationLink(type: NotificationKind) {
   switch (type) {
     case "social":
-      return "/feed";
+      return "/";
     case "event":
       return "/events";
     case "marketplace":

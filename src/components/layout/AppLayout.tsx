@@ -2,7 +2,9 @@ import { Grid, Layout, Modal, Typography, theme, Flex, Button, Drawer } from "an
 import { Outlet, useLocation } from "react-router-dom";
 import { useUIStore } from "@/store/uiStore";
 import { useAuthStore } from "@/store/authStore";
+import { usePostComposerStore } from "@/store/postComposerStore";
 import { useCreatePostMutation } from "@/features/posts/hooks";
+import type { CreatePostInput } from "@/features/posts/types";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import MobileNav from "./MobileNav";
@@ -22,46 +24,56 @@ export default function AppLayout({ children }: AppLayoutProps) {
   
   const { isComposeModalOpen, closeComposeModal } = useUIStore();
   const user = useAuthStore((state) => state.user);
+  const draftContent = usePostComposerStore((state) => state.content);
   const createPostMutation = useCreatePostMutation();
   const shouldShowChatBubble = isDesktop && !location.pathname.startsWith("/edu-ai");
+  const canSubmitDraft = draftContent.trim().length > 0;
 
-  const handleCreatePost = async (content: string) => {
-    await createPostMutation.mutateAsync({ content });
+  const handleCreatePost = async (input: CreatePostInput) => {
+    await createPostMutation.mutateAsync(input);
     closeComposeModal();
   };
 
   return (
     <>
-      <Layout
-        hasSider={isDesktop}
+      <div
         style={{
           minHeight: "100vh",
           background: token.colorBgLayout,
-          maxWidth: 1265, // Sidebar (275) + Feed Max Width (990)
-          margin: "0 auto",
         }}
       >
-        <Sidebar />
-
         <Layout
+          hasSider={isDesktop}
           style={{
-            minWidth: 0,
+            minHeight: "100vh",
+            width: "100%",
+            maxWidth: 1265, // Sidebar (275) + Feed Max Width (990)
+            margin: "0 auto",
             background: "transparent",
           }}
         >
-          <Header />
+          <Sidebar />
 
-          <Layout.Content
+          <Layout
             style={{
-              flex: 1,
-              overflowX: "hidden",
-              paddingBottom: isDesktop ? 0 : 74,
+              minWidth: 0,
+              background: "transparent",
             }}
           >
-            {children ?? <Outlet />}
-          </Layout.Content>
+            <Header />
+
+            <Layout.Content
+              style={{
+                flex: 1,
+                overflowX: "hidden",
+                paddingBottom: isDesktop ? 0 : 74,
+              }}
+            >
+              {children ?? <Outlet />}
+            </Layout.Content>
+          </Layout>
         </Layout>
-      </Layout>
+      </div>
 
       <MobileNav />
       {shouldShowChatBubble && <ChatBubble />}
@@ -102,7 +114,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 size="middle"
                 form="compose-modal-form"
                 htmlType="submit"
-                disabled={createPostMutation.isPending}
+                disabled={createPostMutation.isPending || !canSubmitDraft}
                 style={{
                   paddingInline: 16,
                   fontWeight: 700,
@@ -160,6 +172,20 @@ export default function AppLayout({ children }: AppLayoutProps) {
               >
                 Taslaklar
               </Typography.Link>
+              <Button
+                type="primary"
+                shape="round"
+                size="middle"
+                form="compose-modal-form"
+                htmlType="submit"
+                disabled={createPostMutation.isPending || !canSubmitDraft}
+                style={{
+                  paddingInline: 16,
+                  fontWeight: 700,
+                }}
+              >
+                Gonderi yayinla
+              </Button>
             </Flex>
           }
           styles={{

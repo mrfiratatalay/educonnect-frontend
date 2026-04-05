@@ -4,11 +4,13 @@ import { useAuthStore } from "@/store/authStore";
 import { getUserInitials } from "@/components/layout/shellNavigation";
 
 interface PostCommentComposerProps {
+  id?: string;
   isSubmitting: boolean;
   onSubmit: (content: string) => Promise<void>;
 }
 
 export default function PostCommentComposer({
+  id,
   isSubmitting,
   onSubmit,
 }: PostCommentComposerProps) {
@@ -51,7 +53,7 @@ export default function PostCommentComposer({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+    <form id={id} onSubmit={handleSubmit} style={{ width: "100%" }}>
       <Flex gap={12} align="flex-start" style={{ padding: "12px 16px" }}>
         <Avatar
           src={user?.avatarUrl}

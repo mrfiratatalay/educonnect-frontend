@@ -1,256 +1,269 @@
-import {
-  Button,
-  ConfigProvider,
-  Divider,
-  Flex,
-  Grid,
-  Layout,
-  Modal,
-  Typography,
-  theme,
-} from "antd";
+import { Button, ConfigProvider, Flex, Grid, Layout, Modal, Typography, theme } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, X } from "lucide-react";
+import {
+  AuthLegalText,
+  authPalette,
+  authPrimaryButtonStyle,
+  authSecondaryButtonStyle,
+} from "@/pages/Auth/AuthPageParts";
+
+const footerLinks = [
+  "Hakkinda",
+  "Kampus rehberi",
+  "Gizlilik",
+  "Cerezler",
+  "Kariyer",
+  "Yardim merkezi",
+  "(c) 2026 EduConnect Corp.",
+];
 
 function AuthLayoutContent() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
 
-  const isModalRoute = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password";
+  const isModalRoute =
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/forgot-password" ||
+    pathname === "/verify-email";
 
   return (
     <Layout
       style={{
         minHeight: "100vh",
-        background: "#000000",
+        background: authPalette.background,
       }}
     >
       <Layout.Content>
-        {/* Split-screen Landing Page */}
         <Flex
-          align="stretch"
-          style={{ minHeight: "calc(100vh - 48px)" }}
-          wrap={screens.md ? undefined : "wrap"}
-        >
-          {/* Left: Giant Logo */}
-          <Flex
-            align="center"
-            justify="center"
-            style={{
-              flex: screens.md ? 1 : undefined,
-              width: screens.md ? undefined : "100%",
-              minHeight: screens.md ? "100%" : 240,
-              background: "#000000",
-              padding: 32,
-            }}
-          >
-            <GraduationCap
-              size={screens.md ? 320 : 100}
-              strokeWidth={0.7}
-              color="#FFFFFF"
-              style={{ opacity: 0.85 }}
-            />
-          </Flex>
-
-          {/* Right: Slogan + Buttons */}
-          <Flex
-            vertical
-            justify="center"
-            style={{
-              flex: screens.md ? 1 : undefined,
-              width: screens.md ? undefined : "100%",
-              padding: screens.md ? "40px 40px 40px 48px" : "24px 24px 48px",
-              background: "#000000",
-            }}
-          >
-            <Typography.Title
-              level={1}
-              style={{
-                color: "#E7E9EA",
-                fontSize: screens.md ? 64 : 36,
-                fontWeight: 800,
-                lineHeight: 1.15,
-                letterSpacing: "-0.04em",
-                margin: "0 0 48px 0",
-              }}
-            >
-              Kampüste neler oluyor?
-            </Typography.Title>
-
-            <Typography.Title
-              level={2}
-              style={{
-                color: "#E7E9EA",
-                fontSize: screens.md ? 31 : 22,
-                fontWeight: 800,
-                margin: "0 0 32px 0",
-              }}
-            >
-              Bugün katıl.
-            </Typography.Title>
-
-            <Flex vertical gap={16} style={{ maxWidth: 300 }}>
-              <Button
-                block
-                size="large"
-                onClick={() => navigate("/register")}
-                style={{
-                  height: 40,
-                  borderRadius: 9999,
-                  fontWeight: 700,
-                  fontSize: 15,
-                  background: "#1D9BF0",
-                  color: "#FFFFFF",
-                  border: "none",
-                }}
-              >
-                Hesap oluştur
-              </Button>
-
-              <Divider
-                plain
-                style={{
-                  borderColor: "#2F3336",
-                  margin: "4px 0",
-                  color: "#71767B",
-                  fontSize: 14,
-                }}
-              >
-                ya da
-              </Divider>
-
-              <Typography.Text
-                style={{
-                  color: "#71767B",
-                  fontSize: 11,
-                  lineHeight: 1.5,
-                }}
-              >
-                Kaydolarak{" "}
-                <Typography.Link style={{ color: "#1D9BF0", fontSize: 11 }}>
-                  Hizmet Şartları
-                </Typography.Link>
-                'nı ve{" "}
-                <Typography.Link style={{ color: "#1D9BF0", fontSize: 11 }}>
-                  Gizlilik Politikası
-                </Typography.Link>
-                'nı kabul etmiş olursunuz.
-              </Typography.Text>
-            </Flex>
-
-            <Flex vertical gap={16} style={{ marginTop: 48, maxWidth: 300 }}>
-              <Typography.Text
-                style={{
-                  color: "#E7E9EA",
-                  fontSize: 17,
-                  fontWeight: 700,
-                }}
-              >
-                Zaten hesabın var mı?
-              </Typography.Text>
-
-              <Button
-                block
-                size="large"
-                onClick={() => navigate("/login")}
-                style={{
-                  height: 40,
-                  borderRadius: 9999,
-                  fontWeight: 700,
-                  fontSize: 15,
-                  background: "transparent",
-                  color: "#1D9BF0",
-                  borderColor: "#536471",
-                }}
-              >
-                Giriş yap
-              </Button>
-            </Flex>
-          </Flex>
-        </Flex>
-
-        {/* Footer */}
-        <Flex
-          wrap="wrap"
-          justify="center"
-          gap={16}
+          vertical
           style={{
-            padding: "12px 16px",
-            background: "#000000",
+            minHeight: "100vh",
+            position: "relative",
+            overflow: "hidden",
+            background: authPalette.background,
           }}
         >
-          {[
-            "Hakkında",
-            "Yardım Merkezi",
-            "Hizmet Şartları",
-            "Gizlilik Politikası",
-            "Çerez Politikası",
-            "Erişilebilirlik",
-            "© 2026 EduConnect Corp.",
-          ].map((text) => (
-            <Typography.Text
-              key={text}
-              style={{ color: "#71767B", fontSize: 13 }}
+          <Flex
+            style={{
+              flex: 1,
+              position: "relative",
+              zIndex: 1,
+              padding: screens.lg ? "32px 40px 24px" : "20px 20px 24px",
+            }}
+            wrap={screens.lg ? undefined : "wrap"}
+          >
+            <Flex
+              align="center"
+              justify="center"
+              style={{
+                flex: screens.lg ? "1 1 52%" : undefined,
+                width: screens.lg ? undefined : "100%",
+                minHeight: screens.lg ? "auto" : 160,
+                padding: screens.lg ? 48 : "8px 0 32px",
+              }}
             >
-              {text}
-            </Typography.Text>
-          ))}
-        </Flex>
+              <div
+                style={{
+                  width: screens.lg ? 320 : 82,
+                  height: screens.lg ? 320 : 82,
+                  borderRadius: "50%",
+                  display: "grid",
+                  placeItems: "center",
+                  border: "1px solid rgba(231, 233, 234, 0.12)",
+                  background: "rgba(255, 255, 255, 0.03)",
+                  boxShadow: "0 24px 60px rgba(0, 0, 0, 0.35)",
+                }}
+              >
+                <GraduationCap
+                  size={screens.lg ? 180 : 44}
+                  strokeWidth={0.9}
+                  color={authPalette.text}
+                  style={{ opacity: 0.92 }}
+                />
+              </div>
+            </Flex>
 
-        {/* Modal for Login / Register / Forgot Password */}
-        <ConfigProvider
-          theme={{
-            algorithm: theme.darkAlgorithm,
-            token: {
-              colorBgBase: "#000000",
-              colorBgContainer: "#000000",
-              colorBgElevated: "#000000",
-              colorBorder: "#333639",
-              colorBorderSecondary: "#333639",
-            },
-            components: {
-              Modal: {
-                contentBg: "#000000",
-                headerBg: "#000000",
-              },
-              Input: {
-                colorBgContainer: "transparent",
-                activeBorderColor: "#1D9BF0",
-                hoverBorderColor: "#1D9BF0",
-              },
-              Select: {
-                colorBgContainer: "transparent",
-              },
-            },
-          }}
-        >
+            <Flex
+              vertical
+              justify="center"
+              style={{
+                flex: screens.lg ? "1 1 48%" : undefined,
+                width: screens.lg ? undefined : "100%",
+                padding: screens.lg ? "32px 32px 56px" : 0,
+                maxWidth: screens.lg ? 620 : 420,
+              }}
+            >
+              <Flex align="center" gap={12} style={{ marginBottom: screens.lg ? 72 : 36 }}>
+                <GraduationCap size={screens.lg ? 36 : 30} color={authPalette.text} />
+                <Typography.Text
+                  style={{
+                    color: authPalette.text,
+                    fontSize: screens.lg ? 28 : 24,
+                    fontWeight: 800,
+                    letterSpacing: "-0.03em",
+                  }}
+                >
+                  EduConnect
+                </Typography.Text>
+              </Flex>
+
+              <Typography.Title
+                level={1}
+                style={{
+                  color: authPalette.text,
+                  fontSize: screens.lg ? 72 : 42,
+                  fontWeight: 800,
+                  lineHeight: 1,
+                  letterSpacing: "-0.05em",
+                  margin: "0 0 20px 0",
+                }}
+              >
+                Kampuste simdi ne oluyor?
+              </Typography.Title>
+
+              <Typography.Title
+                level={2}
+                style={{
+                  color: authPalette.text,
+                  fontSize: screens.lg ? 34 : 26,
+                  fontWeight: 800,
+                  margin: "0 0 28px 0",
+                }}
+              >
+                Universite agina bugun katil.
+              </Typography.Title>
+
+              <Flex vertical gap={14} style={{ width: "100%", maxWidth: 360 }}>
+                <Button
+                  type="primary"
+                  block
+                  size="large"
+                  onClick={() => navigate("/register")}
+                  style={authPrimaryButtonStyle}
+                >
+                  Hesap olustur
+                </Button>
+
+                <AuthLegalText />
+              </Flex>
+
+              <Flex vertical gap={14} style={{ width: "100%", maxWidth: 360, marginTop: 44 }}>
+                <Typography.Text
+                  style={{
+                    color: authPalette.text,
+                    fontSize: 20,
+                    fontWeight: 800,
+                  }}
+                >
+                  Zaten bir hesabin var mi?
+                </Typography.Text>
+
+                <Button
+                  block
+                  size="large"
+                  onClick={() => navigate("/login")}
+                  style={authSecondaryButtonStyle}
+                >
+                  Giris yap
+                </Button>
+              </Flex>
+            </Flex>
+          </Flex>
+
+          <Flex
+            wrap="wrap"
+            gap={12}
+            justify={screens.lg ? "center" : "flex-start"}
+            style={{
+              position: "relative",
+              zIndex: 1,
+              padding: screens.lg ? "0 24px 24px" : "0 24px 28px",
+            }}
+          >
+            {footerLinks.map((text) => (
+              <Typography.Text
+                key={text}
+                style={{
+                  color: authPalette.muted,
+                  fontSize: 13,
+                }}
+              >
+                {text}
+              </Typography.Text>
+            ))}
+          </Flex>
+
           <Modal
             open={isModalRoute}
             footer={null}
-            closable
-            centered
+            closable={false}
+            centered={!isMobile}
             destroyOnHidden
-            width={600}
+            maskClosable
+            width={isMobile ? "100vw" : 600}
+            wrapClassName="auth-route-modal"
             onCancel={() => navigate("/", { replace: true })}
+            style={{
+              top: isMobile ? 0 : 24,
+              paddingBottom: 0,
+            }}
             styles={{
               body: {
-                background: "#000000",
-                borderRadius: 16,
-                padding: "0",
+                padding: 0,
               },
               mask: {
-                background: "rgba(91, 112, 131, 0.4)",
+                background: isMobile ? "rgba(0, 0, 0, 0.94)" : "rgba(91, 112, 131, 0.42)",
+                backdropFilter: isMobile ? undefined : "blur(10px)",
               },
             }}
             title={null}
           >
-            <Flex vertical align="center" style={{ padding: "16px 80px 48px" }}>
-              <GraduationCap size={32} color="#E7E9EA" style={{ marginBottom: 28 }} />
-              <Outlet />
+            <Flex
+              vertical
+              className="auth-modal-panel"
+              style={{
+                minHeight: isMobile ? "100dvh" : undefined,
+                padding: isMobile ? "18px 24px 32px" : "20px 40px 40px",
+                overflowY: "auto",
+              }}
+            >
+              <Flex
+                align="center"
+                justify="space-between"
+                style={{ marginBottom: isMobile ? 20 : 24 }}
+              >
+                <Button
+                  type="text"
+                  shape="circle"
+                  aria-label="Close auth dialog"
+                  onClick={() => navigate("/", { replace: true })}
+                  icon={<X size={20} />}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    color: authPalette.text,
+                    border: "none",
+                    background: "transparent",
+                    boxShadow: "none",
+                  }}
+                />
+
+                <GraduationCap size={isMobile ? 32 : 34} color={authPalette.text} />
+                <div style={{ width: 40, height: 40 }} />
+              </Flex>
+
+              <Flex justify="center" style={{ width: "100%" }}>
+                <div style={{ width: "100%", maxWidth: 420 }}>
+                  <Outlet />
+                </div>
+              </Flex>
             </Flex>
           </Modal>
-        </ConfigProvider>
+        </Flex>
       </Layout.Content>
     </Layout>
   );
@@ -261,7 +274,72 @@ export default function AuthLayout() {
     <ConfigProvider
       componentSize="large"
       form={{ requiredMark: false, scrollToFirstError: { focus: true } }}
-      variant="filled"
+      variant="outlined"
+      wave={{ disabled: true }}
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorPrimary: authPalette.primary,
+          colorLink: authPalette.primary,
+          colorBgBase: authPalette.background,
+          colorBgContainer: authPalette.background,
+          colorBgElevated: authPalette.background,
+          colorBorder: authPalette.border,
+          colorBorderSecondary: authPalette.border,
+          colorTextBase: authPalette.text,
+          colorText: authPalette.text,
+          colorTextSecondary: authPalette.muted,
+          colorTextPlaceholder: authPalette.muted,
+          colorIcon: authPalette.muted,
+          colorIconHover: authPalette.text,
+          controlOutline: "rgba(29, 155, 240, 0.16)",
+          boxShadow: "0 24px 80px rgba(0, 0, 0, 0.5)",
+        },
+        components: {
+          Button: {
+            borderRadius: 999,
+            controlHeightLG: 48,
+            fontWeight: 700,
+            colorPrimary: authPalette.white,
+            colorPrimaryHover: "#F4F4F5",
+            colorPrimaryActive: "#E5E7EB",
+            colorTextLightSolid: authPalette.ink,
+            defaultBg: "transparent",
+            defaultBorderColor: authPalette.borderStrong,
+            defaultColor: authPalette.text,
+            defaultHoverBg: "rgba(255, 255, 255, 0.04)",
+            defaultHoverColor: authPalette.text,
+            defaultHoverBorderColor: "#6E7C86",
+            defaultActiveBg: "rgba(255, 255, 255, 0.08)",
+            defaultActiveColor: authPalette.text,
+            defaultActiveBorderColor: "#6E7C86",
+            defaultShadow: "none",
+            primaryShadow: "none",
+          },
+          Input: {
+            borderRadius: 14,
+            controlHeightLG: 56,
+            paddingInlineLG: 16,
+            activeBorderColor: authPalette.primary,
+            hoverBorderColor: authPalette.primary,
+            activeShadow: "0 0 0 2px rgba(29, 155, 240, 0.12)",
+          },
+          Select: {
+            borderRadius: 14,
+            controlHeightLG: 56,
+            optionHeight: 44,
+            activeBorderColor: authPalette.primary,
+            hoverBorderColor: authPalette.primary,
+            activeOutlineColor: "rgba(29, 155, 240, 0.12)",
+            selectorBg: "transparent",
+          },
+          Modal: {
+            borderRadiusLG: 28,
+            contentBg: authPalette.background,
+            headerBg: authPalette.background,
+          },
+        },
+      }}
     >
       <AuthLayoutContent />
     </ConfigProvider>

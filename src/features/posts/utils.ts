@@ -23,3 +23,10 @@ export function getPostExcerpt(content: string, maxLength = 120) {
 
   return `${content.slice(0, maxLength).trimEnd()}...`;
 }
+
+export function formatPostMetric(value: number) {
+  return new Intl.NumberFormat("tr-TR", {
+    notation: value >= 1000 ? "compact" : "standard",
+    maximumFractionDigits: value >= 1000 ? 1 : 0,
+  }).format(value);
+}

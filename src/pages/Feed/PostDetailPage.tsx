@@ -1,33 +1,76 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { Button, Flex, Typography, theme, Spin, Alert, Divider } from "antd";
-import { usePostDetailQuery } from "@/features/posts/hooks";
+import { Alert, Button, Divider, Flex, Spin, Typography, theme } from "antd";
+import {
+  useAddPostCommentMutation,
+  useDeletePostMutation,
+  usePostDetailQuery,
+  useTrackPostViewMutation,
+  useUpdatePostMutation,
+} from "@/features/posts/hooks";
 import PostCard from "@/pages/Feed/components/PostCard";
 import PostCommentComposer from "@/pages/Feed/components/PostCommentComposer";
 import PostCommentList from "@/pages/Feed/components/PostCommentList";
-import { useAddPostCommentMutation } from "@/features/posts/hooks";
 import { useAuthStore } from "@/store/authStore";
 
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const trackedPostIdRef = useRef<string | null>(null);
   const { token } = theme.useToken();
   const user = useAuthStore((state) => state.user);
 
   const postDetailQuery = usePostDetailQuery(id || "", true);
   const addCommentMutation = useAddPostCommentMutation();
+  const deletePostMutation = useDeletePostMutation();
+  const trackPostViewMutation = useTrackPostViewMutation();
+  const updatePostMutation = useUpdatePostMutation();
 
-  const handleAddComment = async (content: string) => {
+  useEffect(() => {
+    const postId = postDetailQuery.data?.post.id;
+
+    if (!postId || trackedPostIdRef.current === postId) {
+      return;
+    }
+
+    trackedPostIdRef.current = postId;
+    void trackPostViewMutation.mutateAsync(postId);
+  }, [postDetailQuery.data?.post.id, trackPostViewMutation]);
+
+  async function handleAddComment(content: string) {
     if (id) {
       await addCommentMutation.mutateAsync({ postId: id, content });
     }
-  };
+  }
+
+  async function handleUpdatePost(postId: string, content: string) {
+    await updatePostMutation.mutateAsync({ postId, content });
+  }
+
+  async function handleDeletePost(postId: string) {
+    await deletePostMutation.mutateAsync(postId);
+    navigate("/", { replace: true });
+  }
 
   const isPostError = postDetailQuery.error instanceof Error;
+  const deletingPostId =
+    deletePostMutation.isPending && typeof deletePostMutation.variables === "string"
+      ? deletePostMutation.variables
+      : undefined;
+  const updatingPostId =
+    updatePostMutation.isPending ? updatePostMutation.variables?.postId : undefined;
 
   return (
-    <div style={{ maxWidth: 600, width: "100%", margin: "0 auto", borderRight: `1px solid ${token.colorBorderSecondary}`, minHeight: "100vh" }}>
-      {/* Header */}
+    <div
+      style={{
+        maxWidth: 600,
+        width: "100%",
+        margin: "0 auto",
+        borderRight: `1px solid ${token.colorBorderSecondary}`,
+        minHeight: "100vh",
+      }}
+    >
       <Flex
         align="center"
         gap={24}
@@ -50,11 +93,10 @@ export default function PostDetailPage() {
           onClick={() => navigate(-1)}
         />
         <Typography.Title level={2} style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
-          Gönderi
+          Gonderi
         </Typography.Title>
       </Flex>
 
-      {/* Main Content */}
       {postDetailQuery.isLoading ? (
         <Flex justify="center" style={{ padding: 40 }}>
           <Spin />
@@ -65,36 +107,36 @@ export default function PostDetailPage() {
         </div>
       ) : postDetailQuery.data?.post ? (
         <div>
-          {/* Post itself (rendered via PostCard or custom block if we want specific big fonts) */}
-          {/* For exact X, Post details page has larger font for content and shows time inline.
-              If we reuse PostCard, it will look like timeline post. X uses a slightly different template for details.
-              Since we have PostCard, let's use it for now, and hide the comments panel since we have one below. */}
-          <div style={{ pointerEvents: 'none' /* Disable link to itself if PostCard clicks to post */ }}>
-             <PostCard
-               post={postDetailQuery.data.post}
-               canManage={user?.id === postDetailQuery.data.post.userId}
-               isDeleting={false}
-               isUpdating={false}
-               onDelete={() => {}}
-               onUpdate={async () => {}}
-             />
-          </div>
+          <PostCard
+            post={postDetailQuery.data.post}
+            canManage={
+              postDetailQuery.data.post.userId === user?.id ||
+              user?.role === "admin" ||
+              user?.role === "moderator"
+            }
+            isDeleting={deletingPostId === postDetailQuery.data.post.id}
+            isUpdating={updatingPostId === postDetailQuery.data.post.id}
+            mode="detail"
+            onDelete={(postId) => {
+              void handleDeletePost(postId);
+            }}
+            onUpdate={handleUpdatePost}
+          />
 
           <Divider style={{ margin: 0, borderColor: token.colorBorderSecondary }} />
 
-          {/* Comment Composer */}
           <PostCommentComposer
+            id="post-comment-composer"
             isSubmitting={addCommentMutation.isPending}
             onSubmit={handleAddComment}
           />
-          
+
           <Divider style={{ margin: 0, borderColor: token.colorBorderSecondary }} />
 
-          {/* Comments List */}
           <PostCommentList comments={postDetailQuery.data.comments || []} />
         </div>
       ) : (
-        <div style={{ padding: 16 }}>Gönderi bulunamadı.</div>
+        <div style={{ padding: 16 }}>Gonderi bulunamadi.</div>
       )}
     </div>
   );

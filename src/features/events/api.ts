@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getApiErrorMessage } from "@/features/auth/api";
-import { getAccessToken } from "@/features/auth/token";
+import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
 import type { AppEvent, CreateEventInput } from "@/features/events/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
@@ -29,9 +29,15 @@ interface ApiEventResponse {
 
 export async function getEvents(): Promise<AppEvent[]> {
   try {
-    const response = await eventsApi.get<ApiEventResponse[]>(
-      "/api/events",
-      getAuthorizedConfig(),
+    const response = await executeAuthorizedRequest((accessToken) =>
+      eventsApi.get<ApiEventResponse[]>(
+        "/api/events",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
 
     return response.data.map(normalizeEvent);
@@ -42,9 +48,15 @@ export async function getEvents(): Promise<AppEvent[]> {
 
 export async function getEvent(eventId: string): Promise<AppEvent> {
   try {
-    const response = await eventsApi.get<ApiEventResponse>(
-      `/api/events/${eventId}`,
-      getAuthorizedConfig(),
+    const response = await executeAuthorizedRequest((accessToken) =>
+      eventsApi.get<ApiEventResponse>(
+        `/api/events/${eventId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
 
     return normalizeEvent(response.data);
@@ -55,10 +67,16 @@ export async function getEvent(eventId: string): Promise<AppEvent> {
 
 export async function createEvent(input: CreateEventInput): Promise<AppEvent> {
   try {
-    const response = await eventsApi.post<ApiEventResponse>(
-      "/api/events",
-      input,
-      getAuthorizedConfig(),
+    const response = await executeAuthorizedRequest((accessToken) =>
+      eventsApi.post<ApiEventResponse>(
+        "/api/events",
+        input,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
 
     return normalizeEvent(response.data);
@@ -69,10 +87,16 @@ export async function createEvent(input: CreateEventInput): Promise<AppEvent> {
 
 export async function registerEvent(eventId: string) {
   try {
-    await eventsApi.post(
-      `/api/events/${eventId}/register`,
-      undefined,
-      getAuthorizedConfig(),
+    await executeAuthorizedRequest((accessToken) =>
+      eventsApi.post(
+        `/api/events/${eventId}/register`,
+        undefined,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
     );
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
@@ -81,24 +105,16 @@ export async function registerEvent(eventId: string) {
 
 export async function cancelEvent(eventId: string) {
   try {
-    await eventsApi.delete(`/api/events/${eventId}/cancel`, getAuthorizedConfig());
+    await executeAuthorizedRequest((accessToken) =>
+      eventsApi.delete(`/api/events/${eventId}/cancel`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }),
+    );
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
   }
-}
-
-function getAuthorizedConfig() {
-  const accessToken = getAccessToken();
-
-  if (!accessToken) {
-    throw new Error("Oturum bulunamadi. Lutfen yeniden giris yapin.");
-  }
-
-  return {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  };
 }
 
 function normalizeEvent(event: ApiEventResponse): AppEvent {

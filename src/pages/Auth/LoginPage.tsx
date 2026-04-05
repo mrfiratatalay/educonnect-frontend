@@ -3,13 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Alert, Button, Flex, Form, Input, Typography } from "antd";
+import { Alert, Button, Flex, Form, Input } from "antd";
 import { getApiErrorMessage, login as loginRequest } from "@/features/auth/api";
 import { useAuthStore } from "@/store/authStore";
+import {
+  AuthPageFooter,
+  AuthPageIntro,
+  authAlertStyle,
+  authInputStyle,
+  authPrimaryButtonStyle,
+  authSecondaryButtonStyle,
+} from "./AuthPageParts";
 
 const loginSchema = z.object({
-  email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
+  email: z.string().email("Gecerli bir e-posta adresi girin"),
+  password: z.string().min(8, "Sifre en az 8 karakter olmali"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -44,31 +52,21 @@ export default function LoginPage() {
   };
 
   return (
-    <Flex vertical style={{ width: "100%", maxWidth: 364 }}>
-      <Typography.Title
-        level={2}
-        style={{
-          color: "#E7E9EA",
-          fontSize: 31,
-          fontWeight: 800,
-          letterSpacing: "-0.03em",
-          margin: "0 0 28px 0",
-        }}
-      >
-        EduConnect'e giriş yap
-      </Typography.Title>
+    <Flex vertical style={{ width: "100%", maxWidth: 380 }}>
+      <AuthPageIntro
+        eyebrow="Hesabina don"
+        title="Giris yap"
+        description="EduConnect hesabina erismek icin e-posta adresini ve sifreni gir."
+      />
 
       <Form
         layout="vertical"
         requiredMark={false}
         size="large"
         onFinish={handleSubmit(onSubmit)}
+        style={{ width: "100%" }}
       >
-        <Form.Item
-          validateStatus={errors.email ? "error" : undefined}
-          help={errors.email?.message}
-          style={{ marginBottom: 20 }}
-        >
+        <Form.Item validateStatus={errors.email ? "error" : undefined} help={errors.email?.message}>
           <Controller
             name="email"
             control={control}
@@ -80,16 +78,9 @@ export default function LoginPage() {
                 type="email"
                 inputMode="email"
                 autoComplete="email"
-                placeholder="E-posta veya kullanıcı adı"
+                placeholder="E-posta adresi"
                 status={errors.email ? "error" : undefined}
-                style={{
-                  height: 56,
-                  borderRadius: 4,
-                  background: "transparent",
-                  borderColor: "#333639",
-                  color: "#E7E9EA",
-                  fontSize: 17,
-                }}
+                style={authInputStyle}
               />
             )}
           />
@@ -98,7 +89,6 @@ export default function LoginPage() {
         <Form.Item
           validateStatus={errors.password ? "error" : undefined}
           help={errors.password?.message}
-          style={{ marginBottom: 24 }}
         >
           <Controller
             name="password"
@@ -107,85 +97,60 @@ export default function LoginPage() {
               <Input.Password
                 {...field}
                 autoComplete="current-password"
-                placeholder="Şifre"
+                placeholder="Sifre"
                 status={errors.password ? "error" : undefined}
-                style={{
-                  height: 56,
-                  borderRadius: 4,
-                  background: "transparent",
-                  borderColor: "#333639",
-                  color: "#E7E9EA",
-                  fontSize: 17,
-                }}
+                style={authInputStyle}
               />
             )}
           />
         </Form.Item>
 
-        {submitError && (
+        {submitError ? (
           <Alert
             type="error"
             showIcon
             message={submitError}
-            style={{ marginBottom: 24 }}
+            style={{ ...authAlertStyle, marginBottom: 20 }}
           />
-        )}
+        ) : null}
 
-        <Button
-          htmlType="submit"
-          block
-          loading={isSubmitting}
-          style={{
-            height: 44,
-            borderRadius: 9999,
-            fontWeight: 700,
-            fontSize: 15,
-            background: "#FFFFFF",
-            color: "#0F1419",
-            border: "none",
-            marginBottom: 20,
-          }}
-        >
-          {isSubmitting ? "Giriş yapılıyor..." : "Giriş Yap"}
-        </Button>
+        <Flex vertical gap={12}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            size="large"
+            loading={isSubmitting}
+            style={authPrimaryButtonStyle}
+          >
+            {isSubmitting ? "Giris yapiliyor..." : "Giris yap"}
+          </Button>
 
-        <Button
-          block
-          onClick={() => navigate("/forgot-password")}
-          style={{
-            height: 44,
-            borderRadius: 9999,
-            fontWeight: 700,
-            fontSize: 15,
-            background: "transparent",
-            color: "#FFFFFF",
-            borderColor: "#536471",
-          }}
-        >
-          Şifremi unuttum?
-        </Button>
+          <Button
+            block
+            size="large"
+            onClick={() => navigate("/forgot-password")}
+            style={authSecondaryButtonStyle}
+          >
+            Sifremi unuttum
+          </Button>
+
+          <Button
+            block
+            size="large"
+            onClick={() => navigate("/verify-email")}
+            style={authSecondaryButtonStyle}
+          >
+            E-postami dogrula
+          </Button>
+        </Flex>
       </Form>
 
-      <Typography.Paragraph
-        style={{
-          marginTop: 40,
-          marginBottom: 0,
-          color: "#71767B",
-          fontSize: 15,
-        }}
-      >
-        Hesabın yok mu?{" "}
-        <Typography.Link
-          onClick={() => navigate("/register")}
-          style={{
-            color: "#1D9BF0",
-            fontWeight: 400,
-            fontSize: 15,
-          }}
-        >
-          Kayıt ol
-        </Typography.Link>
-      </Typography.Paragraph>
+      <AuthPageFooter
+        prompt="Hesabin yok mu?"
+        linkText="Kayit ol"
+        onClick={() => navigate("/register")}
+      />
     </Flex>
   );
 }
