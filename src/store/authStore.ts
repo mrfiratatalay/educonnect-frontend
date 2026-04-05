@@ -17,6 +17,8 @@ interface AuthState {
   user: User | null;
   accessToken: string | null;
   isAuthenticated: boolean;
+  hasHydratedSession: boolean;
+  isHydratingSession: boolean;
   setSession: (session: AuthSession) => void;
   clearSession: () => void;
   hydrateSession: () => Promise<void>;
@@ -29,6 +31,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   accessToken: null,
   isAuthenticated: false,
+  hasHydratedSession: false,
+  isHydratingSession: false,
   setSession: (session) => {
     setAccessToken(session.accessToken);
     set({
@@ -36,6 +40,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       user: session.user,
       accessToken: session.accessToken,
       isAuthenticated: true,
+      hasHydratedSession: true,
+      isHydratingSession: false,
     });
   },
   clearSession: () => {
@@ -45,12 +51,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       user: null,
       accessToken: null,
       isAuthenticated: false,
+      hasHydratedSession: true,
+      isHydratingSession: false,
     });
   },
   hydrateSession: async () => {
+    if (get().hasHydratedSession || get().isHydratingSession) {
+      return;
+    }
+
     set((state) => ({
       ...state,
       status: "loading",
+      isHydratingSession: true,
     }));
 
     try {

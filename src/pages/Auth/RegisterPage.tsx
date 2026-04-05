@@ -7,51 +7,58 @@ import { z } from "zod";
 import {
   Alert,
   Button,
-  Col,
   Flex,
   Form,
-  Grid,
   Input,
-  Row,
   Select,
-  Steps,
   Typography,
 } from "antd";
 import { getApiErrorMessage, getUniversities, register as registerRequest } from "@/features/auth/api";
-import { AuthPageIntro } from "@/pages/Auth/AuthPageParts";
 import { useAuthStore } from "@/store/authStore";
 
 const registerSchema = z
   .object({
-    fullName: z.string().min(3, "Ad soyad en az 3 karakter olmali"),
-    email: z.string().email("Gecerli bir e-posta adresi giriniz"),
-    universityId: z.string().min(1, "Universite seciniz"),
-    department: z.string().min(2, "Bolum en az 2 karakter olmali"),
-    year: z.string().min(1, "Sinif seciniz"),
-    password: z.string().min(8, "Sifre en az 8 karakter olmali"),
+    fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalı"),
+    email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+    universityId: z.string().min(1, "Üniversite seçiniz"),
+    department: z.string().min(2, "Bölüm en az 2 karakter olmalı"),
+    year: z.string().min(1, "Sınıf seçiniz"),
+    password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Sifreler eslesmiyor",
+    message: "Şifreler eşleşmiyor",
     path: ["confirmPassword"],
   });
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
 const yearOptions = [
-  { value: "1", label: "1. Sinif" },
-  { value: "2", label: "2. Sinif" },
-  { value: "3", label: "3. Sinif" },
-  { value: "4", label: "4. Sinif" },
-  { value: "5", label: "5. Sinif+" },
+  { value: "1", label: "1. Sınıf" },
+  { value: "2", label: "2. Sınıf" },
+  { value: "3", label: "3. Sınıf" },
+  { value: "4", label: "4. Sınıf" },
+  { value: "5", label: "5. Sınıf+" },
 ];
+
+const inputStyle = {
+  height: 56,
+  borderRadius: 4,
+  background: "transparent",
+  borderColor: "#333639",
+  color: "#E7E9EA",
+  fontSize: 17,
+};
+
+const selectStyle = {
+  height: 56,
+};
 
 export default function RegisterPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
-  const screens = Grid.useBreakpoint();
 
   const {
     data: universities = [],
@@ -63,7 +70,6 @@ export default function RegisterPage() {
     control,
     handleSubmit,
     trigger,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -87,10 +93,6 @@ export default function RegisterPage() {
     [universities],
   );
 
-  const wEmail = watch("email");
-  const wPassword = watch("password");
-  const wConfirm = watch("confirmPassword");
-
   const onSubmit = async (data: RegisterForm) => {
     setSubmitError(null);
 
@@ -105,7 +107,7 @@ export default function RegisterPage() {
       });
 
       setSession(session);
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
     }
@@ -122,30 +124,38 @@ export default function RegisterPage() {
   };
 
   return (
-    <Flex vertical gap={28}>
-      <AuthPageIntro
-        title="Hesap Olustur"
-        description="Hesap bilgilerinizi ve ogrenci profilinizi iki kisa adimda tamamlayin."
-      />
+    <Flex vertical style={{ width: "100%", maxWidth: 440 }}>
+      <Typography.Title
+        level={2}
+        style={{
+          color: "#E7E9EA",
+          fontSize: 31,
+          fontWeight: 800,
+          letterSpacing: "-0.03em",
+          margin: "0 0 8px 0",
+        }}
+      >
+        Hesabını oluştur
+      </Typography.Title>
 
-      <Steps
-        current={currentStep}
-        progressDot
-        items={[
-          { title: "Hesap" },
-          { title: "Akademik" },
-        ]}
-        orientation={screens.xs ? "vertical" : "horizontal"}
-        size="small"
-      />
+      {/* Step indicator */}
+      <Typography.Text
+        style={{
+          color: "#71767B",
+          fontSize: 15,
+          marginBottom: 24,
+        }}
+      >
+        {currentStep === 0 ? "Adım 1/2 — Hesap bilgileri" : "Adım 2/2 — Akademik bilgiler"}
+      </Typography.Text>
 
       <Form layout="vertical" size="large" onFinish={handleSubmit(onSubmit)}>
         {currentStep === 0 ? (
-          <Flex vertical gap={4}>
+          <Flex vertical>
             <Form.Item
-              label="Ad Soyad"
               validateStatus={errors.fullName ? "error" : undefined}
               help={errors.fullName?.message}
+              style={{ marginBottom: 20 }}
             >
               <Controller
                 name="fullName"
@@ -156,18 +166,20 @@ export default function RegisterPage() {
                     autoFocus
                     allowClear
                     autoComplete="name"
-                    placeholder="Adiniz Soyadiniz"
+                    placeholder="Ad Soyad"
                     status={errors.fullName ? "error" : undefined}
+                    style={inputStyle}
+                    showCount
+                    maxLength={50}
                   />
                 )}
               />
             </Form.Item>
 
             <Form.Item
-              label="E-posta"
-              hasFeedback={!!wEmail}
-              validateStatus={errors.email ? "error" : wEmail ? "success" : undefined}
+              validateStatus={errors.email ? "error" : undefined}
               help={errors.email?.message}
+              style={{ marginBottom: 20 }}
             >
               <Controller
                 name="email"
@@ -179,134 +191,127 @@ export default function RegisterPage() {
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                    placeholder="ornek@universite.edu.tr"
+                    placeholder="E-posta"
                     status={errors.email ? "error" : undefined}
+                    style={inputStyle}
                   />
                 )}
               />
             </Form.Item>
 
-            <Row gutter={16}>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  label="Sifre"
-                  hasFeedback={!!wPassword}
-                  validateStatus={errors.password ? "error" : wPassword ? "success" : undefined}
-                  help={errors.password?.message}
-                >
-                  <Controller
-                    name="password"
-                    control={control}
-                    render={({ field }) => (
-                      <Input.Password
-                        {...field}
-                        autoComplete="new-password"
-                        placeholder="********"
-                        status={errors.password ? "error" : undefined}
-                      />
-                    )}
+            <Form.Item
+              validateStatus={errors.password ? "error" : undefined}
+              help={errors.password?.message}
+              style={{ marginBottom: 20 }}
+            >
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    autoComplete="new-password"
+                    placeholder="Şifre"
+                    status={errors.password ? "error" : undefined}
+                    style={inputStyle}
                   />
-                </Form.Item>
-              </Col>
+                )}
+              />
+            </Form.Item>
 
-              <Col xs={24} md={12}>
-                <Form.Item
-                  label="Sifre Tekrar"
-                  hasFeedback={!!wConfirm}
-                  validateStatus={errors.confirmPassword ? "error" : wConfirm ? "success" : undefined}
-                  help={errors.confirmPassword?.message}
-                >
-                  <Controller
-                    name="confirmPassword"
-                    control={control}
-                    render={({ field }) => (
-                      <Input.Password
-                        {...field}
-                        autoComplete="new-password"
-                        placeholder="********"
-                        status={errors.confirmPassword ? "error" : undefined}
-                      />
-                    )}
+            <Form.Item
+              validateStatus={errors.confirmPassword ? "error" : undefined}
+              help={errors.confirmPassword?.message}
+              style={{ marginBottom: 24 }}
+            >
+              <Controller
+                name="confirmPassword"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    autoComplete="new-password"
+                    placeholder="Şifre tekrar"
+                    status={errors.confirmPassword ? "error" : undefined}
+                    style={inputStyle}
                   />
-                </Form.Item>
-              </Col>
-            </Row>
+                )}
+              />
+            </Form.Item>
           </Flex>
         ) : (
-          <Flex vertical gap={4}>
-            <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
-              Universite, bolum ve sinif bilgileriniz ogrenci profilinizin olusturulmasi icin
+          <Flex vertical>
+            <Typography.Text
+              style={{ color: "#71767B", fontSize: 14, marginBottom: 20, lineHeight: 1.5 }}
+            >
+              Üniversite, bölüm ve sınıf bilgileriniz öğrenci profilinizin oluşturulması için
               gereklidir.
-            </Typography.Paragraph>
+            </Typography.Text>
 
-            <Row gutter={16}>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  label="Universite"
-                  validateStatus={errors.universityId ? "error" : undefined}
-                  help={errors.universityId?.message}
-                >
-                  <Controller
-                    name="universityId"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        allowClear
-                        loading={isUniversitiesLoading}
-                        notFoundContent={
-                          isUniversitiesLoading ? "Yukleniyor..." : "Sonuc bulunamadi"
-                        }
-                        optionFilterProp="label"
-                        options={universityOptions}
-                        placeholder="Universite seciniz"
-                        showSearch
-                        status={errors.universityId ? "error" : undefined}
-                        value={field.value || undefined}
-                        onChange={(value) => field.onChange(value ?? "")}
-                      />
-                    )}
+            <Form.Item
+              validateStatus={errors.universityId ? "error" : undefined}
+              help={errors.universityId?.message}
+              style={{ marginBottom: 20 }}
+            >
+              <Controller
+                name="universityId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    allowClear
+                    loading={isUniversitiesLoading}
+                    notFoundContent={
+                      isUniversitiesLoading ? "Yükleniyor..." : "Sonuç bulunamadı"
+                    }
+                    optionFilterProp="label"
+                    options={universityOptions}
+                    placeholder="Üniversite seçiniz"
+                    showSearch
+                    status={errors.universityId ? "error" : undefined}
+                    value={field.value || undefined}
+                    onChange={(value) => field.onChange(value ?? "")}
+                    style={selectStyle}
                   />
-                </Form.Item>
-              </Col>
+                )}
+              />
+            </Form.Item>
 
-              <Col xs={24} md={12}>
-                <Form.Item
-                  label="Bolum"
-                  validateStatus={errors.department ? "error" : undefined}
-                  help={errors.department?.message}
-                >
-                  <Controller
-                    name="department"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        allowClear
-                        autoComplete="organization-title"
-                        placeholder="Bilgisayar Muhendisligi"
-                        status={errors.department ? "error" : undefined}
-                      />
-                    )}
+            <Form.Item
+              validateStatus={errors.department ? "error" : undefined}
+              help={errors.department?.message}
+              style={{ marginBottom: 20 }}
+            >
+              <Controller
+                name="department"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    allowClear
+                    autoComplete="organization-title"
+                    placeholder="Bölüm (ör. Bilgisayar Mühendisliği)"
+                    status={errors.department ? "error" : undefined}
+                    style={inputStyle}
                   />
-                </Form.Item>
-              </Col>
-            </Row>
+                )}
+              />
+            </Form.Item>
 
             {isUniversitiesError && (
               <Alert
                 type="warning"
                 showIcon
-                title="Universiteler yuklenemedi."
-                description="Liste tekrar alinamadi. Sayfayi yenileyip yeniden deneyin."
-                style={{ marginBottom: 24 }}
+                message="Üniversiteler yüklenemedi."
+                description="Sayfayı yenileyip yeniden deneyin."
+                style={{ marginBottom: 20 }}
               />
             )}
 
             <Form.Item
-              label="Sinif"
               validateStatus={errors.year ? "error" : undefined}
               help={errors.year?.message}
+              style={{ marginBottom: 24 }}
             >
               <Controller
                 name="year"
@@ -315,10 +320,11 @@ export default function RegisterPage() {
                   <Select
                     {...field}
                     options={yearOptions}
-                    placeholder="Sinif seciniz"
+                    placeholder="Sınıf seçiniz"
                     status={errors.year ? "error" : undefined}
                     value={field.value || undefined}
                     onChange={(value) => field.onChange(value ?? "")}
+                    style={selectStyle}
                   />
                 )}
               />
@@ -330,26 +336,85 @@ export default function RegisterPage() {
           <Alert
             type="error"
             showIcon
-            title={submitError}
+            message={submitError}
             style={{ marginBottom: 24 }}
           />
         )}
 
         {currentStep === 0 ? (
-          <Button block onClick={handleContinue} type="primary">
-            Devam Et
+          <Button
+            block
+            onClick={handleContinue}
+            style={{
+              height: 44,
+              borderRadius: 9999,
+              fontWeight: 700,
+              fontSize: 15,
+              background: "#FFFFFF",
+              color: "#0F1419",
+              border: "none",
+            }}
+          >
+            İleri
           </Button>
         ) : (
-          <Flex gap={12}>
-            <Button block htmlType="button" onClick={() => setCurrentStep(0)}>
-              Geri
+          <Flex vertical gap={12}>
+            <Button
+              htmlType="submit"
+              block
+              loading={isSubmitting}
+              style={{
+                height: 44,
+                borderRadius: 9999,
+                fontWeight: 700,
+                fontSize: 15,
+                background: "#FFFFFF",
+                color: "#0F1419",
+                border: "none",
+              }}
+            >
+              {isSubmitting ? "Kayıt yapılıyor..." : "Kayıt Ol"}
             </Button>
-            <Button type="primary" htmlType="submit" block loading={isSubmitting}>
-              {isSubmitting ? "Kayit yapiliyor..." : "Kayit Ol"}
+
+            <Button
+              block
+              onClick={() => setCurrentStep(0)}
+              style={{
+                height: 44,
+                borderRadius: 9999,
+                fontWeight: 700,
+                fontSize: 15,
+                background: "transparent",
+                color: "#FFFFFF",
+                borderColor: "#536471",
+              }}
+            >
+              Geri
             </Button>
           </Flex>
         )}
       </Form>
+
+      <Typography.Paragraph
+        style={{
+          marginTop: 32,
+          marginBottom: 0,
+          color: "#71767B",
+          fontSize: 15,
+        }}
+      >
+        Zaten hesabın var mı?{" "}
+        <Typography.Link
+          onClick={() => navigate("/login")}
+          style={{
+            color: "#1D9BF0",
+            fontWeight: 400,
+            fontSize: 15,
+          }}
+        >
+          Giriş yap
+        </Typography.Link>
+      </Typography.Paragraph>
     </Flex>
   );
 }

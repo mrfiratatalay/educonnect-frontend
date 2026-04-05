@@ -1,6 +1,7 @@
-import { type FormEvent, useState } from "react";
-import { Send } from "lucide-react";
-import { Button, Flex, Input, Typography } from "antd";
+import { type FormEvent, useState, useRef, useEffect } from "react";
+import { Button, Flex, Avatar, theme } from "antd";
+import { useAuthStore } from "@/store/authStore";
+import { getUserInitials } from "@/components/layout/shellNavigation";
 
 interface PostCommentComposerProps {
   isSubmitting: boolean;
@@ -12,62 +13,101 @@ export default function PostCommentComposer({
   onSubmit,
 }: PostCommentComposerProps) {
   const [content, setContent] = useState("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { token } = theme.useToken();
+  const user = useAuthStore((state) => state.user);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+    }
+  }, [content]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedContent = content.trim();
-    if (!trimmedContent) {
-      setErrorMessage("Yorum boş olamaz.");
-      return;
-    }
+    if (!trimmedContent) return;
 
     try {
-      setErrorMessage(null);
       await onSubmit(trimmedContent);
       setContent("");
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Yorum gönderilemedi.",
-      );
+      // Handle error gracefully if needed
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (content.trim()) {
+        const form = e.currentTarget.closest('form');
+        if (form) form.requestSubmit();
+      }
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
-      <Flex vertical gap={8}>
-        <Input.TextArea
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
-          placeholder="Yorum yaz..."
-          rows={2}
-          maxLength={500}
-          autoSize={{ minRows: 2, maxRows: 4 }}
-        />
+    <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+      <Flex gap={12} align="flex-start" style={{ padding: "12px 16px" }}>
+        <Avatar
+          src={user?.avatarUrl}
+          size={40}
+          style={{
+            backgroundColor: token.colorPrimaryBg,
+            color: token.colorPrimary,
+            flexShrink: 0,
+          }}
+        >
+          {getUserInitials(user?.fullName)}
+        </Avatar>
 
-        <Flex align="center" justify="space-between" gap={12}>
-          <div>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              {content.length}/500
-            </Typography.Text>
-            {errorMessage && (
-              <Typography.Text type="danger" style={{ fontSize: 12, display: "block" }}>
-                {errorMessage}
-              </Typography.Text>
-            )}
-          </div>
+        <Flex vertical style={{ flex: 1, minWidth: 0, paddingTop: 4 }}>
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Yanıtını gönder"
+            disabled={isSubmitting}
+            style={{
+              width: "100%",
+              minHeight: 24,
+              fontSize: 20,
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              resize: "none",
+              color: token.colorText,
+              fontFamily: "inherit",
+              overflow: "hidden",
+            }}
+          />
 
-          <Button
-            type="primary"
-            htmlType="submit"
-            size="small"
-            icon={<Send size={12} />}
-            loading={isSubmitting}
-            disabled={!content.trim()}
-          >
-            Yorum Yap
-          </Button>
+          <Flex justify="flex-end" style={{ marginTop: 12 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isSubmitting}
+              disabled={!content.trim()}
+              shape="round"
+              style={{
+                height: 36,
+                padding: "0 16px",
+                fontWeight: 700,
+                fontSize: 15,
+                backgroundColor: "#1D9BF0",
+                opacity: !content.trim() ? 0.5 : 1,
+                border: "none",
+                color: "#FFFFFF",
+              }}
+            >
+              Yanıtla
+            </Button>
+          </Flex>
         </Flex>
       </Flex>
     </form>

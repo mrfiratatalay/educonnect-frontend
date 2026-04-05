@@ -1,14 +1,33 @@
-import { Grid, Layout, theme } from "antd";
-import { Outlet } from "react-router-dom";
+import { Grid, Layout, Modal, Typography, theme, Flex, Button } from "antd";
+import { Outlet, useLocation } from "react-router-dom";
+import { useUIStore } from "@/store/uiStore";
+import { useAuthStore } from "@/store/authStore";
+import { useCreatePostMutation } from "@/features/posts/hooks";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import MobileNav from "./MobileNav";
 import ChatBubble from "@/components/chat/ChatBubble";
+import PostComposer from "@/pages/Feed/components/PostComposer";
 
-export default function AppLayout() {
+interface AppLayoutProps {
+  children?: React.ReactNode;
+}
+
+export default function AppLayout({ children }: AppLayoutProps) {
   const screens = Grid.useBreakpoint();
   const { token } = theme.useToken();
   const isDesktop = !!screens.lg;
+  const location = useLocation();
+  
+  const { isComposeModalOpen, closeComposeModal } = useUIStore();
+  const user = useAuthStore((state) => state.user);
+  const createPostMutation = useCreatePostMutation();
+  const shouldShowChatBubble = !location.pathname.startsWith("/edu-ai");
+
+  const handleCreatePost = async (content: string) => {
+    await createPostMutation.mutateAsync({ content });
+    closeComposeModal();
+  };
 
   return (
     <>
@@ -17,6 +36,8 @@ export default function AppLayout() {
         style={{
           minHeight: "100vh",
           background: token.colorBgLayout,
+          maxWidth: 1265, // Sidebar (275) + Feed Max Width (990)
+          margin: "0 auto",
         }}
       >
         <Sidebar />
@@ -36,13 +57,72 @@ export default function AppLayout() {
               paddingBottom: isDesktop ? 0 : 84,
             }}
           >
-            <Outlet />
+            {children ?? <Outlet />}
           </Layout.Content>
         </Layout>
       </Layout>
 
       <MobileNav />
-      <ChatBubble />
+      {shouldShowChatBubble && <ChatBubble />}
+
+      <Modal
+        open={isComposeModalOpen}
+        onCancel={closeComposeModal}
+        footer={null}
+        width={600}
+        destroyOnClose
+        closeIcon={false}
+        title={
+          <Flex align="center" justify="space-between" style={{ width: "100%" }}>
+            <Button
+              type="text"
+              shape="circle"
+              icon={
+                <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20, fill: "currentColor" }}>
+                  <g><path d="M10.59 12L4.54 5.96l1.42-1.42L12 10.59l6.04-6.05 1.42 1.42L13.41 12l6.05 6.04-1.42 1.42L12 13.41l-6.04 6.05-1.42-1.42L10.59 12z"></path></g>
+                </svg>
+              }
+              onClick={closeComposeModal}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+            />
+            <Typography.Link 
+              style={{ 
+                fontSize: 15, 
+                fontWeight: 700, 
+                color: "#1D9BF0" 
+              }}
+            >
+              Taslaklar
+            </Typography.Link>
+          </Flex>
+        }
+        styles={{
+          body: {
+            padding: 0,
+            borderRadius: 16,
+            top: "5%",
+          },
+          header: {
+            padding: "16px 24px",
+            borderBottom: `1px solid ${token.colorBorderSecondary}`,
+            margin: 0,
+            borderRadius: "16px 16px 0 0",
+          },
+          mask: {
+            background: "rgba(0, 0, 0, 0.4)",
+          }
+        }}
+      >
+        <div style={{ paddingTop: 16 }}>
+          <PostComposer
+            avatarUrl={user?.avatarUrl}
+            fullName={user?.fullName}
+            isSubmitting={createPostMutation.isPending}
+            onSubmit={handleCreatePost}
+            isInModal
+          />
+        </div>
+      </Modal>
     </>
   );
 }

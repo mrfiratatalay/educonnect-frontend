@@ -62,6 +62,7 @@ Do not silently finish work without updating this file.
 - ~~Keep `react-hook-form` and `zod` integrated with the new UI~~
 - ~~Remove custom `src/components/ui` dependencies from auth screens~~
 - ~~Remove Tailwind-based form styling from auth screens~~
+- ~~Fix auth session bootstrap and root-route modal loop between landing and login/register~~
 - [ ] Verify validation states, loading states, and error messages
 - [ ] Update this todo after auth migration is complete
 

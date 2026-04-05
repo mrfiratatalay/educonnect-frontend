@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Alert, Button, Flex, Form, Input, Typography, theme } from "antd";
+import { Alert, Button, Flex, Form, Input, Typography } from "antd";
 import { getApiErrorMessage, login as loginRequest } from "@/features/auth/api";
-import { AuthPageIntro } from "@/pages/Auth/AuthPageParts";
 import { useAuthStore } from "@/store/authStore";
 
 const loginSchema = z.object({
-  email: z.string().email("Gecerli bir e-posta adresi giriniz"),
-  password: z.string().min(8, "Sifre en az 8 karakter olmali"),
+  email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -19,12 +18,10 @@ export default function LoginPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
-  const { token } = theme.useToken();
 
   const {
     control,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -34,27 +31,32 @@ export default function LoginPage() {
     },
   });
 
-  const wEmail = watch("email");
-  const wPassword = watch("password");
-
   const onSubmit = async (data: LoginForm) => {
     setSubmitError(null);
 
     try {
       const session = await loginRequest(data);
       setSession(session);
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
     }
   };
 
   return (
-    <Flex vertical gap={28}>
-      <AuthPageIntro
-        title="Hesabina Giris Yap"
-        description="EduConnect hesabinizla devam edin."
-      />
+    <Flex vertical style={{ width: "100%", maxWidth: 364 }}>
+      <Typography.Title
+        level={2}
+        style={{
+          color: "#E7E9EA",
+          fontSize: 31,
+          fontWeight: 800,
+          letterSpacing: "-0.03em",
+          margin: "0 0 28px 0",
+        }}
+      >
+        EduConnect'e giriş yap
+      </Typography.Title>
 
       <Form
         layout="vertical"
@@ -63,10 +65,9 @@ export default function LoginPage() {
         onFinish={handleSubmit(onSubmit)}
       >
         <Form.Item
-          label="E-posta"
-          hasFeedback={!!wEmail}
-          validateStatus={errors.email ? "error" : wEmail ? "success" : undefined}
+          validateStatus={errors.email ? "error" : undefined}
           help={errors.email?.message}
+          style={{ marginBottom: 20 }}
         >
           <Controller
             name="email"
@@ -79,33 +80,25 @@ export default function LoginPage() {
                 type="email"
                 inputMode="email"
                 autoComplete="email"
-                placeholder="ornek@universite.edu.tr"
+                placeholder="E-posta veya kullanıcı adı"
                 status={errors.email ? "error" : undefined}
+                style={{
+                  height: 56,
+                  borderRadius: 4,
+                  background: "transparent",
+                  borderColor: "#333639",
+                  color: "#E7E9EA",
+                  fontSize: 17,
+                }}
               />
             )}
           />
         </Form.Item>
 
-        <div style={{ marginBottom: 8 }}>
-          <Flex align="center" justify="space-between" gap={16}>
-            <Typography.Text strong>Sifre</Typography.Text>
-            <Link
-              to="/forgot-password"
-              style={{
-                color: token.colorPrimary,
-                fontSize: 13,
-                fontWeight: 600,
-              }}
-            >
-              Sifremi unuttum
-            </Link>
-          </Flex>
-        </div>
-
         <Form.Item
-          hasFeedback={!!wPassword}
-          validateStatus={errors.password ? "error" : wPassword ? "success" : undefined}
+          validateStatus={errors.password ? "error" : undefined}
           help={errors.password?.message}
+          style={{ marginBottom: 24 }}
         >
           <Controller
             name="password"
@@ -114,8 +107,16 @@ export default function LoginPage() {
               <Input.Password
                 {...field}
                 autoComplete="current-password"
-                placeholder="********"
+                placeholder="Şifre"
                 status={errors.password ? "error" : undefined}
+                style={{
+                  height: 56,
+                  borderRadius: 4,
+                  background: "transparent",
+                  borderColor: "#333639",
+                  color: "#E7E9EA",
+                  fontSize: 17,
+                }}
               />
             )}
           />
@@ -125,23 +126,65 @@ export default function LoginPage() {
           <Alert
             type="error"
             showIcon
-            title={submitError}
+            message={submitError}
             style={{ marginBottom: 24 }}
           />
         )}
 
-        <Button type="primary" htmlType="submit" block loading={isSubmitting} size="large">
-          {isSubmitting ? "Giris yapiliyor..." : "Giris Yap"}
+        <Button
+          htmlType="submit"
+          block
+          loading={isSubmitting}
+          style={{
+            height: 44,
+            borderRadius: 9999,
+            fontWeight: 700,
+            fontSize: 15,
+            background: "#FFFFFF",
+            color: "#0F1419",
+            border: "none",
+            marginBottom: 20,
+          }}
+        >
+          {isSubmitting ? "Giriş yapılıyor..." : "Giriş Yap"}
+        </Button>
+
+        <Button
+          block
+          onClick={() => navigate("/forgot-password")}
+          style={{
+            height: 44,
+            borderRadius: 9999,
+            fontWeight: 700,
+            fontSize: 15,
+            background: "transparent",
+            color: "#FFFFFF",
+            borderColor: "#536471",
+          }}
+        >
+          Şifremi unuttum?
         </Button>
       </Form>
 
       <Typography.Paragraph
-        type="secondary"
         style={{
+          marginTop: 40,
           marginBottom: 0,
+          color: "#71767B",
+          fontSize: 15,
         }}
       >
-        Kurumsal veya ogrenci e-posta bilgilerinizle giris yapin.
+        Hesabın yok mu?{" "}
+        <Typography.Link
+          onClick={() => navigate("/register")}
+          style={{
+            color: "#1D9BF0",
+            fontWeight: 400,
+            fontSize: 15,
+          }}
+        >
+          Kayıt ol
+        </Typography.Link>
       </Typography.Paragraph>
     </Flex>
   );

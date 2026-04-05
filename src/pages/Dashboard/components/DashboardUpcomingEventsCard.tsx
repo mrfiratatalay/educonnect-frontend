@@ -30,7 +30,7 @@ export default function DashboardUpcomingEventsCard({
         </Flex>
       }
       extra={
-        <Link to="/explore?tab=events" style={{ textDecoration: "none" }}>
+        <Link to="/events" style={{ textDecoration: "none" }}>
           <Button type="text" icon={<ArrowRight size={14} />} iconPlacement="end">
             Tumunu Gor
           </Button>
@@ -74,7 +74,7 @@ export default function DashboardUpcomingEventsCard({
             return (
               <Link
                 key={event.id}
-                to="/explore?tab=events"
+                to="/events"
                 style={{ color: "inherit", textDecoration: "none" }}
               >
                 <Flex

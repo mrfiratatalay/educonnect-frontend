@@ -32,9 +32,21 @@ import { filterPreviewDiscounts } from "@/pages/Explore/exploreMockData";
 import { getActiveFilterCount, getExploreActionConfig, getExplorePreviewMessage, getExploreTab } from "@/pages/Explore/explorePageUtils";
 import { useExplorePreviewState } from "@/pages/Explore/useExplorePreviewState";
 
-export default function ExplorePage() {
+interface ExploreWorkspacePageProps {
+  forcedTab?: ExploreTab;
+  title?: string;
+  description?: string;
+  showTabs?: boolean;
+}
+
+export function ExploreWorkspacePage({
+  forcedTab,
+  title = "Topluluklar",
+  description = "Gruplari, etkinlikleri ve kampusteki yeni firsatlari bu ekrandan takip et.",
+  showTabs = false,
+}: ExploreWorkspacePageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = getExploreTab(searchParams.get("tab"));
+  const activeTab = forcedTab ?? getExploreTab(searchParams.get("tab"));
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
@@ -190,6 +202,9 @@ export default function ExplorePage() {
   }
 
   function handleTabChange(tab: ExploreTab) {
+    if (forcedTab) {
+      return;
+    }
     setSearchQuery("");
     setActionErrorMessage(null);
     setSelectedGroupId(null);
@@ -227,20 +242,26 @@ export default function ExplorePage() {
       <Flex vertical gap={24}>
         <div>
           <Typography.Title level={screens.lg ? 2 : 3} style={{ margin: 0 }}>
-            Keşfet
+            {title}
           </Typography.Title>
           <Typography.Text type="secondary" style={{ marginTop: 4, display: "block" }}>
-            Grupları, etkinlikleri ve kampüsteki yeni fırsatları bu ekrandan takip et.
+            {description}
           </Typography.Text>
         </div>
 
-        <ExploreTabs
-          activeTab={activeTab}
-          counts={{ groups: groups.length, events: events.length, discounts: previewState.discounts.length }}
-          extraContent={screens.md ? actionBar : undefined}
-          onChange={handleTabChange}
-        />
-        {!screens.md && actionBar}
+        {showTabs ? (
+          <>
+            <ExploreTabs
+              activeTab={activeTab}
+              counts={{ groups: groups.length, events: events.length, discounts: previewState.discounts.length }}
+              extraContent={screens.md ? actionBar : undefined}
+              onChange={handleTabChange}
+            />
+            {!screens.md && actionBar}
+          </>
+        ) : (
+          actionBar
+        )}
         {activeTab !== "discounts" && isFilterBarOpen && (
           <ExploreFilterBar
             activeTab={activeTab}
@@ -302,5 +323,15 @@ export default function ExplorePage() {
         onToggleRegistration={handleToggleRegistration}
       />
     </div>
+  );
+}
+
+export default function CommunitiesPage() {
+  return (
+    <ExploreWorkspacePage
+      forcedTab="groups"
+      title="Topluluklar"
+      description="Topluluklari kesfet, ilgini ceken gruplara katil ve kampuste ayni alanlara ilgi duyan insanlarla bulus."
+    />
   );
 }

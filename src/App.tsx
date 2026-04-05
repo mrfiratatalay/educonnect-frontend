@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import AppLayout from "@/components/layout/AppLayout";
@@ -7,8 +7,16 @@ import LoginPage from "@/pages/Auth/LoginPage";
 import RegisterPage from "@/pages/Auth/RegisterPage";
 import ForgotPasswordPage from "@/pages/Auth/ForgotPasswordPage";
 import FeedPage from "@/pages/Feed/FeedPage";
+import PostDetailPage from "@/pages/Feed/PostDetailPage";
+import BookmarksPage from "@/pages/Bookmarks/BookmarksPage";
+import EduAiPage from "@/pages/EduAI/EduAiPage";
 import VisualSearchPage from "@/pages/VisualSearch/VisualSearchPage";
-import ExplorePage from "@/pages/Explore/ExplorePage";
+import CommunitiesPage from "@/pages/Explore/ExplorePage";
+import EventsPage from "@/pages/Explore/EventsPage";
+import ExploreDiscoveryPage from "@/pages/Explore/ExploreDiscoveryPage";
+import MarketPage from "@/pages/Market/MarketPage";
+import NotificationsPage from "@/pages/Notifications/NotificationsPage";
+import MessagesPage from "@/pages/Messages/MessagesPage";
 import ProfilePage from "@/pages/Profile/ProfilePage";
 import SettingsPage from "@/pages/Settings/SettingsPage";
 import { Spin, Flex } from "antd";
@@ -22,7 +30,8 @@ function RouteLoading() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, status } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const status = useAuthStore((state) => state.status);
 
   if (status === "loading") {
     return <RouteLoading />;
@@ -36,7 +45,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, status } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const status = useAuthStore((state) => state.status);
 
   if (status === "loading") {
     return <RouteLoading />;
@@ -49,21 +59,36 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function RootRoute() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const status = useAuthStore((state) => state.status);
+
+  if (status === "loading") {
+    return <RouteLoading />;
+  }
+
+  if (isAuthenticated) {
+    return (
+      <AppLayout>
+        <FeedPage />
+      </AppLayout>
+    );
+  }
+
+  return <AuthLayout />;
+}
+
 export default function App() {
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
-  const hasBootstrappedRef = useRef(false);
 
   useEffect(() => {
-    if (hasBootstrappedRef.current) {
-      return;
-    }
-
-    hasBootstrappedRef.current = true;
     void hydrateSession();
   }, [hydrateSession]);
 
   return (
     <Routes>
+      <Route path="/" element={<RootRoute />} />
+
       <Route
         element={
           <GuestRoute>
@@ -83,9 +108,17 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<FeedPage />} />
+        <Route path="/post/:id" element={<PostDetailPage />} />
+        <Route path="/bookmarks" element={<BookmarksPage />} />
+        <Route path="/edu-ai" element={<EduAiPage />} />
         <Route path="/visual-search" element={<VisualSearchPage />} />
-        <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/explore" element={<ExploreDiscoveryPage />} />
+        <Route path="/communities" element={<CommunitiesPage />} />
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/market" element={<MarketPage />} />
+        <Route path="/discounts" element={<Navigate replace to="/market?tab=discounts" />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/messages" element={<MessagesPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/profile/:userId" element={<ProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />

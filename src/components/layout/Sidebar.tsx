@@ -1,160 +1,349 @@
-import type { MenuProps } from "antd";
-import {
-  Avatar,
-  Button,
-  Flex,
-  Grid,
-  Layout,
-  Menu,
-  Typography,
-  theme,
-} from "antd";
-import { MoreHorizontal } from "lucide-react";
+import { useState } from "react";
+import { Avatar, Button, Flex, Grid, Layout, Popover, Typography, theme } from "antd";
+import { Feather, GraduationCap, MoreHorizontal } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getSelectedShellKey,
+  isMoreNavPath,
   getUserInitials,
   shellMainNavItems,
+  shellMoreNavItems,
 } from "@/components/layout/shellNavigation";
 import { useAuthStore } from "@/store/authStore";
-import { GraduationCap } from "lucide-react";
+import { useUIStore } from "@/store/uiStore";
 
 export default function Sidebar() {
   const screens = Grid.useBreakpoint();
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const { openComposeModal } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = theme.useToken();
+  const [accountPopoverOpen, setAccountPopoverOpen] = useState(false);
+  const [morePopoverOpen, setMorePopoverOpen] = useState(false);
 
   if (!screens.lg) {
     return null;
   }
 
+  const isMessages = location.pathname === "/messages";
   const selectedKey = getSelectedShellKey(location.pathname);
-  const mainMenuItems: MenuProps["items"] = shellMainNavItems.map((item) => ({
-    key: item.key,
-    icon: <item.icon size={26} />,
-    label: <span style={{ fontSize: 20, fontWeight: selectedKey === item.key ? 700 : 400 }}>{item.label}</span>,
-  }));
-  const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
-    navigate(String(key));
-  };
+  const isMoreSelected = isMoreNavPath(location.pathname);
+  const userHandle = user?.email?.split("@")[0] ?? "kullanici";
+  const navIconSize = 24;
+  const navLabelFontSize = 18;
+  const navRowPadding = isMessages ? "10px" : "10px 20px 10px 10px";
+
+  const accountPopoverContent = (
+    <div style={{ width: 360, maxWidth: "calc(100vw - 32px)" }}>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setAccountPopoverOpen(false)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setAccountPopoverOpen(false);
+          }
+        }}
+        style={{
+          padding: "20px 22px 16px",
+          fontSize: 16,
+          fontWeight: 700,
+          lineHeight: 1.2,
+          color: "#1F2937",
+          cursor: "pointer",
+          outline: "none",
+          background: "#FFFFFF",
+        }}
+      >
+        Var olan bir hesap ekle
+      </div>
+
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => {
+          setAccountPopoverOpen(false);
+          void logout();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setAccountPopoverOpen(false);
+            void logout();
+          }
+        }}
+        style={{
+          padding: "14px 22px 22px",
+          cursor: "pointer",
+          outline: "none",
+          background: "#FFFFFF",
+        }}
+      >
+        <div style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.18, color: "#111827" }}>
+          @{userHandle} hesabindan
+        </div>
+        <div style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.18, color: "#111827", marginTop: 2 }}>
+          cikis yap
+        </div>
+      </div>
+    </div>
+  );
+
+  const morePopoverContent = (
+    <Flex vertical style={{ minWidth: 360 }}>
+      {shellMoreNavItems.map((item) => (
+        <Button
+          key={item.key}
+          type="text"
+          onClick={() => {
+            navigate(item.to);
+            setMorePopoverOpen(false);
+          }}
+          style={{
+            justifyContent: "flex-start",
+            height: "auto",
+            padding: "15px 18px",
+            borderRadius: 18,
+            fontSize: 17,
+            fontWeight: selectedKey === item.key ? 700 : 600,
+            color: "#111827",
+          }}
+        >
+          <Flex align="center" gap={16}>
+            <item.icon size={22} />
+            <span>{item.label}</span>
+          </Flex>
+        </Button>
+      ))}
+    </Flex>
+  );
 
   return (
     <Layout.Sider
       width={275}
+      collapsed={isMessages}
+      collapsedWidth={88}
       theme="light"
       trigger={null}
       style={{
         background: "transparent",
         borderInlineEnd: "none",
-        overflow: "auto",
+        overflowX: "hidden",
+        overflowY: "auto",
         height: "100vh",
         position: "sticky",
         insetInlineStart: 0,
         top: 0,
-        scrollbarWidth: "thin",
-        scrollbarGutter: "stable",
       }}
     >
-      <Flex vertical justify="space-between" style={{ minHeight: "100%", padding: "12px 12px 20px" }}>
-        {/* Top section: Logo + Nav + Button */}
+      <Flex vertical justify="space-between" style={{ minHeight: "100%", padding: "6px 10px 12px" }}>
         <div>
-          {/* Logo - X uses just an icon at the top */}
-          <div style={{ padding: "12px 16px 8px" }}>
+          <div style={{ padding: "6px 12px 6px" }}>
             <Button
               type="text"
               onClick={() => navigate("/")}
               style={{ height: "auto", padding: 6, borderRadius: 9999 }}
             >
-              <GraduationCap size={30} strokeWidth={2} />
+              <GraduationCap size={28} strokeWidth={2} />
             </Button>
           </div>
 
-          {/* Navigation Menu */}
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            items={mainMenuItems}
-            onClick={handleMenuClick}
-            style={{
-              borderInlineEnd: "none",
-              background: "transparent",
-              fontSize: 20,
-            }}
-          />
+          <Flex vertical gap={2} style={{ marginTop: 2 }}>
+            {shellMainNavItems.map((item) => (
+              <div
+                key={item.key}
+                style={{ display: "flex", justifyContent: isMessages ? "center" : "flex-start" }}
+              >
+                <Flex
+                  align="center"
+                  gap={18}
+                  style={{
+                    padding: navRowPadding,
+                    borderRadius: 9999,
+                    cursor: "pointer",
+                    transition: "background-color 0.2s",
+                    width: isMessages ? "auto" : "max-content",
+                  }}
+                  onClick={() => navigate(item.key)}
+                  onMouseEnter={(event) => {
+                    event.currentTarget.style.background = token.colorFillTertiary;
+                  }}
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <item.icon size={navIconSize} />
+                  {!isMessages ? (
+                    <span style={{ fontSize: navLabelFontSize, fontWeight: selectedKey === item.key ? 700 : 400, lineHeight: 1.2 }}>
+                      {item.label}
+                    </span>
+                  ) : null}
+                </Flex>
+              </div>
+            ))}
 
-          {/* Post Button */}
-          <Button
-            type="primary"
-            block
-            size="large"
-            style={{
-              marginTop: 16,
-              height: 52,
-              fontSize: 17,
-              fontWeight: 700,
-              letterSpacing: "0.01em",
-            }}
-            onClick={() => {
-              const composer = document.getElementById("feed-composer");
-              composer?.scrollIntoView({ behavior: "smooth", block: "start" });
-              const textarea = composer?.querySelector("textarea");
-              if (textarea instanceof HTMLTextAreaElement) {
-                window.setTimeout(() => textarea.focus(), 150);
-              }
-            }}
-          >
-            Gönderi yayınla
-          </Button>
+            <Popover
+              open={morePopoverOpen}
+              onOpenChange={setMorePopoverOpen}
+              trigger="click"
+              placement="bottomLeft"
+              content={morePopoverContent}
+              overlayStyle={{ paddingTop: 8 }}
+              overlayInnerStyle={{
+                padding: 10,
+                borderRadius: 24,
+                border: "1px solid #E5EAF1",
+                boxShadow: "0 12px 36px rgba(15, 23, 42, 0.14), 0 4px 14px rgba(15, 23, 42, 0.08)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: isMessages ? "center" : "flex-start" }}>
+                <Flex
+                  align="center"
+                  gap={18}
+                  style={{
+                    padding: navRowPadding,
+                    borderRadius: 9999,
+                    cursor: "pointer",
+                    transition: "background-color 0.2s",
+                    width: isMessages ? "auto" : "max-content",
+                    background: morePopoverOpen || isMoreSelected ? token.colorFillTertiary : "transparent",
+                  }}
+                  onMouseEnter={(event) => {
+                    event.currentTarget.style.background = token.colorFillTertiary;
+                  }}
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.background =
+                      morePopoverOpen || isMoreSelected ? token.colorFillTertiary : "transparent";
+                  }}
+                >
+                  <MoreHorizontal size={navIconSize} />
+                  {!isMessages ? (
+                    <span style={{ fontSize: navLabelFontSize, fontWeight: isMoreSelected ? 700 : 400, lineHeight: 1.2 }}>
+                      Daha fazla
+                    </span>
+                  ) : null}
+                </Flex>
+              </div>
+            </Popover>
+          </Flex>
+
+          {isMessages ? (
+            <Flex justify="center" style={{ marginTop: 16 }}>
+              <Button
+                type="primary"
+                shape="circle"
+                size="large"
+                style={{
+                  width: 50,
+                  height: 50,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                onClick={openComposeModal}
+              >
+                <Feather size={24} />
+              </Button>
+            </Flex>
+          ) : (
+            <div style={{ padding: "0 12px" }}>
+              <Button
+                type="primary"
+                size="large"
+                style={{
+                  marginTop: 10,
+                  height: 48,
+                  width: "100%",
+                  maxWidth: 220,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  letterSpacing: "0.01em",
+                  border: "none",
+                  borderRadius: 9999,
+                }}
+                onClick={openComposeModal}
+              >
+                Gonderi yayinla
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Bottom section: User profile row */}
-        <Flex
-          align="center"
-          gap={12}
-          style={{
-            padding: "12px",
-            borderRadius: 9999,
-            cursor: "pointer",
-            transition: "background 0.2s",
+        <Popover
+          open={accountPopoverOpen}
+          onOpenChange={setAccountPopoverOpen}
+          trigger="click"
+          placement="top"
+          content={accountPopoverContent}
+          arrow={{ pointAtCenter: true }}
+          overlayStyle={{
+            paddingBottom: 8,
           }}
-          onClick={() => navigate("/profile")}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = token.colorFillTertiary;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
+          overlayInnerStyle={{
+            padding: 0,
+            borderRadius: 22,
+            border: "1px solid #E5EAF1",
+            boxShadow: "0 10px 28px rgba(15, 23, 42, 0.12), 0 3px 12px rgba(15, 23, 42, 0.08)",
+            background: "#FFFFFF",
           }}
         >
-          <Avatar
-            src={user?.avatarUrl}
-            alt={user?.fullName}
-            size={40}
+          <Flex
+            align="center"
+            gap={12}
             style={{
-              backgroundColor: token.colorPrimaryBg,
-              color: token.colorPrimary,
-              flexShrink: 0,
+              padding: isMessages ? "0" : "12px",
+              justifyContent: isMessages ? "center" : "flex-start",
+              margin: isMessages ? "0" : "8px 0 4px",
+              borderRadius: 9999,
+              cursor: "pointer",
+              transition: "background 0.2s",
+              background: accountPopoverOpen ? token.colorFillTertiary : "transparent",
+            }}
+            onMouseEnter={(event) => {
+              event.currentTarget.style.background = token.colorFillTertiary;
+            }}
+            onMouseLeave={(event) => {
+              event.currentTarget.style.background = accountPopoverOpen
+                ? token.colorFillTertiary
+                : "transparent";
             }}
           >
-            {getUserInitials(user?.fullName)}
-          </Avatar>
-
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <Typography.Text strong ellipsis style={{ display: "block", fontSize: 15 }}>
-              {user?.fullName ?? "Kullanıcı"}
-            </Typography.Text>
-            <Typography.Text
-              type="secondary"
-              ellipsis
-              style={{ display: "block", fontSize: 15 }}
+            <Avatar
+              src={user?.avatarUrl}
+              alt={user?.fullName}
+              size={38}
+              style={{
+                backgroundColor: token.colorPrimaryBg,
+                color: token.colorPrimary,
+                flexShrink: 0,
+              }}
             >
-              @{user?.email?.split("@")[0] ?? "kullanici"}
-            </Typography.Text>
-          </div>
+              {getUserInitials(user?.fullName)}
+            </Avatar>
 
-          <MoreHorizontal size={18} style={{ color: token.colorTextSecondary, flexShrink: 0 }} />
-        </Flex>
+            {!isMessages ? (
+              <>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <Typography.Text strong ellipsis style={{ display: "block", fontSize: 14 }}>
+                    {user?.fullName ?? "Kullanici"}
+                  </Typography.Text>
+                  <Typography.Text
+                    type="secondary"
+                    ellipsis
+                    style={{ display: "block", fontSize: 14 }}
+                  >
+                    @{userHandle}
+                  </Typography.Text>
+                </div>
+
+                <MoreHorizontal size={18} style={{ color: token.colorTextSecondary, flexShrink: 0 }} />
+              </>
+            ) : null}
+          </Flex>
+        </Popover>
       </Flex>
     </Layout.Sider>
   );

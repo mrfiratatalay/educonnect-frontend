@@ -80,6 +80,8 @@ required = true
 - `src/pages/Auth/ForgotPasswordPage.tsx` now uses Ant Design `Form`, `Input`, `Button`, `Alert`, and `Result`.
 - Shared auth page title/footer composition now lives in `src/pages/Auth/AuthPageParts.tsx`.
 - The auth flow no longer depends on custom `src/components/ui` primitives.
+- Auth session hydration now guards against duplicate refresh attempts during app bootstrap, reducing repeat refresh churn on login/signup routes.
+- The root route now renders the guest landing directly and only opens login/signup/forgot-password as modal routes, so closing auth screens no longer bounces back into a protected redirect loop.
 - A production build succeeded after the auth refactor.
 
 ### 7. Dashboard route is rewritten in code

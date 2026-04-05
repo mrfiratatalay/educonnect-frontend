@@ -1,398 +1,217 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { MessageCircle, X, Send, Bot, Sparkles, ThumbsUp, ThumbsDown } from "lucide-react";
-import { Avatar, Button, Flex, Input, Tag, Typography, theme } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { FloatButton, Grid } from "antd";
 import type { InputRef } from "antd";
+import { GraduationCap, MessageCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import EduAiPanel from "@/components/chat/EduAiPanel";
+import MessagesLauncherPanel from "@/components/chat/MessagesLauncherPanel";
 import { useChatStore } from "@/store/chatStore";
-import { chatBotResponses, mockChatMessages } from "@/data/mock";
-import type { ChatMessage } from "@/types";
-
-const quickQuestions = [
-  "Sınav takvimi ne zaman?",
-  "Kütüphane saatleri nedir?",
-  "Yemekhane menüsü?",
-  "Burs başvurusu nasıl yapılır?",
-];
 
 export default function ChatBubble() {
-  const { isOpen, messages, isTyping, toggleChat, addMessage, setTyping } =
-    useChatStore();
-  const [input, setInput] = useState("");
-  const [feedbackGiven, setFeedbackGiven] = useState<Set<string>>(new Set());
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const screens = Grid.useBreakpoint();
+  const navigate = useNavigate();
+  const isOpen = useChatStore((state) => state.isOpen);
+  const openChat = useChatStore((state) => state.openChat);
+  const closeChat = useChatStore((state) => state.closeChat);
+  const [prompt, setPrompt] = useState("");
+  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const inputRef = useRef<InputRef>(null);
-  const seeded = useRef(false);
-  const { token } = theme.useToken();
+  const aiPanelRef = useRef<HTMLDivElement>(null);
+  const aiTriggerRef = useRef<HTMLDivElement>(null);
+  const messagesPanelRef = useRef<HTMLDivElement>(null);
+  const messagesTriggerRef = useRef<HTMLDivElement>(null);
+
+  const rightOffset = screens.xs ? 12 : 24;
+  const messagesButtonBottom = screens.lg ? 28 : 92;
+  const aiButtonBottom = messagesButtonBottom + 78;
+  const aiPanelWidth = screens.xs ? "calc(100vw - 24px)" : 500;
+  const messagesPanelWidth = screens.xs ? "calc(100vw - 24px)" : 520;
 
   useEffect(() => {
-    if (!seeded.current && messages.length === 0) {
-      seeded.current = true;
-      mockChatMessages.forEach((m) => addMessage(m));
+    if (!isOpen && !isMessagesOpen) {
+      return;
     }
-  }, [messages.length, addMessage]);
 
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const timer = isOpen ? window.setTimeout(() => inputRef.current?.focus(), 90) : undefined;
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (
+        aiPanelRef.current?.contains(target) ||
+        aiTriggerRef.current?.contains(target) ||
+        messagesPanelRef.current?.contains(target) ||
+        messagesTriggerRef.current?.contains(target)
+      ) {
+        return;
       }
-    });
-  }, [messages, isTyping]);
 
-  useEffect(() => {
+      closeChat();
+      setIsMessagesOpen(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeChat();
+        setIsMessagesOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      if (timer !== undefined) {
+        window.clearTimeout(timer);
+      }
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMessagesOpen, isOpen, closeChat]);
+
+  const openFullPage = () => {
+    const trimmedPrompt = prompt.trim();
+    closeChat();
+    setIsMessagesOpen(false);
+    navigate(trimmedPrompt ? `/edu-ai?prompt=${encodeURIComponent(trimmedPrompt)}` : "/edu-ai");
+  };
+
+  const openMessagesPage = () => {
+    setIsMessagesOpen(false);
+    closeChat();
+    navigate("/messages");
+  };
+
+  const handleQuickAction = (value: string) => {
+    setPrompt(value);
+    window.requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
+  const handleAiButtonClick = () => {
     if (isOpen) {
-      const timer = setTimeout(() => inputRef.current?.focus(), 300);
-      return () => clearTimeout(timer);
+      closeChat();
+      return;
     }
-  }, [isOpen]);
 
-  const getBotResponse = useCallback(
-    (message: string, recentMessages: ChatMessage[]): string => {
-      const lowerMsg = message.toLowerCase();
-      const entries = Object.entries(chatBotResponses).filter(
-        ([k]) => k !== "default",
-      );
-      entries.sort((a, b) => b[0].length - a[0].length);
+    setIsMessagesOpen(false);
+    openChat();
+  };
 
-      for (const [key, response] of entries) {
-        if (lowerMsg.includes(key)) return response;
-      }
+  const handleMessagesButtonClick = () => {
+    if (isMessagesOpen) {
+      setIsMessagesOpen(false);
+      return;
+    }
 
-      const words = lowerMsg.split(/\s+/).filter((w) => w.length > 2);
-      for (const word of words) {
-        for (const [key, response] of entries) {
-          if (key.includes(word) || word.includes(key)) return response;
-        }
-      }
-
-      const contextWindow = recentMessages.slice(-10);
-      const contextText = contextWindow
-        .map((m) => m.content.toLowerCase())
-        .join(" ");
-
-      for (const [key, response] of entries) {
-        if (contextText.includes(key)) {
-          const contextHint = key.charAt(0).toUpperCase() + key.slice(1);
-          return `Önceki konuşmamıza referansla — ${contextHint} hakkında: ${response}`;
-        }
-      }
-
-      return chatBotResponses.default;
-    },
-    [],
-  );
-
-  const sendMessage = useCallback(
-    (text: string) => {
-      if (!text.trim() || isTyping) return;
-
-      const userMsg: ChatMessage = {
-        id: `cm-${Date.now()}`,
-        sessionId: "s1",
-        senderType: "user",
-        content: text.trim(),
-        timestamp: new Date().toISOString(),
-      };
-      addMessage(userMsg);
-      setInput("");
-      setTyping(true);
-
-      setTimeout(
-        () => {
-          const currentMessages = useChatStore.getState().messages;
-          const botMsg: ChatMessage = {
-            id: `cm-${Date.now()}-bot`,
-            sessionId: "s1",
-            senderType: "bot",
-            content: getBotResponse(text, currentMessages),
-            timestamp: new Date().toISOString(),
-          };
-          addMessage(botMsg);
-          setTyping(false);
-        },
-        1200 + Math.random() * 800,
-      );
-    },
-    [addMessage, setTyping, isTyping, getBotResponse],
-  );
-
-  const giveFeedback = (msgId: string) => {
-    setFeedbackGiven((prev) => new Set(prev).add(msgId));
+    closeChat();
+    setIsMessagesOpen(true);
   };
 
   return (
     <>
-      {/* Floating toggle button */}
-      <button
-        onClick={toggleChat}
-        aria-label={isOpen ? "Sohbeti kapat" : "AI Asistanı aç"}
-        style={{
-          position: "fixed",
-          bottom: 80,
-          right: 24,
-          zIndex: 1050,
-          width: 56,
-          height: 56,
-          borderRadius: "50%",
-          border: "none",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: isOpen ? token.colorFillSecondary : token.colorPrimary,
-          color: isOpen ? token.colorTextSecondary : "#fff",
-          boxShadow: isOpen
-            ? token.boxShadowSecondary
-            : `0 8px 24px ${token.colorPrimary}44`,
-          transition: "all 0.3s ease",
-          transform: isOpen ? "scale(0.9)" : "scale(1)",
-        }}
-      >
-        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
-      </button>
-
-      {/* Chat panel */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 148,
-          right: 24,
-          zIndex: 1050,
-          width: 384,
-          maxWidth: "calc(100vw - 2rem)",
-          transition: "all 0.3s ease",
-          opacity: isOpen ? 1 : 0,
-          transform: isOpen ? "translateY(0)" : "translateY(16px)",
-          pointerEvents: isOpen ? "auto" : "none",
-        }}
-      >
-        <div
+      <div ref={aiTriggerRef}>
+        <FloatButton
+          shape="square"
+          tooltip={isOpen ? "EduAI'yi kapat" : "EduAI'yi ac"}
+          icon={<GraduationCap size={24} strokeWidth={2.1} />}
+          onClick={handleAiButtonClick}
           style={{
-            display: "flex",
-            flexDirection: "column",
-            height: 500,
-            borderRadius: token.borderRadiusLG * 2,
-            border: `1px solid ${token.colorBorder}`,
-            background: token.colorBgContainer,
-            boxShadow: token.boxShadow,
-            overflow: "hidden",
+            right: rightOffset,
+            bottom: aiButtonBottom,
           }}
-        >
-          {/* Header */}
-          <Flex
-            align="center"
-            gap={12}
-            style={{
-              padding: "14px 16px",
-              background: token.colorPrimary,
-              color: "#fff",
-            }}
-          >
-            <Avatar
-              size={36}
-              style={{
-                backgroundColor: "rgba(255,255,255,0.2)",
-                color: "#fff",
-              }}
-            >
-              <Bot size={18} />
-            </Avatar>
-            <div style={{ flex: 1 }}>
-              <Typography.Text strong style={{ color: "#fff", display: "block", fontSize: 14 }}>
-                EduConnect Asistan
-              </Typography.Text>
-              <Typography.Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
-                Her zaman burada
-              </Typography.Text>
-            </div>
-            <Sparkles size={18} style={{ opacity: 0.6 }} />
-          </Flex>
-
-          {/* Messages */}
-          <div
-            ref={scrollRef}
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: 16,
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-            }}
-          >
-            {messages.map((msg) => (
-              <div key={msg.id}>
-                <Flex
-                  gap={8}
-                  style={{
-                    maxWidth: "85%",
-                    ...(msg.senderType === "user"
-                      ? { marginLeft: "auto", flexDirection: "row-reverse" }
-                      : {}),
-                  }}
-                >
-                  {msg.senderType === "bot" && (
-                    <Avatar
-                      size={28}
-                      style={{
-                        backgroundColor: token.colorPrimaryBg,
-                        color: token.colorPrimary,
-                        flexShrink: 0,
-                        marginTop: 4,
-                        fontSize: 12,
-                      }}
-                    >
-                      <Bot size={14} />
-                    </Avatar>
-                  )}
-                  <div
-                    style={{
-                      borderRadius: 16,
-                      padding: "10px 14px",
-                      fontSize: 13,
-                      lineHeight: 1.6,
-                      ...(msg.senderType === "user"
-                        ? {
-                            background: token.colorPrimary,
-                            color: "#fff",
-                            borderBottomRightRadius: 4,
-                          }
-                        : {
-                            background: token.colorFillQuaternary,
-                            color: token.colorText,
-                            borderBottomLeftRadius: 4,
-                          }),
-                    }}
-                  >
-                    {msg.content}
-                  </div>
-                </Flex>
-
-                {msg.senderType === "bot" && msg.id !== "cm1" && (
-                  <Flex gap={4} style={{ marginLeft: 36, marginTop: 4 }}>
-                    {feedbackGiven.has(msg.id) ? (
-                      <Typography.Text type="secondary" style={{ fontSize: 10 }}>
-                        Geri bildiriminiz alındı
-                      </Typography.Text>
-                    ) : (
-                      <>
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<ThumbsUp size={12} />}
-                          onClick={() => giveFeedback(msg.id)}
-                          style={{ padding: "0 4px", height: 20 }}
-                        />
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<ThumbsDown size={12} />}
-                          onClick={() => giveFeedback(msg.id)}
-                          style={{ padding: "0 4px", height: 20 }}
-                        />
-                      </>
-                    )}
-                  </Flex>
-                )}
-              </div>
-            ))}
-
-            {isTyping && (
-              <Flex gap={8} style={{ maxWidth: "85%" }}>
-                <Avatar
-                  size={28}
-                  style={{
-                    backgroundColor: token.colorPrimaryBg,
-                    color: token.colorPrimary,
-                    flexShrink: 0,
-                    marginTop: 4,
-                    fontSize: 12,
-                  }}
-                >
-                  <Bot size={14} />
-                </Avatar>
-                <div
-                  style={{
-                    borderRadius: 16,
-                    borderBottomLeftRadius: 4,
-                    padding: "12px 16px",
-                    background: token.colorFillQuaternary,
-                    display: "flex",
-                    gap: 4,
-                  }}
-                >
-                  {[0, 1, 2].map((i) => (
-                    <span
-                      key={i}
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        background: token.colorTextTertiary,
-                        animation: `chatBounce 1.4s ease-in-out ${i * 0.15}s infinite`,
-                      }}
-                    />
-                  ))}
-                </div>
-              </Flex>
-            )}
-          </div>
-
-          {/* Quick questions */}
-          {messages.length <= 1 && (
-            <div style={{ padding: "0 16px 8px" }}>
-              <Typography.Text type="secondary" style={{ fontSize: 11, display: "block", marginBottom: 8 }}>
-                Hızlı sorular:
-              </Typography.Text>
-              <Flex gap={6} wrap="wrap">
-                {quickQuestions.map((q) => (
-                  <Tag
-                    key={q}
-                    onClick={() => sendMessage(q)}
-                    style={{ cursor: "pointer", borderRadius: 20, fontSize: 11 }}
-                  >
-                    {q}
-                  </Tag>
-                ))}
-              </Flex>
-            </div>
-          )}
-
-          {/* Input */}
-          <Flex
-            gap={8}
-            align="center"
-            style={{
-              padding: 12,
-              borderTop: `1px solid ${token.colorBorder}`,
-            }}
-          >
-            <Input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
-              placeholder="Bir soru sorun..."
-              variant="filled"
-              style={{ flex: 1 }}
-            />
-            <Button
-              type="primary"
-              shape="circle"
-              icon={<Send size={16} />}
-              onClick={() => sendMessage(input)}
-              disabled={!input.trim() || isTyping}
-            />
-          </Flex>
-        </div>
+          styles={{
+            root: {
+              width: 62,
+              height: 62,
+              borderRadius: 22,
+              background: "#FFFFFF",
+              border: "1px solid #D9E2EC",
+              boxShadow: isOpen
+                ? "0 12px 30px rgba(15, 23, 42, 0.14)"
+                : "0 14px 34px rgba(15, 23, 42, 0.18)",
+            },
+            icon: {
+              color: "#111827",
+            },
+          }}
+        />
       </div>
 
-      {/* Bounce animation keyframes */}
-      <style>{`
-        @keyframes chatBounce {
-          0%, 80%, 100% { transform: scale(0); }
-          40% { transform: scale(1); }
-        }
-      `}</style>
+      <div
+        ref={aiPanelRef}
+        style={{
+          position: "fixed",
+          right: rightOffset,
+          bottom: messagesButtonBottom + 84,
+          width: aiPanelWidth,
+          maxWidth: "calc(100vw - 24px)",
+          zIndex: 1045,
+          opacity: isOpen ? 1 : 0,
+          transform: isOpen ? "translateY(0)" : "translateY(18px)",
+          transformOrigin: "bottom right",
+          pointerEvents: isOpen ? "auto" : "none",
+          transition: "opacity 0.22s ease, transform 0.22s ease",
+        }}
+      >
+        <EduAiPanel
+          ref={inputRef}
+          prompt={prompt}
+          onPromptChange={setPrompt}
+          onSubmit={openFullPage}
+          onQuickAction={handleQuickAction}
+          onClose={closeChat}
+          onExpand={openFullPage}
+        />
+      </div>
+
+      <div ref={messagesTriggerRef}>
+        <FloatButton
+          shape="square"
+          tooltip={isMessagesOpen ? "Mesajlari kapat" : "Mesajlari ac"}
+          icon={<MessageCircle size={24} strokeWidth={2.1} />}
+          onClick={handleMessagesButtonClick}
+          style={{
+            right: rightOffset,
+            bottom: messagesButtonBottom,
+          }}
+          styles={{
+            root: {
+              width: 62,
+              height: 62,
+              borderRadius: 22,
+              background: "#FFFFFF",
+              border: "1px solid #D9E2EC",
+              boxShadow: isMessagesOpen
+                ? "0 12px 30px rgba(15, 23, 42, 0.14)"
+                : "0 14px 34px rgba(15, 23, 42, 0.18)",
+            },
+            icon: {
+              color: "#111827",
+            },
+          }}
+        />
+      </div>
+
+      <div
+        ref={messagesPanelRef}
+        style={{
+          position: "fixed",
+          right: rightOffset,
+          bottom: messagesButtonBottom + 84,
+          width: messagesPanelWidth,
+          maxWidth: "calc(100vw - 24px)",
+          zIndex: 1045,
+          opacity: isMessagesOpen ? 1 : 0,
+          transform: isMessagesOpen ? "translateY(0)" : "translateY(18px)",
+          transformOrigin: "bottom right",
+          pointerEvents: isMessagesOpen ? "auto" : "none",
+          transition: "opacity 0.22s ease, transform 0.22s ease",
+        }}
+      >
+        <MessagesLauncherPanel
+          onClose={() => setIsMessagesOpen(false)}
+          onExpand={openMessagesPage}
+        />
+      </div>
     </>
   );
 }

@@ -1,16 +1,15 @@
 import { useState } from "react";
 import {
-  CommentOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  HeartFilled,
-  HeartOutlined,
-  MoreOutlined,
-  RetweetOutlined,
-  BarChartOutlined,
-  BookOutlined,
-  ShareAltOutlined,
-} from "@ant-design/icons";
+  MessageCircle,
+  Repeat2,
+  Heart,
+  BarChart2,
+  Bookmark,
+  Upload,
+  MoreHorizontal,
+  Pencil,
+  Trash2
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, Button, Dropdown, Flex, Image, Typography, theme, List } from "antd";
 import type { MenuProps } from "antd";
@@ -28,6 +27,55 @@ interface PostCardProps {
   onDelete: (postId: string) => void;
   onUpdate: (postId: string, content: string) => Promise<void>;
 }
+
+const ActionBtn = ({
+  icon,
+  count,
+  color,
+  hoverColor,
+  hoverBgColor,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  count?: number;
+  color: string;
+  hoverColor: string;
+  hoverBgColor: string;
+  onClick?: (e: React.MouseEvent) => void;
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <Flex
+      align="center"
+      style={{ cursor: "pointer", color: isHovered ? hoverColor : color, transition: "color 0.2s" }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.(e);
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          backgroundColor: isHovered ? hoverBgColor : "transparent",
+          transition: "background-color 0.2s",
+        }}
+      >
+        {icon}
+      </div>
+      {count !== undefined && (
+        <span style={{ fontSize: 13, minWidth: 16 }}>{count > 0 ? count : ""}</span>
+      )}
+    </Flex>
+  );
+};
 
 export default function PostCard({
   post,
@@ -50,14 +98,14 @@ export default function PostCard({
   const managementItems: MenuProps["items"] = [
     {
       key: "edit",
-      icon: <EditOutlined />,
+      icon: <Pencil size={16} />,
       label: isEditing ? "Düzenlemeyi kapat" : "Gönderiyi düzenle",
       disabled: isUpdating,
     },
     { type: "divider" },
     {
       key: "delete",
-      icon: <DeleteOutlined />,
+      icon: <Trash2 size={16} />,
       label: isDeleting ? "Siliniyor..." : "Gönderiyi sil",
       danger: true,
       disabled: isDeleting,
@@ -83,20 +131,7 @@ export default function PostCard({
     }
   }
 
-  // X-style interaction button
-  const ActionBtn = ({ icon, count, color, hoverColor, onClick }: { icon: React.ReactNode; count?: number; color: string; hoverColor: string; onClick?: () => void }) => (
-    <Flex
-      align="center"
-      gap={4}
-      style={{ cursor: "pointer", color, transition: "color 0.2s" }}
-      onClick={onClick}
-      onMouseEnter={(e) => { e.currentTarget.style.color = hoverColor; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = color; }}
-    >
-      <Button type="text" shape="circle" size="small" icon={icon} style={{ color: "inherit" }} />
-      <span style={{ fontSize: 13, minWidth: 16 }}>{count && count > 0 ? count : ""}</span>
-    </Flex>
-  );
+  // ActionBtn is now globally defined above
 
   return (
     <List.Item style={{ padding: "12px 16px" }}>
@@ -144,7 +179,9 @@ export default function PostCard({
                 placement="bottomRight"
                 trigger={["click"]}
               >
-                <Button icon={<MoreOutlined />} shape="circle" type="text" size="small" />
+                <div style={{ cursor: "pointer", display: "flex", alignItems: "center", padding: 4 }}>
+                  <MoreHorizontal size={18} style={{ color: token.colorTextTertiary }} />
+                </div>
               </Dropdown>
             )}
           </Flex>
@@ -179,43 +216,52 @@ export default function PostCard({
                 />
               )}
 
-              {/* X-style action row: Reply · Repost · Like · Views · Bookmark · Share */}
-              <Flex justify="space-between" align="center" style={{ marginTop: 12, maxWidth: 425 }}>
-                <ActionBtn
-                  icon={<CommentOutlined />}
-                  count={post.commentsCount}
-                  color={token.colorTextTertiary}
-                  hoverColor="#1D9BF0"
-                  onClick={() => setShowComments((c) => !c)}
-                />
-                <ActionBtn
-                  icon={<RetweetOutlined />}
-                  color={token.colorTextTertiary}
-                  hoverColor="#00BA7C"
-                />
-                <ActionBtn
-                  icon={post.isLiked ? <HeartFilled /> : <HeartOutlined />}
-                  count={post.likesCount}
-                  color={post.isLiked ? "#F91880" : token.colorTextTertiary}
-                  hoverColor="#F91880"
-                  onClick={handleToggleLike}
-                />
-                <ActionBtn
-                  icon={<BarChartOutlined />}
-                  count={Math.floor(Math.random() * 500) + 50}
-                  color={token.colorTextTertiary}
-                  hoverColor="#1D9BF0"
-                />
-                <Flex align="center" gap={8}>
+              {/* X-style action row */}
+              <Flex justify="space-between" align="center" style={{ marginTop: 4, width: "100%" }}>
+                <Flex align="center" justify="space-between" style={{ flex: 1, maxWidth: 425, paddingRight: 20 }}>
                   <ActionBtn
-                    icon={<BookOutlined />}
+                    icon={<MessageCircle size={18} />}
+                    count={post.commentsCount}
                     color={token.colorTextTertiary}
                     hoverColor="#1D9BF0"
+                    hoverBgColor="rgba(29, 155, 240, 0.1)"
+                    onClick={() => setShowComments((c) => !c)}
                   />
                   <ActionBtn
-                    icon={<ShareAltOutlined />}
+                    icon={<Repeat2 size={18} />}
+                    color={token.colorTextTertiary}
+                    hoverColor="#00BA7C"
+                    hoverBgColor="rgba(0, 186, 124, 0.1)"
+                  />
+                  <ActionBtn
+                    icon={<Heart size={18} fill={post.isLiked ? "#F91880" : "transparent"} />}
+                    count={post.likesCount}
+                    color={post.isLiked ? "#F91880" : token.colorTextTertiary}
+                    hoverColor="#F91880"
+                    hoverBgColor="rgba(249, 24, 128, 0.1)"
+                    onClick={handleToggleLike}
+                  />
+                  <ActionBtn
+                    icon={<BarChart2 size={18} />}
+                    count={Math.floor(Math.random() * 500) + 50}
                     color={token.colorTextTertiary}
                     hoverColor="#1D9BF0"
+                    hoverBgColor="rgba(29, 155, 240, 0.1)"
+                  />
+                </Flex>
+                
+                <Flex align="center" gap={0}>
+                  <ActionBtn
+                    icon={<Bookmark size={18} />}
+                    color={token.colorTextTertiary}
+                    hoverColor="#1D9BF0"
+                    hoverBgColor="rgba(29, 155, 240, 0.1)"
+                  />
+                  <ActionBtn
+                    icon={<Upload size={18} />}
+                    color={token.colorTextTertiary}
+                    hoverColor="#1D9BF0"
+                    hoverBgColor="rgba(29, 155, 240, 0.1)"
                   />
                 </Flex>
               </Flex>

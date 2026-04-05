@@ -111,7 +111,9 @@ export function getAntdTheme(isDarkMode: boolean): ThemeConfig {
         controlHeight: 44,
       },
       Modal: {
-        borderRadiusLG: 20,
+        borderRadiusLG: 16,
+        contentBg: isDarkMode ? "#000000" : "#FFFFFF",
+        headerBg: isDarkMode ? "#000000" : "#FFFFFF",
       },
       Drawer: {
         borderRadiusLG: 20,

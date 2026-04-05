@@ -609,7 +609,7 @@ export const mockNotifications: Notification[] = [
     isRead: false,
     type: "event",
     createdAt: "2026-03-27T08:00:00Z",
-    link: "/explore",
+    link: "/events",
   },
   {
     id: "n2",
@@ -618,7 +618,7 @@ export const mockNotifications: Notification[] = [
     isRead: false,
     type: "social",
     createdAt: "2026-03-22T11:00:00Z",
-    link: "/explore",
+    link: "/communities",
   },
   {
     id: "n3",
@@ -627,7 +627,7 @@ export const mockNotifications: Notification[] = [
     isRead: false,
     type: "discount",
     createdAt: "2026-03-21T09:00:00Z",
-    link: "/explore",
+    link: "/market?tab=discounts",
   },
   {
     id: "n4",

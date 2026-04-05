@@ -4,6 +4,7 @@ import { LogOut, Menu as MenuIcon, MoreHorizontal } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getSelectedShellKey,
+  isMoreNavPath,
   getUserInitials,
   shellMainNavItems,
   shellSecondaryNavItems,
@@ -19,6 +20,7 @@ export default function MobileNav() {
   const location = useLocation();
   const { token } = theme.useToken();
   const selectedKey = getSelectedShellKey(location.pathname);
+  const isMoreSelected = isMoreNavPath(location.pathname);
 
   if (screens.lg) {
     return null;
@@ -166,7 +168,7 @@ export default function MobileNav() {
               flex: 1,
               height: 56,
               paddingInline: 4,
-              color: moreOpen ? token.colorPrimary : token.colorTextSecondary,
+              color: moreOpen || isMoreSelected ? token.colorPrimary : token.colorTextSecondary,
               borderRadius: token.borderRadiusLG,
             }}
           >

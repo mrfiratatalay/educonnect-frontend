@@ -92,9 +92,9 @@ function getNotificationLink(type: NotificationKind) {
     case "social":
       return "/feed";
     case "event":
-      return "/explore?tab=events";
+      return "/events";
     case "marketplace":
-      return "/explore?tab=discounts";
+      return "/market?tab=discounts";
     default:
       return "/";
   }

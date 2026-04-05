@@ -113,7 +113,7 @@ export default function DashboardHighlightsColumn({
             </div>
           ))}
 
-          <Link to="/explore?tab=discounts" style={{ textDecoration: "none" }}>
+          <Link to="/market?tab=discounts" style={{ textDecoration: "none" }}>
             <Button type="default" block icon={<ArrowRight size={14} />} iconPlacement="end">
               Tum Indirimleri Gor
             </Button>

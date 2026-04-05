@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
-import { Avatar, Button, Flex, Input, Typography, theme, Tooltip } from "antd";
+import { Avatar, Button, Dropdown, Flex, Input, Typography, theme, Tooltip } from "antd";
+import type { MenuProps } from "antd";
 import {
   FileImageOutlined,
   FileGifOutlined,
@@ -7,6 +8,10 @@ import {
   SmileOutlined,
   ScheduleOutlined,
   EnvironmentOutlined,
+  GlobalOutlined,
+  TeamOutlined,
+  LockOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 
 interface PostComposerProps {
@@ -14,6 +19,7 @@ interface PostComposerProps {
   fullName?: string;
   isSubmitting: boolean;
   onSubmit: (content: string) => Promise<void>;
+  isInModal?: boolean;
 }
 
 export default function PostComposer({
@@ -21,10 +27,24 @@ export default function PostComposer({
   fullName,
   isSubmitting,
   onSubmit,
+  isInModal = false,
 }: PostComposerProps) {
   const [content, setContent] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [audience, setAudience] = useState<"everyone" | "followers" | "verified">("everyone");
   const { token } = theme.useToken();
+
+  const audienceLabels = {
+    everyone: "Herkes",
+    followers: "Takipçiler",
+    verified: "Onaylı hesaplar",
+  };
+
+  const audienceMenuItems: MenuProps["items"] = [
+    { key: "everyone", icon: <GlobalOutlined />, label: "Herkes" },
+    { key: "followers", icon: <TeamOutlined />, label: "Takipçiler" },
+    { key: "verified", icon: <LockOutlined />, label: "Onaylı hesaplar" },
+  ];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,7 +76,13 @@ export default function PostComposer({
   ];
 
   return (
-    <div id="feed-composer" style={{ padding: "12px 16px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
+    <div
+      id={isInModal ? undefined : "feed-composer"}
+      style={{
+        padding: isInModal ? "0 16px" : "16px 16px 8px",
+        borderBottom: isInModal ? "none" : `1px solid ${token.colorBorderSecondary}`,
+      }}
+    >
       <form onSubmit={handleSubmit}>
         <Flex gap={12} align="flex-start">
           <Avatar
@@ -71,7 +97,37 @@ export default function PostComposer({
             {fullName?.charAt(0) ?? "K"}
           </Avatar>
 
-          <Flex vertical style={{ flex: 1 }}>
+          <Flex vertical gap={4} style={{ flex: 1 }}>
+            {/* Audience selector pill */}
+            <Dropdown
+              menu={{
+                items: audienceMenuItems,
+                selectedKeys: [audience],
+                onClick: ({ key }) => setAudience(key as "everyone" | "followers" | "verified"),
+              }}
+              trigger={["click"]}
+            >
+              <Button
+                size="small"
+                shape="round"
+                style={{
+                  color: "#1D9BF0",
+                  borderColor: "#1D9BF0",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  padding: "0 12px",
+                  height: 24,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  width: "fit-content",
+                  marginBottom: 4,
+                }}
+              >
+                {audienceLabels[audience]} <DownOutlined style={{ fontSize: 10 }} />
+              </Button>
+            </Dropdown>
+
             <Input.TextArea
               value={content}
               onChange={(event) => setContent(event.target.value)}
@@ -79,27 +135,34 @@ export default function PostComposer({
               bordered={false}
               style={{
                 fontSize: 20,
-                padding: "8px 0",
+                padding: "12px 0",
                 boxShadow: "none",
                 resize: "none",
-                minHeight: 52,
+                minHeight: 56,
               }}
               maxLength={1500}
-              autoSize={{ minRows: 1, maxRows: 8 }}
+              autoSize={{ minRows: isInModal ? 3 : 1, maxRows: 8 }}
             />
+
+            {/* Reply audience info */}
+            <Flex align="center" gap={6} style={{ marginTop: 4, marginBottom: 12 }}>
+              <GlobalOutlined style={{ color: "#1D9BF0", fontSize: 14 }} />
+              <Typography.Text style={{ color: "#1D9BF0", fontSize: 14, fontWeight: 500 }}>
+                Herkes yanıtlayabilir
+              </Typography.Text>
+            </Flex>
 
             <div style={{ height: 1, background: token.colorBorderSecondary, marginBottom: 12 }} />
 
             <Flex align="center" justify="space-between">
-              <Flex align="center" gap={0}>
+              <Flex align="center" gap={2}>
                 {mediaIcons.map((item, i) => (
                   <Tooltip title={item.tip} key={i}>
                     <Button
                       type="text"
                       shape="circle"
-                      size="small"
                       icon={item.icon}
-                      style={{ color: "#1D9BF0", fontSize: 16 }}
+                      style={{ color: "#1D9BF0", fontSize: 18, width: 36, height: 36 }}
                     />
                   </Tooltip>
                 ))}
@@ -117,7 +180,15 @@ export default function PostComposer({
                   loading={isSubmitting}
                   disabled={!content.trim()}
                   shape="round"
-                  style={{ padding: "0 20px", fontWeight: 700, height: 36 }}
+                  style={{
+                    padding: "0 20px",
+                    fontWeight: 700,
+                    height: 36,
+                    backgroundColor: "#1D9BF0",
+                    color: "#FFFFFF",
+                    opacity: !content.trim() ? 0.5 : 1,
+                    borderColor: "transparent",
+                  }}
                 >
                   Gönderi yayınla
                 </Button>
