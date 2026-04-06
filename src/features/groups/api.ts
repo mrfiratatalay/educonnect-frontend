@@ -7,6 +7,7 @@ import type {
   AppGroupMemberPreview,
   CreateGroupInput,
   DiscoverGroupsInput,
+  UpdateGroupInput,
 } from "@/features/groups/types";
 import type { FeedPost, GetPostsInput, PostsPage } from "@/features/posts/types";
 
@@ -147,6 +148,26 @@ export async function createGroup(input: CreateGroupInput): Promise<AppGroup> {
     );
 
     return normalizeGroup(response.data);
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function updateGroup(groupId: string, input: UpdateGroupInput): Promise<AppGroupDetail> {
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      groupsApi.put<ApiGroupDetailResponse>(
+        `/api/groups/${groupId}`,
+        input,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
+    );
+
+    return normalizeGroupDetail(response.data);
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
   }

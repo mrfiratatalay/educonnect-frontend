@@ -20,6 +20,28 @@ export interface PublicUserProfile {
   coverImageUrl?: string;
   universityId?: string;
   universityName?: string;
+  followersCount: number;
+  followingCount: number;
+  isFollowedByCurrentUser: boolean;
+}
+
+export interface FollowSuggestion {
+  id: string;
+  fullName: string;
+  avatarUrl?: string;
+  department?: string;
+  universityName?: string;
+  mutualGroupCount: number;
+  reasonLabel: string;
+}
+
+export interface UserConnection {
+  id: string;
+  fullName: string;
+  avatarUrl?: string;
+  department?: string;
+  universityName?: string;
+  isFollowedByCurrentUser: boolean;
 }
 
 export interface UpdateMyProfileInput {
@@ -72,6 +94,67 @@ export async function updateMyProfile(input: UpdateMyProfileInput) {
   return normalizeUser(response.data);
 }
 
+export async function getFollowSuggestions(limit = 3) {
+  const response = await executeAuthorizedRequest((accessToken) =>
+    usersApi.get<FollowSuggestion[]>("/api/users/follow-suggestions", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params: { limit },
+    }),
+  );
+
+  return response.data.map(normalizeFollowSuggestion);
+}
+
+export async function getFollowers(userId: string) {
+  const response = await executeAuthorizedRequest((accessToken) =>
+    usersApi.get<UserConnection[]>(`/api/users/${userId}/followers`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }),
+  );
+
+  return response.data.map(normalizeUserConnection);
+}
+
+export async function getFollowing(userId: string) {
+  const response = await executeAuthorizedRequest((accessToken) =>
+    usersApi.get<UserConnection[]>(`/api/users/${userId}/following`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }),
+  );
+
+  return response.data.map(normalizeUserConnection);
+}
+
+export async function followUser(userId: string) {
+  await executeAuthorizedRequest((accessToken) =>
+    usersApi.post(
+      `/api/users/${userId}/follow`,
+      undefined,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    ),
+  );
+}
+
+export async function unfollowUser(userId: string) {
+  await executeAuthorizedRequest((accessToken) =>
+    usersApi.delete(`/api/users/${userId}/follow`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }),
+  );
+}
+
 export async function uploadMyAvatar(file: File) {
   const formData = new FormData();
   formData.append("file", file);
@@ -120,6 +203,8 @@ function normalizeUser(user: User): User {
     coverImageUrl: user.coverImageUrl || undefined,
     universityId: user.universityId || undefined,
     universityName: user.universityName || undefined,
+    followersCount: user.followersCount ?? 0,
+    followingCount: user.followingCount ?? 0,
   };
 }
 
@@ -133,5 +218,27 @@ function normalizePublicProfile(profile: PublicUserProfile): PublicUserProfile {
     coverImageUrl: profile.coverImageUrl || undefined,
     universityId: profile.universityId || undefined,
     universityName: profile.universityName || undefined,
+    followersCount: profile.followersCount ?? 0,
+    followingCount: profile.followingCount ?? 0,
+    isFollowedByCurrentUser: Boolean(profile.isFollowedByCurrentUser),
+  };
+}
+
+function normalizeFollowSuggestion(suggestion: FollowSuggestion): FollowSuggestion {
+  return {
+    ...suggestion,
+    avatarUrl: suggestion.avatarUrl || undefined,
+    department: suggestion.department || undefined,
+    universityName: suggestion.universityName || undefined,
+  };
+}
+
+function normalizeUserConnection(connection: UserConnection): UserConnection {
+  return {
+    ...connection,
+    avatarUrl: connection.avatarUrl || undefined,
+    department: connection.department || undefined,
+    universityName: connection.universityName || undefined,
+    isFollowedByCurrentUser: Boolean(connection.isFollowedByCurrentUser),
   };
 }

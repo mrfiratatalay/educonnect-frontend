@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { CompassOutlined } from "@ant-design/icons";
 import { Button, Drawer, Flex, FloatButton, Grid, Tabs, Typography, theme } from "antd";
+import { useNavigate } from "react-router-dom";
+import { useInfiniteJoinedGroupsFeedQuery } from "@/features/groups/hooks";
 import { useAuthStore } from "@/store/authStore";
 import { useUIStore } from "@/store/uiStore";
 import {
   useCreatePostMutation,
   useDeletePostMutation,
+  useInfiniteFollowingPostsQuery,
   useInfinitePostsQuery,
   useUpdatePostMutation,
 } from "@/features/posts/hooks";
@@ -14,22 +17,36 @@ import FeedSidebar from "@/pages/Feed/components/FeedSidebar";
 import PostComposer from "@/pages/Feed/components/PostComposer";
 import PostList from "@/pages/Feed/components/PostList";
 
+type FeedTabKey = "foryou" | "following" | "groups";
+
 export default function FeedPage() {
   const { token } = theme.useToken();
+  const navigate = useNavigate();
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState<FeedTabKey>("foryou");
   const user = useAuthStore((state) => state.user);
   const openComposeModal = useUIStore((state) => state.openComposeModal);
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
-  const postsQuery = useInfinitePostsQuery(10);
+  const postsQuery = useInfinitePostsQuery(10, activeTab === "foryou");
+  const followingPostsQuery = useInfiniteFollowingPostsQuery(10, activeTab === "following");
+  const groupsFeedQuery = useInfiniteJoinedGroupsFeedQuery(10, activeTab === "groups");
   const createPostMutation = useCreatePostMutation();
   const deletePostMutation = useDeletePostMutation();
   const updatePostMutation = useUpdatePostMutation();
+  const isFollowingTab = activeTab === "following";
+  const isGroupsTab = activeTab === "groups";
+  const isForYouTab = activeTab === "foryou";
+  const activeFeedQuery = isGroupsTab
+    ? groupsFeedQuery
+    : isFollowingTab
+      ? followingPostsQuery
+      : postsQuery;
 
-  const posts = postsQuery.data?.pages.flatMap((page) => page.items) ?? [];
-  const totalCount = postsQuery.data?.pages[0]?.totalCount ?? 0;
+  const posts = activeFeedQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const totalCount = activeFeedQuery.data?.pages[0]?.totalCount ?? 0;
   const errorMessage =
-    postsQuery.error instanceof Error ? postsQuery.error.message : undefined;
+    activeFeedQuery.error instanceof Error ? activeFeedQuery.error.message : undefined;
   const deletingPostId =
     deletePostMutation.isPending && typeof deletePostMutation.variables === "string"
       ? deletePostMutation.variables
@@ -87,10 +104,11 @@ export default function FeedPage() {
               }}
             >
               <Tabs
-                defaultActiveKey="foryou"
+                activeKey={activeTab}
                 centered={!isMobile}
                 size="large"
                 indicator={{ size: isMobile ? 84 : 56, align: "center" }}
+                onChange={(key) => setActiveTab(key as FeedTabKey)}
                 tabBarGutter={isMobile ? 20 : undefined}
                 tabBarStyle={{
                   margin: 0,
@@ -104,11 +122,11 @@ export default function FeedPage() {
                   },
                   {
                     key: "following",
-                    label: (
-                      <span style={{ color: token.colorTextSecondary, fontWeight: 700, fontSize: isMobile ? 18 : undefined }}>
-                        Takip ediliyor
-                      </span>
-                    ),
+                    label: <span style={{ fontWeight: 700, fontSize: isMobile ? 18 : undefined }}>Takip ettiklerin</span>,
+                  },
+                  {
+                    key: "groups",
+                    label: <span style={{ fontWeight: 700, fontSize: isMobile ? 18 : undefined }}>Topluluklar</span>,
                   },
                 ]}
               />
@@ -122,7 +140,7 @@ export default function FeedPage() {
               </Flex>
             )}
 
-            {!isMobile ? (
+            {!isMobile && !isGroupsTab ? (
               <PostComposer
                 avatarUrl={user?.avatarUrl}
                 fullName={user?.fullName}
@@ -138,24 +156,36 @@ export default function FeedPage() {
               deletingPostId={deletingPostId}
               updatingPostId={updatingPostId}
               errorMessage={errorMessage}
-              isLoading={postsQuery.isLoading}
+              emptyDescription={
+                isGroupsTab
+                  ? "Katildigin topluluklardaki paylasimlar burada akacak."
+                  : isFollowingTab
+                    ? "Takip ettigin kullanicilarin kisisel paylasimlari burada akacak."
+                  : undefined
+              }
+              emptyActionLabel={isGroupsTab ? "Topluluklari kesfet" : undefined}
+              isLoading={activeFeedQuery.isLoading}
               onCreatePostClick={handleCreatePostClick}
               onDelete={handleDeletePost}
+              onEmptyActionClick={isGroupsTab ? () => navigate("/communities") : undefined}
               onUpdate={handleUpdatePost}
+              showGroupContext={isGroupsTab}
+              showRecommendationReason={isForYouTab}
+              showCreateAction={!isGroupsTab && !isFollowingTab}
             />
 
-            {postsQuery.hasNextPage && (
+            {activeFeedQuery.hasNextPage && (
               <Flex justify="center" style={{ padding: "8px 0" }}>
                 <Button
-                  onClick={() => void postsQuery.fetchNextPage()}
-                  loading={postsQuery.isFetchingNextPage}
+                  onClick={() => void activeFeedQuery.fetchNextPage()}
+                  loading={activeFeedQuery.isFetchingNextPage}
                 >
                   Daha Fazla Yukle
                 </Button>
               </Flex>
             )}
 
-            {posts.length > 0 && !postsQuery.hasNextPage && (
+            {posts.length > 0 && !activeFeedQuery.hasNextPage && (
               <Typography.Text
                 type="secondary"
                 style={{ textAlign: "center", padding: "24px 0", display: "block" }}

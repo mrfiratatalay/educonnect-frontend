@@ -15,6 +15,8 @@ export interface User {
   year?: number;
   bio?: string;
   interests?: string[];
+  followersCount?: number;
+  followingCount?: number;
 }
 
 export interface Post {

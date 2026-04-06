@@ -2,11 +2,11 @@ import type { CSSProperties } from "react";
 import { Flex, Typography } from "antd";
 
 export const authPalette = {
-  background: "#000000",
-  text: "#E7E9EA",
-  muted: "#71767B",
-  border: "#2F3336",
-  borderStrong: "#536471",
+  background: "#FFFFFF",
+  text: "#0F1419",
+  muted: "#536471",
+  border: "#CFD9DE",
+  borderStrong: "#9BA6AD",
   primary: "#1D9BF0",
   white: "#FFFFFF",
   ink: "#0F1419",
@@ -30,8 +30,8 @@ export const authPrimaryButtonStyle: CSSProperties = {
   borderRadius: 999,
   fontSize: 16,
   fontWeight: 800,
-  background: authPalette.white,
-  color: authPalette.ink,
+  background: authPalette.ink,
+  color: authPalette.white,
   border: "none",
   boxShadow: "none",
 };
@@ -48,20 +48,20 @@ export const authSecondaryButtonStyle: CSSProperties = {
 };
 
 export const authAlertStyle: CSSProperties = {
-  background: "rgba(244, 33, 46, 0.12)",
-  border: "1px solid rgba(244, 33, 46, 0.28)",
+  background: "rgba(244, 33, 46, 0.08)",
+  border: "1px solid rgba(244, 33, 46, 0.2)",
   borderRadius: 16,
 };
 
 export const authSuccessAlertStyle: CSSProperties = {
-  background: "rgba(0, 186, 124, 0.12)",
-  border: "1px solid rgba(0, 186, 124, 0.28)",
+  background: "rgba(0, 186, 124, 0.08)",
+  border: "1px solid rgba(0, 186, 124, 0.2)",
   borderRadius: 16,
 };
 
 export const authWarningAlertStyle: CSSProperties = {
-  background: "rgba(245, 158, 11, 0.12)",
-  border: "1px solid rgba(245, 158, 11, 0.28)",
+  background: "rgba(245, 158, 11, 0.08)",
+  border: "1px solid rgba(245, 158, 11, 0.2)",
   borderRadius: 16,
 };
 

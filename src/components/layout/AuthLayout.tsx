@@ -73,9 +73,9 @@ function AuthLayoutContent() {
                   borderRadius: "50%",
                   display: "grid",
                   placeItems: "center",
-                  border: "1px solid rgba(231, 233, 234, 0.12)",
-                  background: "rgba(255, 255, 255, 0.03)",
-                  boxShadow: "0 24px 60px rgba(0, 0, 0, 0.35)",
+                  border: "1px solid rgba(15, 20, 25, 0.08)",
+                  background: "rgba(15, 20, 25, 0.02)",
+                  boxShadow: "0 24px 60px rgba(0, 0, 0, 0.08)",
                 }}
               >
                 <GraduationCap
@@ -216,7 +216,7 @@ function AuthLayoutContent() {
                 padding: 0,
               },
               mask: {
-                background: isMobile ? "rgba(0, 0, 0, 0.94)" : "rgba(91, 112, 131, 0.42)",
+                background: isMobile ? "rgba(0, 0, 0, 0.6)" : "rgba(91, 112, 131, 0.4)",
                 backdropFilter: isMobile ? undefined : "blur(10px)",
               },
             }}
@@ -277,7 +277,7 @@ export default function AuthLayout() {
       variant="outlined"
       wave={{ disabled: true }}
       theme={{
-        algorithm: theme.darkAlgorithm,
+        algorithm: theme.defaultAlgorithm,
         token: {
           colorPrimary: authPalette.primary,
           colorLink: authPalette.primary,
@@ -292,25 +292,25 @@ export default function AuthLayout() {
           colorTextPlaceholder: authPalette.muted,
           colorIcon: authPalette.muted,
           colorIconHover: authPalette.text,
-          controlOutline: "rgba(29, 155, 240, 0.16)",
-          boxShadow: "0 24px 80px rgba(0, 0, 0, 0.5)",
+          controlOutline: "rgba(29, 155, 240, 0.12)",
+          boxShadow: "0 8px 28px rgba(0, 0, 0, 0.12)",
         },
         components: {
           Button: {
             borderRadius: 999,
             controlHeightLG: 48,
             fontWeight: 700,
-            colorPrimary: authPalette.white,
-            colorPrimaryHover: "#F4F4F5",
-            colorPrimaryActive: "#E5E7EB",
-            colorTextLightSolid: authPalette.ink,
+            colorPrimary: authPalette.ink,
+            colorPrimaryHover: "#272C30",
+            colorPrimaryActive: "#0F1419",
+            colorTextLightSolid: authPalette.white,
             defaultBg: "transparent",
             defaultBorderColor: authPalette.borderStrong,
             defaultColor: authPalette.text,
-            defaultHoverBg: "rgba(255, 255, 255, 0.04)",
+            defaultHoverBg: "rgba(15, 20, 25, 0.04)",
             defaultHoverColor: authPalette.text,
             defaultHoverBorderColor: "#6E7C86",
-            defaultActiveBg: "rgba(255, 255, 255, 0.08)",
+            defaultActiveBg: "rgba(15, 20, 25, 0.08)",
             defaultActiveColor: authPalette.text,
             defaultActiveBorderColor: "#6E7C86",
             defaultShadow: "none",

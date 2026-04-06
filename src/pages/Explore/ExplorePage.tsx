@@ -15,7 +15,7 @@ import {
   useJoinGroupMutation,
   useLeaveGroupMutation,
 } from "@/features/groups/hooks";
-import type { AppGroup } from "@/features/groups/types";
+import type { AppGroup, CreateGroupInput } from "@/features/groups/types";
 import ExploreContent from "@/pages/Explore/components/ExploreContent";
 import ExploreDialogs from "@/pages/Explore/components/ExploreDialogs";
 import ExploreFilterBar from "@/pages/Explore/components/ExploreFilterBar";
@@ -126,7 +126,7 @@ export function ExploreWorkspacePage({
     setSelectedGroupId(null);
     setSelectedEventId(null);
   }, [activeTab]);
-  async function handleCreateGroup(input: { name: string; description: string; category: string }) {
+  async function handleCreateGroup(input: CreateGroupInput) {
     setActionErrorMessage(null);
     if (previewState.createGroupsLocally) {
       previewState.createPreviewGroup(input);
@@ -323,15 +323,5 @@ export function ExploreWorkspacePage({
         onToggleRegistration={handleToggleRegistration}
       />
     </div>
-  );
-}
-
-export default function CommunitiesPage() {
-  return (
-    <ExploreWorkspacePage
-      forcedTab="groups"
-      title="Topluluklar"
-      description="Topluluklari kesfet, ilgini ceken gruplara katil ve kampuste ayni alanlara ilgi duyan insanlarla bulus."
-    />
   );
 }

@@ -5,10 +5,12 @@ import type {
   CreatePostInput,
   CreatePostCommentInput,
   FeedPost,
+  GetTagPostsInput,
   GetPostsInput,
   PostComment,
   PostDetail,
   PostsPage,
+  TrendingHashtag,
   UpdatePostInput,
 } from "@/features/posts/types";
 
@@ -30,6 +32,7 @@ interface ApiPostResponse {
   avatarUrl?: string | null;
   content: string;
   imageUrl?: string | null;
+  recommendationReason?: string | null;
   likesCount: number;
   commentsCount: number;
   viewsCount: number;
@@ -67,6 +70,13 @@ interface ApiPostViewTrackingResponse {
   viewsCount: number;
 }
 
+interface ApiPostTrendingHashtagResponse {
+  contextLabel: string;
+  hashtag: string;
+  postCount: number;
+  uniqueAuthorCount: number;
+}
+
 export async function getPosts(input: GetPostsInput = {}): Promise<PostsPage> {
   const page = input.page ?? 1;
   const pageSize = input.pageSize ?? 20;
@@ -90,6 +100,116 @@ export async function getPosts(input: GetPostsInput = {}): Promise<PostsPage> {
       pageSize: response.data.pageSize,
       totalCount: response.data.totalCount,
     };
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function getForYouPosts(input: GetPostsInput = {}): Promise<PostsPage> {
+  const page = input.page ?? 1;
+  const pageSize = input.pageSize ?? 20;
+
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPagedResponse<ApiPostResponse>>(
+        "/api/posts/for-you",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: { page, pageSize },
+        },
+      ),
+    );
+
+    return {
+      items: response.data.items.map(normalizePost),
+      page: response.data.page,
+      pageSize: response.data.pageSize,
+      totalCount: response.data.totalCount,
+    };
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function getFollowingPosts(input: GetPostsInput = {}): Promise<PostsPage> {
+  const page = input.page ?? 1;
+  const pageSize = input.pageSize ?? 20;
+
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPagedResponse<ApiPostResponse>>(
+        "/api/posts/following",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: { page, pageSize },
+        },
+      ),
+    );
+
+    return {
+      items: response.data.items.map(normalizePost),
+      page: response.data.page,
+      pageSize: response.data.pageSize,
+      totalCount: response.data.totalCount,
+    };
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function getPostsByTag(input: GetTagPostsInput): Promise<PostsPage> {
+  const page = input.page ?? 1;
+  const pageSize = input.pageSize ?? 20;
+  const tag = input.tag.trim();
+
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPagedResponse<ApiPostResponse>>(
+        `/api/posts/tags/${encodeURIComponent(tag)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: { page, pageSize },
+        },
+      ),
+    );
+
+    return {
+      items: response.data.items.map(normalizePost),
+      page: response.data.page,
+      pageSize: response.data.pageSize,
+      totalCount: response.data.totalCount,
+    };
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function getTrendingHashtags(limit = 4): Promise<TrendingHashtag[]> {
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPostTrendingHashtagResponse[]>(
+        "/api/posts/trending",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: { limit },
+        },
+      ),
+    );
+
+    return response.data.map((trend) => ({
+      contextLabel: trend.contextLabel,
+      hashtag: trend.hashtag,
+      postCount: trend.postCount,
+      uniqueAuthorCount: trend.uniqueAuthorCount,
+    }));
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
   }
@@ -303,6 +423,7 @@ function normalizePost(post: ApiPostResponse): FeedPost {
     avatarUrl: post.avatarUrl || undefined,
     content: post.content,
     imageUrl: post.imageUrl || undefined,
+    recommendationReason: post.recommendationReason || undefined,
     likesCount: post.likesCount,
     commentsCount: post.commentsCount,
     viewsCount: post.viewsCount,

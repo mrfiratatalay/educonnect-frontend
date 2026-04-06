@@ -12,9 +12,11 @@ import PostDetailPage from "@/pages/Feed/PostDetailPage";
 import BookmarksPage from "@/pages/Bookmarks/BookmarksPage";
 import EduAiPage from "@/pages/EduAI/EduAiPage";
 import VisualSearchPage from "@/pages/VisualSearch/VisualSearchPage";
-import CommunitiesPage from "@/pages/Explore/ExplorePage";
+import CommunitiesPage from "@/pages/Communities/CommunitiesPage";
+import CommunityDetailPage from "@/pages/Communities/CommunityDetailPage";
 import EventsPage from "@/pages/Explore/EventsPage";
 import ExploreDiscoveryPage from "@/pages/Explore/ExploreDiscoveryPage";
+import ExploreTagPage from "@/pages/Explore/ExploreTagPage";
 import MarketPage from "@/pages/Market/MarketPage";
 import NotificationsPage from "@/pages/Notifications/NotificationsPage";
 import MessagesPage from "@/pages/Messages/MessagesPage";
@@ -115,7 +117,9 @@ export default function App() {
         <Route path="/edu-ai" element={<EduAiPage />} />
         <Route path="/visual-search" element={<VisualSearchPage />} />
         <Route path="/explore" element={<ExploreDiscoveryPage />} />
+        <Route path="/explore/tag/:tag" element={<ExploreTagPage />} />
         <Route path="/communities" element={<CommunitiesPage />} />
+        <Route path="/communities/:slug" element={<CommunityDetailPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/market" element={<MarketPage />} />
         <Route path="/discounts" element={<Navigate replace to="/market?tab=discounts" />} />

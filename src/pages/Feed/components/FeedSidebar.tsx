@@ -1,5 +1,8 @@
-import { Input, Typography, theme, Button, Flex } from "antd";
-import { SearchOutlined, EllipsisOutlined } from "@ant-design/icons";
+import { EllipsisOutlined } from "@ant-design/icons";
+import { Avatar, Button, Card, Flex, Skeleton, Typography, theme } from "antd";
+import { useNavigate } from "react-router-dom";
+import { useTrendingHashtagsQuery } from "@/features/posts/hooks";
+import { useFollowSuggestionsQuery, useFollowUserMutation } from "@/features/users/hooks";
 import type { FeedPost } from "@/features/posts/types";
 import type { User } from "@/types";
 
@@ -9,122 +12,262 @@ interface FeedSidebarProps {
   user: User | null;
 }
 
-export default function FeedSidebar({}: FeedSidebarProps) {
+export default function FeedSidebar({
+  posts,
+  totalCount,
+  user,
+}: FeedSidebarProps) {
   const { token } = theme.useToken();
-  const isDarkMode = token.colorBgBase === "#000000";
+  const navigate = useNavigate();
+  const trendingQuery = useTrendingHashtagsQuery(4);
+  const followSuggestionsQuery = useFollowSuggestionsQuery(3);
+  const followUserMutation = useFollowUserMutation();
+  const recentGroups = Array.from(
+    posts.reduce(
+      (map, post) => {
+        if (!post.groupId || !post.groupName) {
+          return map;
+        }
 
-  const cardStyle = {
-    background: isDarkMode ? "#16181C" : "#F7F9F9",
-    borderRadius: 16,
-    padding: "12px 16px",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 16,
-  };
+        map.set(post.groupId, {
+          id: post.groupId,
+          name: post.groupName,
+          avatarUrl: post.groupAvatarUrl,
+        });
 
-  const trendItemStyle = {
-    display: "flex",
-    flexDirection: "column" as const,
-    cursor: "pointer",
-    padding: "8px 0",
-  };
+        return map;
+      },
+      new Map<
+        string,
+        {
+          id: string;
+          name: string;
+          avatarUrl?: string;
+        }
+      >(),
+    ).values(),
+  ).slice(0, 4);
 
   return (
     <Flex vertical gap={16}>
-      {/* Search Bar - Pill shape, filled */}
-      <Input
-        size="large"
-        prefix={<SearchOutlined style={{ color: token.colorTextTertiary, fontSize: 18, marginLeft: 8, marginRight: 8 }} />}
-        placeholder="Ara"
+      <Card
+        variant="outlined"
+        styles={{ body: { padding: 18 } }}
+        style={{ borderColor: token.colorBorderSecondary, borderRadius: 24 }}
+      >
+        <Flex vertical gap={12}>
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            Hesabinin ozeti
+          </Typography.Title>
+          <Flex align="center" gap={12}>
+            <Avatar src={user?.avatarUrl} size={52}>
+              {user?.fullName?.charAt(0) ?? "K"}
+            </Avatar>
+            <div>
+              <Typography.Text strong style={{ display: "block", fontSize: 15 }}>
+                {user?.fullName ?? "Kullanici"}
+              </Typography.Text>
+              <Typography.Text type="secondary">
+                @{user?.email?.split("@")[0] ?? "kullanici"}
+              </Typography.Text>
+            </div>
+          </Flex>
+          <QuickRow label="Toplam gonderi" value={`${totalCount}`} />
+          <QuickRow label="Akistaki grup izi" value={`${recentGroups.length}`} />
+        </Flex>
+      </Card>
+
+      <Card
+        variant="outlined"
+        styles={{ body: { padding: 18 } }}
+        style={{ borderColor: token.colorBorderSecondary, borderRadius: 24 }}
+      >
+        <Flex vertical gap={12}>
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            Neler oluyor?
+          </Typography.Title>
+
+          {trendingQuery.isLoading ? (
+            <Skeleton active title={false} paragraph={{ rows: 4 }} />
+          ) : trendingQuery.isError ? (
+            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+              Gundem simdilik yuklenemedi.
+            </Typography.Text>
+          ) : trendingQuery.data && trendingQuery.data.length > 0 ? (
+            <>
+              {trendingQuery.data.map((trend) => (
+                <TrendPreviewRow
+                  key={trend.hashtag}
+                  contextLabel={trend.contextLabel}
+                  hashtag={trend.hashtag}
+                  metricLabel={formatTrendMetric(trend.postCount)}
+                  onClick={() =>
+                    navigate(`/explore/tag/${encodeURIComponent(trend.hashtag.replace(/^#/, ""))}`)
+                  }
+                />
+              ))}
+
+              <Typography.Link
+                style={{ fontSize: 15 }}
+                onClick={() => navigate("/explore")}
+              >
+                Daha fazla goster
+              </Typography.Link>
+            </>
+          ) : (
+            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+              Henuz aktif bir hashtag gundemi yok.
+            </Typography.Text>
+          )}
+        </Flex>
+      </Card>
+
+      <Card
+        variant="outlined"
+        styles={{ body: { padding: 18 } }}
+        style={{ borderColor: token.colorBorderSecondary, borderRadius: 24 }}
+      >
+        <Flex vertical gap={12}>
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            Kimi takip etmeli
+          </Typography.Title>
+
+          {followSuggestionsQuery.isLoading ? (
+            <Skeleton active title={false} paragraph={{ rows: 3 }} />
+          ) : followSuggestionsQuery.isError ? (
+            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+              Kullanici onerileri simdilik yuklenemedi.
+            </Typography.Text>
+          ) : followSuggestionsQuery.data && followSuggestionsQuery.data.length > 0 ? (
+            <>
+              {followSuggestionsQuery.data.map((suggestion) => (
+                <FollowSuggestionRow
+                  key={suggestion.id}
+                  avatarUrl={suggestion.avatarUrl}
+                  isSubmitting={
+                    followUserMutation.isPending &&
+                    followUserMutation.variables === suggestion.id
+                  }
+                  name={suggestion.fullName}
+                  onClick={() => navigate(`/profile/${suggestion.id}`)}
+                  onFollow={() => {
+                    void followUserMutation.mutateAsync(suggestion.id);
+                  }}
+                  reasonLabel={suggestion.reasonLabel}
+                />
+              ))}
+            </>
+          ) : (
+            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+              Su an yeni bir takip onerisi yok.
+            </Typography.Text>
+          )}
+        </Flex>
+      </Card>
+    </Flex>
+  );
+}
+
+function QuickRow({ label, value }: { label: string; value: string }) {
+  return (
+    <Flex align="center" justify="space-between" gap={12}>
+      <Typography.Text type="secondary">{label}</Typography.Text>
+      <Typography.Text strong>{value}</Typography.Text>
+    </Flex>
+  );
+}
+
+function TrendPreviewRow({
+  contextLabel,
+  hashtag,
+  metricLabel,
+  onClick,
+}: {
+  contextLabel: string;
+  hashtag: string;
+  metricLabel: string;
+  onClick: () => void;
+}) {
+  const { token } = theme.useToken();
+
+  return (
+    <div style={{ cursor: "pointer" }} onClick={onClick}>
+      <Flex justify="space-between" align="flex-start" gap={12}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <Typography.Text type="secondary" style={{ display: "block", fontSize: 13 }}>
+            {contextLabel}
+          </Typography.Text>
+          <Typography.Text strong style={{ display: "block", fontSize: 16, marginTop: 2 }}>
+            {hashtag}
+          </Typography.Text>
+          <Typography.Text type="secondary" style={{ display: "block", fontSize: 13, marginTop: 2 }}>
+            {metricLabel}
+          </Typography.Text>
+        </div>
+        <EllipsisOutlined style={{ color: token.colorTextTertiary, marginTop: 2 }} />
+      </Flex>
+    </div>
+  );
+}
+
+function formatTrendMetric(postCount: number) {
+  return `${postCount} gonderi`;
+}
+
+function FollowSuggestionRow({
+  avatarUrl,
+  isSubmitting,
+  name,
+  onClick,
+  onFollow,
+  reasonLabel,
+}: {
+  avatarUrl?: string;
+  isSubmitting: boolean;
+  name: string;
+  onClick: () => void;
+  onFollow: () => void;
+  reasonLabel: string;
+}) {
+  return (
+    <Flex gap={12} align="center" style={{ margin: "4px 0" }}>
+      <Avatar
+        src={avatarUrl}
+        size={40}
+        style={{ cursor: "pointer", flexShrink: 0 }}
+        onClick={onClick}
+      >
+        {name.charAt(0)}
+      </Avatar>
+      <div
         style={{
-          borderRadius: 9999,
-          background: isDarkMode ? "#202327" : "#EFF3F4",
-          border: "none",
-          fontWeight: 400,
-          padding: "6px 12px",
+          flex: 1,
+          minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
         }}
-        bordered={false}
-      />
-
-
-
-      {/* Trends Card */}
-      <div style={cardStyle}>
-        <Typography.Text style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 4 }}>
-          Neler oluyor?
+      >
+        <Typography.Text
+          strong
+          ellipsis
+          style={{ fontSize: 15, lineHeight: 1.2, cursor: "pointer" }}
+          onClick={onClick}
+        >
+          {name}
         </Typography.Text>
-
-        <div style={trendItemStyle}>
-          <Flex justify="space-between" align="flex-start">
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>TÜBİTAK · Gündemdekiler</Typography.Text>
-            <EllipsisOutlined style={{ color: token.colorTextTertiary }} />
-          </Flex>
-          <Typography.Text style={{ fontSize: 15, fontWeight: 700, marginTop: 2 }}>#YapayZeka</Typography.Text>
-          <Typography.Text type="secondary" style={{ fontSize: 13, marginTop: 2 }}>2.4 B gönderi</Typography.Text>
-        </div>
-
-        <div style={trendItemStyle}>
-          <Flex justify="space-between" align="flex-start">
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>Mühendislik · Gündemdekiler</Typography.Text>
-            <EllipsisOutlined style={{ color: token.colorTextTertiary }} />
-          </Flex>
-          <Typography.Text style={{ fontSize: 15, fontWeight: 700, marginTop: 2 }}>Bitirme Projeleri</Typography.Text>
-        </div>
-
-        <Typography.Link style={{ fontSize: 15 }}>Daha fazla göster</Typography.Link>
-      </div>
-
-      {/* Who to Follow Card */}
-      <div style={cardStyle}>
-        <Typography.Text style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 4 }}>
-          Kimi takip etmeli
+        <Typography.Text type="secondary" ellipsis style={{ fontSize: 15 }}>
+          {reasonLabel}
         </Typography.Text>
-
-        <Flex gap={12} align="center" style={{ margin: "4px 0" }}>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jon" alt="Jon" width={40} height={40} style={{ borderRadius: '50%', background: token.colorBgLayout }} />
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-            <Typography.Text strong ellipsis style={{ fontSize: 15, lineHeight: 1.2 }}>Jon Allie</Typography.Text>
-            <Typography.Text type="secondary" ellipsis style={{ fontSize: 15 }}>@jonallie</Typography.Text>
-          </div>
-          <Button type="primary" shape="round" style={{ fontWeight: 700, padding: "0 16px" }}>
-            Takip et
-          </Button>
-        </Flex>
-
-        <Flex gap={12} align="center" style={{ margin: "4px 0" }}>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Erdem" alt="Erdem" width={40} height={40} style={{ borderRadius: '50%', background: token.colorBgLayout }} />
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-            <Typography.Text strong ellipsis style={{ fontSize: 15, lineHeight: 1.2 }}>Erdem Ayaz</Typography.Text>
-            <Typography.Text type="secondary" ellipsis style={{ fontSize: 15 }}>@3rdemayaz</Typography.Text>
-          </div>
-          <Button type="primary" shape="round" style={{ fontWeight: 700, padding: "0 16px" }}>
-            Takip et
-          </Button>
-        </Flex>
-
-        <Flex gap={12} align="center" style={{ margin: "4px 0" }}>
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Matthew" alt="Matthew" width={40} height={40} style={{ borderRadius: '50%', background: token.colorBgLayout }} />
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-            <Typography.Text strong ellipsis style={{ fontSize: 15, lineHeight: 1.2 }}>Matthew Gallagher</Typography.Text>
-            <Typography.Text type="secondary" ellipsis style={{ fontSize: 15 }}>@galligator</Typography.Text>
-          </div>
-          <Button type="primary" shape="round" style={{ fontWeight: 700, padding: "0 16px" }}>
-            Takip et
-          </Button>
-        </Flex>
-
-        <Typography.Link style={{ fontSize: 15 }}>Daha fazla göster</Typography.Link>
       </div>
-
-      {/* Footer Links */}
-      <div style={{ padding: "0 16px" }}>
-        <Flex wrap="wrap" gap={8}>
-          <Typography.Text type="secondary" style={{ fontSize: 13 }}>Hizmet Şartları</Typography.Text>
-          <Typography.Text type="secondary" style={{ fontSize: 13 }}>Gizlilik Politikası</Typography.Text>
-          <Typography.Text type="secondary" style={{ fontSize: 13 }}>Çerez Politikası</Typography.Text>
-          <Typography.Text type="secondary" style={{ fontSize: 13 }}>© 2026 EduConnect Corp.</Typography.Text>
-        </Flex>
-      </div>
+      <Button
+        type="primary"
+        shape="round"
+        loading={isSubmitting}
+        onClick={onFollow}
+        style={{ fontWeight: 700, padding: "0 16px" }}
+      >
+        Takip et
+      </Button>
     </Flex>
   );
 }

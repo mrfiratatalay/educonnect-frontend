@@ -9,6 +9,7 @@ export interface FeedPost {
   avatarUrl?: string;
   content: string;
   imageUrl?: string;
+  recommendationReason?: string;
   likesCount: number;
   commentsCount: number;
   viewsCount: number;
@@ -38,9 +39,20 @@ export interface PostsPage {
   totalCount: number;
 }
 
+export interface TrendingHashtag {
+  contextLabel: string;
+  hashtag: string;
+  postCount: number;
+  uniqueAuthorCount: number;
+}
+
 export interface GetPostsInput {
   page?: number;
   pageSize?: number;
+}
+
+export interface GetTagPostsInput extends GetPostsInput {
+  tag: string;
 }
 
 export interface CreatePostInput {

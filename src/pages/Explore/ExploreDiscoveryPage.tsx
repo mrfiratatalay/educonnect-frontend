@@ -1,158 +1,60 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useDeferredValue, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Affix,
+  Alert,
   Avatar,
   Button,
   Card,
   Flex,
   Grid,
   Input,
+  Skeleton,
   Tabs,
   Typography,
   theme,
 } from "antd";
 import { Ellipsis, Search, Settings } from "lucide-react";
-
-type ExploreTrendTabKey =
-  | "for-you"
-  | "campus"
-  | "academic"
-  | "career"
-  | "events";
-
-interface TrendItem {
-  id: string;
-  tab: Exclude<ExploreTrendTabKey, "for-you">;
-  eyebrow: string;
-  title: string;
-}
-
-const trendItems: TrendItem[] = [
-  {
-    id: "trend-1",
-    tab: "campus",
-    eyebrow: "Kampuste gundemde",
-    title: "#FinalHaftasiHayattaKalma",
-  },
-  {
-    id: "trend-2",
-    tab: "academic",
-    eyebrow: "Akademik · Gundemdekiler",
-    title: "Bitirme proje sunum tarihleri",
-  },
-  {
-    id: "trend-3",
-    tab: "campus",
-    eyebrow: "Kampuste gundemde",
-    title: "Yemekhane menusu degisti",
-  },
-  {
-    id: "trend-4",
-    tab: "events",
-    eyebrow: "Etkinlikler · Gundemdekiler",
-    title: "Bahar senligi kayitlari",
-  },
-  {
-    id: "trend-5",
-    tab: "career",
-    eyebrow: "Kariyer · Gundemdekiler",
-    title: "Yaz staji basvurulari",
-  },
-  {
-    id: "trend-6",
-    tab: "academic",
-    eyebrow: "Akademik · Gundemdekiler",
-    title: "Lab telafi programi",
-  },
-  {
-    id: "trend-7",
-    tab: "events",
-    eyebrow: "Etkinlikler · Gundemdekiler",
-    title: "IEEE workshop serisi",
-  },
-  {
-    id: "trend-8",
-    tab: "career",
-    eyebrow: "Kariyer · Gundemdekiler",
-    title: "#CVHazirlamaAtolyesi",
-  },
-  {
-    id: "trend-9",
-    tab: "campus",
-    eyebrow: "Kampuste gundemde",
-    title: "Kutuphane gece acik kalacak",
-  },
-  {
-    id: "trend-10",
-    tab: "academic",
-    eyebrow: "Akademik · Gundemdekiler",
-    title: "Vize cozum oturumlari",
-  },
-];
-
-const followItems = [
-  {
-    id: "follow-1",
-    name: "Bilgisayar Muh. Kulubu",
-    handle: "@bmkulubu",
-    avatarSeed: "BMKulubu",
-  },
-  {
-    id: "follow-2",
-    name: "Kampus Duyurular",
-    handle: "@kampusduyuru",
-    avatarSeed: "KampusDuyuru",
-  },
-  {
-    id: "follow-3",
-    name: "Kariyer Merkezi",
-    handle: "@kariyermerkezi",
-    avatarSeed: "KariyerMerkezi",
-  },
-];
-
-const footerLinks = [
-  "Hizmet Sartlari",
-  "Gizlilik Politikasi",
-  "Cerez Politikasi",
-  "Imprint",
-  "Erisilebilirlik",
-  "Reklam bilgisi",
-  "Daha fazla ...",
-];
+import { useExploreDiscoveryQuery } from "@/features/explore/hooks";
+import type { ExploreTrendItem, ExploreTrendTabKey } from "@/features/explore/types";
+import {
+  exploreDiscoveryTabs,
+  exploreFooterLinks,
+} from "@/pages/Explore/exploreDiscoveryData";
 
 export default function ExploreDiscoveryPage() {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<ExploreTrendTabKey>("for-you");
+  const deferredQuery = useDeferredValue(query);
   const screens = Grid.useBreakpoint();
   const { token } = theme.useToken();
+  const navigate = useNavigate();
 
   const isDesktop = !!screens.xl;
+  const isTablet = !!screens.md;
   const isDarkMode = token.colorBgBase === "#000000";
   const shellBorderColor = token.colorBorderSecondary;
   const stickyBackground = isDarkMode
     ? "rgba(0, 0, 0, 0.84)"
     : "rgba(255, 255, 255, 0.84)";
   const sidebarSurface = isDarkMode ? "#16181C" : "#FFFFFF";
-
-  const filteredItems = useMemo(() => {
-    const scopedItems =
-      activeTab === "for-you"
-        ? trendItems
-        : trendItems.filter((item) => item.tab === activeTab);
-    const normalizedQuery = query.trim().toLowerCase();
-
-    if (!normalizedQuery) {
-      return scopedItems;
-    }
-
-    return scopedItems.filter((item) =>
-      `${item.eyebrow} ${item.title}`.toLowerCase().includes(normalizedQuery),
-    );
-  }, [activeTab, query]);
+  const pageHorizontalPadding = isTablet ? 16 : 0;
+  const activeTabLabel =
+    exploreDiscoveryTabs.find((tab) => tab.key === activeTab)?.label ?? "Kesfet";
+  const discoveryQuery = useExploreDiscoveryQuery({
+    tab: activeTab,
+    query: deferredQuery.trim() || undefined,
+  });
+  const trends = discoveryQuery.data?.trends ?? [];
+  const suggestions = discoveryQuery.data?.suggestions ?? [];
 
   return (
-    <div style={{ maxWidth: 990, margin: "0 auto", padding: "0 16px" }}>
+    <div
+      style={{
+        maxWidth: 990,
+        margin: "0 auto",
+        paddingInline: pageHorizontalPadding,
+      }}
+    >
       <Flex align="flex-start">
         <div style={{ flex: 1, maxWidth: 600, minWidth: 0 }}>
           <div
@@ -162,133 +64,108 @@ export default function ExploreDiscoveryPage() {
               borderInline: `1px solid ${shellBorderColor}`,
             }}
           >
-            <Affix offsetTop={0}>
-              <div
-                style={{
-                  background: stickyBackground,
-                  backdropFilter: "blur(14px)",
-                  WebkitBackdropFilter: "blur(14px)",
-                  borderBottom: `1px solid ${shellBorderColor}`,
-                  zIndex: 10,
-                }}
+            <div
+              style={{
+                position: "sticky",
+                top: 0,
+                background: stickyBackground,
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+                borderBottom: `1px solid ${shellBorderColor}`,
+                zIndex: 10,
+              }}
+            >
+              <Flex
+                align="center"
+                gap={12}
+                style={{ padding: isTablet ? "8px 12px 10px 16px" : "8px 12px 10px" }}
               >
-                <Flex
-                  align="center"
-                  gap={12}
-                  style={{ padding: "8px 12px 10px 16px" }}
-                >
-                  <Input
-                    size="large"
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Ara"
-                    prefix={
-                      <Search
-                        size={18}
-                        style={{ color: token.colorTextTertiary }}
-                      />
-                    }
-                    variant="outlined"
-                    style={{
-                      flex: 1,
-                      borderRadius: 999,
-                    }}
-                  />
-
-                  <Button
-                    type="text"
-                    shape="circle"
-                    aria-label="Kesfet ayarlari"
-                    style={{
-                      width: 36,
-                      height: 36,
-                      color: token.colorText,
-                    }}
-                    icon={<Settings size={18} />}
-                  />
-                </Flex>
-
-                <Tabs
-                  activeKey={activeTab}
-                  onChange={(value) => setActiveTab(value as ExploreTrendTabKey)}
+                <Input
+                  allowClear
                   size="large"
-                  tabBarGutter={24}
-                  indicator={{ size: 72, align: "center" }}
-                  tabBarStyle={{
-                    margin: 0,
-                    paddingInline: 16,
-                    borderBottom: "none",
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={getSearchPlaceholder(activeTab)}
+                  prefix={
+                    <Search
+                      size={18}
+                      style={{ color: token.colorTextTertiary }}
+                    />
+                  }
+                  variant="outlined"
+                  style={{
+                    flex: 1,
+                    borderRadius: 999,
                   }}
-                  items={[
-                    {
-                      key: "for-you",
-                      label: (
-                        <span style={{ fontWeight: activeTab === "for-you" ? 800 : 700 }}>
-                          Sana Ozel
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "campus",
-                      label: (
-                        <span
-                          style={{
-                            fontWeight: activeTab === "campus" ? 800 : 700,
-                          }}
-                        >
-                          Kampus Gundemi
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "academic",
-                      label: (
-                        <span
-                          style={{
-                            fontWeight: activeTab === "academic" ? 800 : 700,
-                          }}
-                        >
-                          Akademik
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "career",
-                      label: (
-                        <span
-                          style={{
-                            fontWeight: activeTab === "career" ? 800 : 700,
-                          }}
-                        >
-                          Kariyer
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "events",
-                      label: (
-                        <span
-                          style={{
-                            fontWeight: activeTab === "events" ? 800 : 700,
-                          }}
-                        >
-                          Etkinlikler
-                        </span>
-                      ),
-                    },
-                  ]}
                 />
-              </div>
-            </Affix>
+
+                <Button
+                  type="text"
+                  shape="circle"
+                  aria-label="Kesfet ayarlari"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    color: token.colorText,
+                    border: `1px solid ${shellBorderColor}`,
+                    background: token.colorBgContainer,
+                  }}
+                  icon={<Settings size={18} />}
+                />
+              </Flex>
+
+              <Tabs
+                activeKey={activeTab}
+                onChange={(value) => setActiveTab(value as ExploreTrendTabKey)}
+                size="large"
+                tabBarGutter={isTablet ? 24 : 14}
+                indicator={{ size: isTablet ? 72 : 56, align: "center" }}
+                tabBarStyle={{
+                  margin: 0,
+                  paddingInline: isTablet ? 16 : 12,
+                  borderBottom: "none",
+                }}
+                items={exploreDiscoveryTabs.map((tab) => ({
+                  key: tab.key,
+                  label: (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        fontWeight: activeTab === tab.key ? 800 : 700,
+                        fontSize: 15,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {tab.label}
+                    </span>
+                  ),
+                }))}
+              />
+            </div>
 
             <Flex vertical>
-              {filteredItems.map((item) => (
-                <TrendRow
-                  key={item.id}
-                  item={item}
-                  borderColor={shellBorderColor}
-                />
-              ))}
+              {discoveryQuery.isLoading ? (
+                <ExploreTrendLoadingState borderColor={shellBorderColor} />
+              ) : discoveryQuery.error instanceof Error ? (
+                <div style={{ padding: 16 }}>
+                  <Alert
+                    message={discoveryQuery.error.message}
+                    showIcon
+                    type="error"
+                  />
+                </div>
+              ) : trends.length > 0 ? (
+                trends.map((item) => (
+                  <TrendRow
+                    key={item.id}
+                    item={item}
+                    borderColor={shellBorderColor}
+                    onOpen={(targetPath) => navigate(targetPath)}
+                  />
+                ))
+              ) : (
+                <ExploreTrendEmptyState query={query} tabLabel={activeTabLabel} />
+              )}
             </Flex>
           </div>
         </div>
@@ -304,7 +181,7 @@ export default function ExploreDiscoveryPage() {
               />
 
               <SidebarCard title="Kimi takip etmeli" background={sidebarSurface}>
-                {followItems.map((item) => (
+                {suggestions.map((item) => (
                   <SidebarRow key={item.id}>
                     <Flex align="center" gap={12} style={{ width: "100%" }}>
                       <Avatar
@@ -348,8 +225,9 @@ export default function ExploreDiscoveryPage() {
                           color: "#FFFFFF",
                           fontWeight: 800,
                         }}
+                        onClick={() => navigate(item.targetPath)}
                       >
-                        Takip et
+                        {item.ctaLabel}
                       </Button>
                     </Flex>
                   </SidebarRow>
@@ -365,7 +243,7 @@ export default function ExploreDiscoveryPage() {
                 gap={8}
                 style={{ padding: "16px 12px 0", maxWidth: 320 }}
               >
-                {footerLinks.map((item) => (
+                {exploreFooterLinks.map((item) => (
                   <Typography.Text
                     key={item}
                     type="secondary"
@@ -375,7 +253,7 @@ export default function ExploreDiscoveryPage() {
                   </Typography.Text>
                 ))}
                 <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                  © 2026 X Corp.
+                  (c) 2026 EduConnect Corp.
                 </Typography.Text>
               </Flex>
             </div>
@@ -389,44 +267,135 @@ export default function ExploreDiscoveryPage() {
 function TrendRow({
   item,
   borderColor,
+  onOpen,
 }: {
-  item: TrendItem;
+  item: ExploreTrendItem;
   borderColor: string;
+  onOpen: (targetPath: string) => void;
 }) {
   const { token } = theme.useToken();
+  const [isHovered, setIsHovered] = useState(false);
+  const isDarkMode = token.colorBgBase === "#000000";
+  const hoverBackground = isDarkMode ? "#080B0F" : "#F7F9F9";
+  const controlHoverBackground = isDarkMode ? "rgba(231, 233, 234, 0.1)" : "#EFF3F4";
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onOpen(item.targetPath);
+    }
+  }
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(item.targetPath)}
+      onKeyDown={handleKeyDown}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsHovered(true)}
+      onBlur={() => setIsHovered(false)}
+      aria-label={`${item.contextLabel} ${item.title}`}
       style={{
+        background: isHovered ? hoverBackground : "transparent",
         padding: "12px 16px 14px",
         borderBottom: `1px solid ${borderColor}`,
+        cursor: "pointer",
+        minHeight: 88,
+        transition: "background-color 120ms ease, box-shadow 120ms ease",
+        boxShadow: isHovered ? `inset 0 0 0 1px ${borderColor}` : "none",
       }}
     >
       <Flex justify="space-between" align="flex-start" gap={12}>
         <div style={{ minWidth: 0, flex: 1 }}>
           <Typography.Text
             type="secondary"
-            style={{ display: "block", fontSize: 14 }}
+            style={{ display: "block", fontSize: 13, lineHeight: 1.3 }}
           >
-            {item.eyebrow}
+            {item.contextLabel}
           </Typography.Text>
-          <Typography.Text
-            strong
+          <Typography.Paragraph
             style={{
-              display: "block",
-              fontSize: 17,
+              margin: "2px 0 0",
+              fontSize: 18,
               lineHeight: 1.35,
-              marginTop: 2,
+              fontWeight: 800,
               color: token.colorText,
             }}
+            ellipsis={{ rows: 2 }}
           >
             {item.title}
+          </Typography.Paragraph>
+          <Typography.Text
+            type="secondary"
+            style={{ display: "block", fontSize: 13, marginTop: 2 }}
+          >
+            {item.metricLabel}
           </Typography.Text>
         </div>
 
-        <Ellipsis size={18} color={token.colorTextTertiary} />
+        <div
+          aria-hidden
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 30,
+            height: 30,
+            borderRadius: 999,
+            background: isHovered ? controlHoverBackground : "transparent",
+            color: token.colorTextTertiary,
+            flexShrink: 0,
+            transition: "background-color 120ms ease",
+          }}
+        >
+          <Ellipsis size={18} />
+        </div>
       </Flex>
     </div>
+  );
+}
+
+function ExploreTrendEmptyState({
+  query,
+  tabLabel,
+}: {
+  query: string;
+  tabLabel: string;
+}) {
+  return (
+    <Flex
+      vertical
+      align="center"
+      justify="center"
+      gap={10}
+      style={{ padding: "56px 24px 64px", textAlign: "center" }}
+    >
+      <Typography.Title level={5} style={{ margin: 0 }}>
+        Trend bulunamadi
+      </Typography.Title>
+      <Typography.Text type="secondary" style={{ maxWidth: 320 }}>
+        {query.trim()
+          ? "Farkli bir kelime dene veya diger sekmelere gec."
+          : `${tabLabel} sekmesinde gosterecek guncel bir trend yok.`}
+      </Typography.Text>
+    </Flex>
+  );
+}
+
+function ExploreTrendLoadingState({ borderColor }: { borderColor: string }) {
+  return (
+    <Flex vertical>
+      {Array.from({ length: 6 }, (_, index) => (
+        <div
+          key={`explore-skeleton-${index}`}
+          style={{ padding: "14px 16px", borderBottom: `1px solid ${borderColor}` }}
+        >
+          <Skeleton active title={{ width: "48%" }} paragraph={{ rows: 2 }} />
+        </div>
+      ))}
+    </Flex>
   );
 }
 
@@ -473,4 +442,19 @@ function SidebarCard({
 
 function SidebarRow({ children }: { children: ReactNode }) {
   return <div style={{ padding: "10px 16px" }}>{children}</div>;
+}
+
+function getSearchPlaceholder(tab: ExploreTrendTabKey) {
+  switch (tab) {
+    case "academic":
+      return "Ders, sinav veya tez ara";
+    case "career":
+      return "Staj, kariyer veya cv ara";
+    case "events":
+      return "Etkinlik veya workshop ara";
+    case "campus":
+      return "Kampuste ne konusuluyor ara";
+    default:
+      return "Ara";
+  }
 }

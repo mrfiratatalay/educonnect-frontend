@@ -41,6 +41,8 @@ export interface CreateGroupInput {
   category: string;
 }
 
+export interface UpdateGroupInput extends CreateGroupInput {}
+
 export interface DiscoverGroupsInput {
   query?: string;
   limit?: number;

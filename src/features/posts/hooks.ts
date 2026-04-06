@@ -10,8 +10,12 @@ import {
   createPost,
   deletePost,
   getBookmarkedPosts,
+  getForYouPosts,
+  getFollowingPosts,
   getPostDetail,
+  getPostsByTag,
   getPosts,
+  getTrendingHashtags,
   togglePostBookmark,
   togglePostLike,
   trackPostView,
@@ -21,9 +25,11 @@ import type {
   CreatePostCommentInput,
   CreatePostInput,
   FeedPost,
+  GetTagPostsInput,
   GetPostsInput,
   PostDetail,
   PostsPage,
+  TrendingHashtag,
   UpdatePostInput,
 } from "@/features/posts/types";
 import { useAuthStore } from "@/store/authStore";
@@ -32,9 +38,12 @@ export const postKeys = {
   all: ["posts"] as const,
   bookmarksRoot: ["posts", "bookmarks"] as const,
   feed: (pageSize: number) => [...postKeys.all, "feed", pageSize] as const,
+  following: (pageSize: number) => [...postKeys.all, "following", pageSize] as const,
+  tag: (tag: string, pageSize: number) => [...postKeys.all, "tag", tag, pageSize] as const,
   bookmarks: (pageSize: number) => [...postKeys.bookmarksRoot, pageSize] as const,
   list: (page: number, pageSize: number) =>
     [...postKeys.all, "list", page, pageSize] as const,
+  trending: (limit: number) => [...postKeys.all, "trending", limit] as const,
   detail: (postId: string) => [...postKeys.all, "detail", postId] as const,
 };
 
@@ -42,7 +51,7 @@ export function useInfinitePostsQuery(pageSize = 10, enabled = true) {
   return useInfiniteQuery({
     queryKey: postKeys.feed(pageSize),
     queryFn: ({ pageParam }): Promise<PostsPage> =>
-      getPosts({ page: Number(pageParam ?? 1), pageSize }),
+      getForYouPosts({ page: Number(pageParam ?? 1), pageSize }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       const loadedCount = pages.reduce(
@@ -53,6 +62,48 @@ export function useInfinitePostsQuery(pageSize = 10, enabled = true) {
       return loadedCount >= lastPage.totalCount ? undefined : pages.length + 1;
     },
     enabled,
+  });
+}
+
+export function useInfiniteFollowingPostsQuery(pageSize = 10, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: postKeys.following(pageSize),
+    queryFn: ({ pageParam }): Promise<PostsPage> =>
+      getFollowingPosts({ page: Number(pageParam ?? 1), pageSize }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      const loadedCount = pages.reduce(
+        (count, page) => count + page.items.length,
+        0,
+      );
+
+      return loadedCount >= lastPage.totalCount ? undefined : pages.length + 1;
+    },
+    enabled,
+  });
+}
+
+export function useInfiniteTagPostsQuery(
+  input: GetTagPostsInput,
+  enabled = true,
+) {
+  const pageSize = input.pageSize ?? 10;
+  const tag = input.tag.trim();
+
+  return useInfiniteQuery({
+    queryKey: postKeys.tag(tag, pageSize),
+    queryFn: ({ pageParam }): Promise<PostsPage> =>
+      getPostsByTag({ tag, page: Number(pageParam ?? 1), pageSize }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      const loadedCount = pages.reduce(
+        (count, page) => count + page.items.length,
+        0,
+      );
+
+      return loadedCount >= lastPage.totalCount ? undefined : pages.length + 1;
+    },
+    enabled: enabled && Boolean(tag),
   });
 }
 
@@ -81,6 +132,14 @@ export function usePostsQuery(input: GetPostsInput = {}, enabled = true) {
   return useQuery({
     queryKey: postKeys.list(page, pageSize),
     queryFn: (): Promise<PostsPage> => getPosts({ page, pageSize }),
+    enabled,
+  });
+}
+
+export function useTrendingHashtagsQuery(limit = 4, enabled = true) {
+  return useQuery({
+    queryKey: postKeys.trending(limit),
+    queryFn: (): Promise<TrendingHashtag[]> => getTrendingHashtags(limit),
     enabled,
   });
 }
@@ -178,8 +237,15 @@ export function useCreatePostMutation() {
         queryClient.setQueryData(queryKey, data);
       });
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: postKeys.all });
+    onSuccess: async (_data, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: postKeys.all }),
+        variables.groupId
+          ? queryClient.invalidateQueries({
+              predicate: (query) => isGroupsPostQuery(query.queryKey),
+            })
+          : Promise.resolve(),
+      ]);
     },
   });
 }
@@ -205,12 +271,7 @@ export function useUpdatePostMutation() {
   return useMutation({
     mutationFn: (input: UpdatePostInput) => updatePost(input),
     onSuccess: async (_, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: postKeys.all }),
-        queryClient.invalidateQueries({
-          queryKey: postKeys.detail(variables.postId),
-        }),
-      ]);
+      await invalidateFeedQueries(queryClient, variables.postId);
     },
   });
 }
@@ -221,10 +282,7 @@ export function useTogglePostLikeMutation() {
   return useMutation({
     mutationFn: (postId: string) => togglePostLike(postId),
     onSuccess: async (_, postId) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: postKeys.all }),
-        queryClient.invalidateQueries({ queryKey: postKeys.detail(postId) }),
-      ]);
+      await invalidateFeedQueries(queryClient, postId);
     },
   });
 }
@@ -273,12 +331,7 @@ export function useAddPostCommentMutation() {
   return useMutation({
     mutationFn: (input: CreatePostCommentInput) => addPostComment(input),
     onSuccess: async (_, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: postKeys.all }),
-        queryClient.invalidateQueries({
-          queryKey: postKeys.detail(variables.postId),
-        }),
-      ]);
+      await invalidateFeedQueries(queryClient, variables.postId);
     },
   });
 }
@@ -289,7 +342,12 @@ export function useDeletePostMutation() {
   return useMutation({
     mutationFn: (postId: string) => deletePost(postId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: postKeys.all });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: postKeys.all }),
+        queryClient.invalidateQueries({
+          predicate: (query) => isGroupsPostQuery(query.queryKey),
+        }),
+      ]);
     },
   });
 }
@@ -301,7 +359,8 @@ function updatePostAcrossCaches(
 ) {
   queryClient.setQueriesData<PostsPage | InfiniteData<PostsPage> | PostDetail>(
     {
-      predicate: (query) => query.queryKey[0] === "posts",
+      predicate: (query) =>
+        query.queryKey[0] === "posts" || isGroupsPostQuery(query.queryKey),
     },
     (oldData) => {
       if (!oldData) {
@@ -343,4 +402,24 @@ function updatePostList(
   updater: (post: FeedPost) => FeedPost,
 ) {
   return posts.map((post) => (post.id === postId ? updater(post) : post));
+}
+
+async function invalidateFeedQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  postId: string,
+) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: postKeys.all }),
+    queryClient.invalidateQueries({ queryKey: postKeys.detail(postId) }),
+    queryClient.invalidateQueries({
+      predicate: (query) => isGroupsPostQuery(query.queryKey),
+    }),
+  ]);
+}
+
+function isGroupsPostQuery(queryKey: readonly unknown[]) {
+  return (
+    queryKey[0] === "groups" &&
+    (queryKey[1] === "feed" || queryKey[1] === "posts")
+  );
 }

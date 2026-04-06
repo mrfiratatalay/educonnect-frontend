@@ -175,7 +175,7 @@ export default function Sidebar() {
                     event.currentTarget.style.background = "transparent";
                   }}
                 >
-                  <item.icon size={navIconSize} />
+                  <item.icon size={navIconSize} fill={selectedKey === item.key ? "currentColor" : "none"} />
                   {!isMessages ? (
                     <span style={{ fontSize: navLabelFontSize, fontWeight: selectedKey === item.key ? 700 : 400, lineHeight: 1.2 }}>
                       {item.label}
@@ -220,7 +220,7 @@ export default function Sidebar() {
                       morePopoverOpen || isMoreSelected ? token.colorFillTertiary : "transparent";
                   }}
                 >
-                  <MoreHorizontal size={navIconSize} />
+                  <MoreHorizontal size={navIconSize} fill={morePopoverOpen || isMoreSelected ? "currentColor" : "none"} />
                   {!isMessages ? (
                     <span style={{ fontSize: navLabelFontSize, fontWeight: isMoreSelected ? 700 : 400, lineHeight: 1.2 }}>
                       Daha fazla

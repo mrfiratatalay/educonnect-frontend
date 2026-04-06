@@ -10,12 +10,14 @@ import {
   getJoinedGroupsFeed,
   joinGroup,
   leaveGroup,
+  updateGroup,
 } from "@/features/groups/api";
 import type {
   AppGroup,
   AppGroupDetail,
   CreateGroupInput,
   DiscoverGroupsInput,
+  UpdateGroupInput,
 } from "@/features/groups/types";
 import type { PostsPage } from "@/features/posts/types";
 
@@ -116,6 +118,25 @@ export function useCreateGroupMutation() {
     mutationFn: (input: CreateGroupInput) => createGroup(input),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: groupKeys.all });
+    },
+  });
+}
+
+export function useUpdateGroupMutation(groupId?: string, slug?: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateGroupInput) => updateGroup(groupId!, input),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+        groupId
+          ? queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) })
+          : Promise.resolve(),
+        slug
+          ? queryClient.invalidateQueries({ queryKey: groupKeys.detailBySlug(slug) })
+          : Promise.resolve(),
+      ]);
     },
   });
 }

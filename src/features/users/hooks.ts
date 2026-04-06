@@ -1,10 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { postKeys } from "@/features/posts/hooks";
 import { useAuthStore } from "@/store/authStore";
 import {
+  followUser,
+  getFollowers,
+  getFollowSuggestions,
+  getFollowing,
   getMyProfile,
   getUserProfile,
+  type FollowSuggestion,
+  type UserConnection,
   uploadMyAvatar,
   uploadMyCover,
+  unfollowUser,
   updateMyProfile,
   type PublicUserProfile,
   type UpdateMyProfileInput,
@@ -15,6 +23,9 @@ export const userKeys = {
   all: ["users"] as const,
   me: () => [...userKeys.all, "me"] as const,
   detail: (userId: string) => [...userKeys.all, userId] as const,
+  followSuggestions: (limit: number) => [...userKeys.all, "follow-suggestions", limit] as const,
+  followers: (userId: string) => [...userKeys.all, userId, "followers"] as const,
+  following: (userId: string) => [...userKeys.all, userId, "following"] as const,
 };
 
 export function useMyProfileQuery(enabled = true) {
@@ -33,6 +44,30 @@ export function usePublicProfileQuery(userId?: string, enabled = true) {
   });
 }
 
+export function useFollowSuggestionsQuery(limit = 3, enabled = true) {
+  return useQuery({
+    queryKey: userKeys.followSuggestions(limit),
+    queryFn: (): Promise<FollowSuggestion[]> => getFollowSuggestions(limit),
+    enabled,
+  });
+}
+
+export function useFollowersQuery(userId?: string, enabled = true) {
+  return useQuery({
+    queryKey: userId ? userKeys.followers(userId) : [...userKeys.all, "followers"],
+    queryFn: (): Promise<UserConnection[]> => getFollowers(userId!),
+    enabled: enabled && Boolean(userId),
+  });
+}
+
+export function useFollowingUsersQuery(userId?: string, enabled = true) {
+  return useQuery({
+    queryKey: userId ? userKeys.following(userId) : [...userKeys.all, "following-users"],
+    queryFn: (): Promise<UserConnection[]> => getFollowing(userId!),
+    enabled: enabled && Boolean(userId),
+  });
+}
+
 export function useUpdateMyProfileMutation() {
   const queryClient = useQueryClient();
   const updateUser = useAuthStore((state) => state.updateUser);
@@ -41,6 +76,42 @@ export function useUpdateMyProfileMutation() {
     mutationFn: (input: UpdateMyProfileInput) => updateMyProfile(input),
     onSuccess: (profile) => {
       syncProfileCaches(queryClient, updateUser, profile);
+    },
+  });
+}
+
+export function useFollowUserMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) => followUser(userId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: userKeys.all }),
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            query.queryKey[0] === postKeys.all[0] &&
+            query.queryKey[1] === "following",
+        }),
+      ]);
+    },
+  });
+}
+
+export function useUnfollowUserMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) => unfollowUser(userId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: userKeys.all }),
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            query.queryKey[0] === postKeys.all[0] &&
+            query.queryKey[1] === "following",
+        }),
+      ]);
     },
   });
 }

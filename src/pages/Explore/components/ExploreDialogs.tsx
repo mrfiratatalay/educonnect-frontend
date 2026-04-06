@@ -1,5 +1,5 @@
 import type { AppEvent, CreateEventInput } from "@/features/events/types";
-import type { AppGroup } from "@/features/groups/types";
+import type { AppGroup, CreateGroupInput } from "@/features/groups/types";
 import CreateEventDialog from "@/pages/Explore/components/CreateEventDialog";
 import CreateGroupDialog from "@/pages/Explore/components/CreateGroupDialog";
 import EventDetailDialog from "@/pages/Explore/components/EventDetailDialog";
@@ -22,7 +22,7 @@ interface ExploreDialogsProps {
   onCloseEventDetail: () => void;
   onCloseGroupDetail: () => void;
   onCreateEvent: (input: CreateEventInput) => Promise<void>;
-  onCreateGroup: (input: { name: string; description: string; category: string }) => Promise<void>;
+  onCreateGroup: (input: CreateGroupInput) => Promise<void>;
   onToggleMembership: (group: AppGroup) => void;
   onToggleRegistration: (event: AppEvent) => void;
 }

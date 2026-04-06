@@ -32,6 +32,7 @@ const roleLabels: Record<UserRole, string> = {
 
 interface ProfileSummaryCardProps {
   profile: {
+    id: string;
     fullName: string;
     role: UserRole;
     avatarUrl?: string;
@@ -42,10 +43,17 @@ interface ProfileSummaryCardProps {
     year?: number;
     email?: string;
     createdAt?: string;
+    followersCount: number;
+    followingCount: number;
   };
   isOwnProfile: boolean;
   loading?: boolean;
   onEditProfile?: () => void;
+  isFollowing?: boolean;
+  followActionPending?: boolean;
+  onFollowToggle?: () => void | Promise<void>;
+  onOpenFollowers?: () => void;
+  onOpenFollowing?: () => void;
 }
 
 export default function ProfileSummaryCard({
@@ -53,6 +61,11 @@ export default function ProfileSummaryCard({
   isOwnProfile,
   loading = false,
   onEditProfile,
+  isFollowing = false,
+  followActionPending = false,
+  onFollowToggle,
+  onOpenFollowers,
+  onOpenFollowing,
 }: ProfileSummaryCardProps) {
   const { token } = theme.useToken();
   const screens = Grid.useBreakpoint();
@@ -66,6 +79,7 @@ export default function ProfileSummaryCard({
   const secondaryLabel = profile.email
     ? `@${profile.email.split("@")[0].toLowerCase()}`
     : roleLabels[profile.role];
+  const followButtonLabel = isFollowing ? "Takibi birak" : "Takip et";
 
   const uploadProps: UploadProps = {
     name: "file",
@@ -278,6 +292,32 @@ export default function ProfileSummaryCard({
               Profili duzenle
             </Button>
           ) : null}
+
+          {!isOwnProfile && onFollowToggle ? (
+            <Button
+              shape="round"
+              loading={followActionPending}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                void onFollowToggle();
+              }}
+              color={isFollowing ? undefined : "default"}
+              variant={isFollowing ? "outlined" : "solid"}
+              style={{
+                height: 38,
+                paddingInline: 18,
+                fontWeight: 700,
+                background: isFollowing ? token.colorBgContainer : undefined,
+                borderColor: isFollowing ? token.colorBorder : undefined,
+                boxShadow: "none",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              {followButtonLabel}
+            </Button>
+          ) : null}
         </Flex>
 
         <div style={{ marginTop: 16 }}>
@@ -306,6 +346,19 @@ export default function ProfileSummaryCard({
           </Typography.Paragraph>
         ) : null}
 
+        <Flex gap={24} wrap="wrap" style={{ marginTop: profile.bio ? 2 : 14 }}>
+          <ProfileMetric
+            label="Takip edilen"
+            value={profile.followingCount}
+            onClick={onOpenFollowing}
+          />
+          <ProfileMetric
+            label="Takipci"
+            value={profile.followersCount}
+            onClick={onOpenFollowers}
+          />
+        </Flex>
+
         <Flex gap={16} wrap="wrap" style={{ marginTop: 14 }}>
           {profile.createdAt ? (
             <Typography.Text type="secondary" style={{ fontSize: 14 }}>
@@ -331,6 +384,55 @@ export default function ProfileSummaryCard({
         </Flex>
       </div>
     </section>
+  );
+}
+
+function ProfileMetric({
+  label,
+  value,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  onClick?: () => void;
+}) {
+  const { token } = theme.useToken();
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: 0,
+          border: "none",
+          background: "transparent",
+          cursor: "pointer",
+          font: "inherit",
+        }}
+      >
+        <Typography.Text strong style={{ color: token.colorText, fontSize: 15 }}>
+          {value}
+        </Typography.Text>
+        <Typography.Text type="secondary" style={{ fontSize: 15 }}>
+          {label}
+        </Typography.Text>
+      </button>
+    );
+  }
+
+  return (
+    <Flex align="center" gap={6}>
+      <Typography.Text strong style={{ color: token.colorText, fontSize: 15 }}>
+        {value}
+      </Typography.Text>
+      <Typography.Text type="secondary" style={{ fontSize: 15 }}>
+        {label}
+      </Typography.Text>
+    </Flex>
   );
 }
 

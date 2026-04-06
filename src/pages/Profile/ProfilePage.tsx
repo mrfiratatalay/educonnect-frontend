@@ -17,17 +17,23 @@ import {
 import { useAuthStore } from "@/store/authStore";
 import { getUserInitials } from "@/components/layout/shellNavigation";
 import {
+  useFollowUserMutation,
+  useFollowersQuery,
   useMyProfileQuery,
+  useFollowingUsersQuery,
   usePublicProfileQuery,
+  useUnfollowUserMutation,
 } from "@/features/users/hooks";
 import type { PublicUserProfile } from "@/features/users/api";
 import type { User, UserRole } from "@/types";
 import ProfileSummaryCard from "@/pages/Profile/components/ProfileSummaryCard";
+import ProfileConnectionsModal from "@/pages/Profile/components/ProfileConnectionsModal";
 import ProfileDetailsCard from "@/pages/Profile/components/ProfileDetailsCard";
 import ProfileTimeline from "@/pages/Profile/components/ProfileTimeline";
 import ProfileEditModal from "@/pages/Profile/components/ProfileEditModal";
 
 interface ProfileViewModel {
+  id: string;
   fullName: string;
   role: UserRole;
   email?: string;
@@ -39,6 +45,9 @@ interface ProfileViewModel {
   department?: string;
   year?: number;
   createdAt?: string;
+  followersCount: number;
+  followingCount: number;
+  isFollowedByCurrentUser?: boolean;
 }
 
 const roleLabels: Record<UserRole, string> = {
@@ -93,6 +102,8 @@ const footerLinks = [
   "Reklam bilgisi",
 ];
 
+type ConnectionView = "followers" | "following" | null;
+
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
@@ -102,12 +113,25 @@ export default function ProfilePage() {
   const myProfileQuery = useMyProfileQuery(isOwnProfile);
   const publicProfileQuery = usePublicProfileQuery(targetUserId, !isOwnProfile);
   const profileQuery = isOwnProfile ? myProfileQuery : publicProfileQuery;
+  const followUserMutation = useFollowUserMutation();
+  const unfollowUserMutation = useUnfollowUserMutation();
   const screens = Grid.useBreakpoint();
   const { token } = theme.useToken();
   const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [connectionView, setConnectionView] = useState<ConnectionView>(null);
+  const [pendingConnectionUserId, setPendingConnectionUserId] = useState<string | null>(null);
 
   const isDesktop = !!screens.xl;
   const pageBorder = screens.xs ? "none" : `1px solid ${token.colorBorderSecondary}`;
+  const connectionProfileId = profileQuery.data?.id;
+  const followersQuery = useFollowersQuery(
+    connectionProfileId,
+    connectionView === "followers" && Boolean(connectionProfileId),
+  );
+  const followingUsersQuery = useFollowingUsersQuery(
+    connectionProfileId,
+    connectionView === "following" && Boolean(connectionProfileId),
+  );
 
   if (profileQuery.isLoading) {
     return (
@@ -119,7 +143,13 @@ export default function ProfilePage() {
             onBack={() => handleBack(navigate)}
           />
           <ProfileSummaryCard
-            profile={{ fullName: "", role: "student" }}
+            profile={{
+              id: "",
+              fullName: "",
+              role: "student",
+              followersCount: 0,
+              followingCount: 0,
+            }}
             isOwnProfile={false}
             loading
           />
@@ -148,6 +178,12 @@ export default function ProfilePage() {
   }
 
   const profile = toProfileViewModel(profileQuery.data);
+  const isFollowActionPending = followUserMutation.isPending || unfollowUserMutation.isPending;
+  const isFollowing = Boolean(!isOwnProfile && profile.isFollowedByCurrentUser);
+  const activeConnectionsQuery =
+    connectionView === "followers" ? followersQuery : followingUsersQuery;
+  const activeConnectionsTitle =
+    connectionView === "followers" ? "Takipciler" : "Takip edilenler";
 
   return (
     <>
@@ -163,6 +199,22 @@ export default function ProfilePage() {
             profile={profile}
             isOwnProfile={isOwnProfile}
             onEditProfile={isOwnProfile ? () => setEditModalOpen(true) : undefined}
+            isFollowing={isFollowing}
+            followActionPending={isFollowActionPending}
+            onOpenFollowers={() => setConnectionView("followers")}
+            onOpenFollowing={() => setConnectionView("following")}
+            onFollowToggle={
+              !isOwnProfile && targetUserId
+                ? async () => {
+                    if (isFollowing) {
+                      await unfollowUserMutation.mutateAsync(targetUserId);
+                      return;
+                    }
+
+                    await followUserMutation.mutateAsync(targetUserId);
+                  }
+                : undefined
+            }
           />
 
           <Tabs
@@ -280,6 +332,33 @@ export default function ProfilePage() {
           onClose={() => setEditModalOpen(false)}
         />
       ) : null}
+
+      <ProfileConnectionsModal
+        open={connectionView !== null}
+        title={activeConnectionsTitle}
+        loading={activeConnectionsQuery.isLoading}
+        profiles={activeConnectionsQuery.data}
+        currentUserId={currentUserId}
+        pendingUserId={pendingConnectionUserId}
+        onClose={() => {
+          setConnectionView(null);
+          setPendingConnectionUserId(null);
+        }}
+        onToggleFollow={async (connectionProfile) => {
+          setPendingConnectionUserId(connectionProfile.id);
+
+          try {
+            if (connectionProfile.isFollowedByCurrentUser) {
+              await unfollowUserMutation.mutateAsync(connectionProfile.id);
+              return;
+            }
+
+            await followUserMutation.mutateAsync(connectionProfile.id);
+          } finally {
+            setPendingConnectionUserId(null);
+          }
+        }}
+      />
     </>
   );
 }
@@ -567,6 +646,7 @@ function ProfileRailRow({ children }: { children: ReactNode }) {
 
 function toProfileViewModel(profile: User | PublicUserProfile): ProfileViewModel {
   const baseProfile = {
+    id: profile.id,
     fullName: profile.fullName,
     role: profile.role,
     avatarUrl: profile.avatarUrl,
@@ -577,6 +657,10 @@ function toProfileViewModel(profile: User | PublicUserProfile): ProfileViewModel
     department: profile.department,
     year: profile.year,
     createdAt: "createdAt" in profile ? profile.createdAt : undefined,
+    followersCount: profile.followersCount ?? 0,
+    followingCount: profile.followingCount ?? 0,
+    isFollowedByCurrentUser:
+      "isFollowedByCurrentUser" in profile ? profile.isFollowedByCurrentUser : undefined,
   };
 
   if ("email" in profile) {

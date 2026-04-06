@@ -145,7 +145,7 @@ export default function MobileNav() {
                   }}
                 >
                   <Flex align="center" gap={18}>
-                    <item.icon size={24} />
+                    <item.icon size={24} fill={isActive ? "currentColor" : "none"} />
                     <span style={{ fontSize: 18, lineHeight: 1.2 }}>{item.label}</span>
                   </Flex>
                 </Button>
@@ -220,7 +220,7 @@ export default function MobileNav() {
                   padding: 0,
                 }}
               >
-                <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} />
+                <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} fill={isActive ? "currentColor" : "none"} />
               </Button>
             );
           })}

@@ -37,6 +37,8 @@ interface PostCardProps {
   isUpdating: boolean;
   mode?: "feed" | "detail";
   onDelete: (postId: string) => void;
+  showGroupContext?: boolean;
+  showRecommendationReason?: boolean;
   onUpdate: (postId: string, content: string) => Promise<void>;
 }
 
@@ -121,6 +123,8 @@ export default function PostCard({
   isUpdating,
   mode = "feed",
   onDelete,
+  showGroupContext = false,
+  showRecommendationReason = false,
   onUpdate,
 }: PostCardProps) {
   const navigate = useNavigate();
@@ -168,6 +172,17 @@ export default function PostCard({
 
   function handleDropdownTriggerClick(event: MouseEvent) {
     event.stopPropagation();
+  }
+
+  function handleGroupClick(event: MouseEvent<HTMLElement>) {
+    event.stopPropagation();
+
+    if (post.groupSlug) {
+      navigate(`/communities/${post.groupSlug}`);
+      return;
+    }
+
+    navigate("/communities");
   }
 
   function handleToggleLike() {
@@ -236,6 +251,56 @@ export default function PostCard({
           </Avatar>
 
           <Flex vertical style={{ flex: 1, minWidth: 0 }}>
+            {showRecommendationReason && post.recommendationReason ? (
+              <Typography.Text
+                type="secondary"
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  lineHeight: 1.3,
+                  marginBottom: 6,
+                }}
+              >
+                Senin icin - {post.recommendationReason}
+              </Typography.Text>
+            ) : null}
+
+            {showGroupContext && post.groupName ? (
+              <Flex
+                align="center"
+                gap={8}
+                style={{
+                  marginBottom: 4,
+                  color: token.colorTextSecondary,
+                  cursor: "pointer",
+                  width: "fit-content",
+                }}
+                onClick={handleGroupClick}
+              >
+                <Avatar
+                  src={post.groupAvatarUrl}
+                  size={20}
+                  style={{
+                    backgroundColor: token.colorFillSecondary,
+                    color: token.colorText,
+                    flexShrink: 0,
+                  }}
+                >
+                  {!post.groupAvatarUrl ? getGroupInitials(post.groupName) : null}
+                </Avatar>
+                <Typography.Text
+                  style={{
+                    margin: 0,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: token.colorTextSecondary,
+                  }}
+                >
+                  {post.groupName}
+                </Typography.Text>
+              </Flex>
+            ) : null}
+
             {isEditing ? (
               <>
                 <Flex align="center" justify="space-between">
@@ -431,4 +496,13 @@ async function copyTextToClipboard(value: string) {
   if (!hasCopied) {
     throw new Error("copy_failed");
   }
+}
+
+function getGroupInitials(groupName: string) {
+  return groupName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
 }

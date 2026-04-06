@@ -1,85 +1,360 @@
-import { useEffect, useState } from "react";
-import { Alert, Button, Form, Input, Modal, Select } from "antd";
+import { useEffect, useMemo, useState } from "react";
+import { Alert, Avatar, Button, Flex, Form, Input, Modal, Select, Typography, theme } from "antd";
+import type { CreateGroupInput } from "@/features/groups/types";
+import {
+  avatarPresets,
+  coverPresets,
+  resolveGroupPresetUrl,
+  type GroupVisualPreset,
+} from "@/pages/Explore/components/groupVisualPresets";
 
-const groupCategories = ["Akademik", "Teknoloji", "Spor", "Sanat", "Sosyal"];
+const groupCategories = ["Akademik", "Teknoloji", "Spor", "Sanat", "Sosyal", "Kariyer"];
 
 interface CreateGroupDialogProps {
   isOpen: boolean;
   isSubmitting: boolean;
+  initialValues?: Partial<CreateGroupInput>;
+  submitLabel?: string;
+  title?: string;
   onClose: () => void;
-  onSubmit: (input: { name: string; description: string; category: string }) => Promise<void>;
+  onSubmit: (input: CreateGroupInput) => Promise<void>;
 }
 
 export default function CreateGroupDialog({
   isOpen,
   isSubmitting,
+  initialValues,
+  submitLabel = "Toplulugu olustur",
+  title = "Topluluk olustur",
   onClose,
   onSubmit,
 }: CreateGroupDialogProps) {
   const [name, setName] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(groupCategories[0]);
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { token } = theme.useToken();
 
   useEffect(() => {
     if (!isOpen) {
-      setName("");
-      setDescription("");
-      setCategory(groupCategories[0]);
-      setErrorMessage(null);
+      return;
     }
-  }, [isOpen]);
+
+    setName(initialValues?.name ?? "");
+    setShortDescription(initialValues?.shortDescription ?? "");
+    setDescription(initialValues?.description ?? "");
+    setCategory(initialValues?.category ?? groupCategories[0]);
+    setAvatarUrl(initialValues?.avatarUrl ?? "");
+    setBannerUrl(initialValues?.bannerUrl ?? "");
+    setErrorMessage(null);
+  }, [initialValues, isOpen]);
+
+  const normalizedAvatarUrl = useMemo(() => normalizeOptionalUrl(avatarUrl), [avatarUrl]);
+  const normalizedBannerUrl = useMemo(() => normalizeOptionalUrl(bannerUrl), [bannerUrl]);
+  const resolvedAvatarPresets = useMemo(
+    () => avatarPresets.map((preset) => ({ ...preset, url: resolveGroupPresetUrl(preset.path) })),
+    [],
+  );
+  const resolvedCoverPresets = useMemo(
+    () => coverPresets.map((preset) => ({ ...preset, url: resolveGroupPresetUrl(preset.path) })),
+    [],
+  );
+  const previewDescription =
+    shortDescription.trim() ||
+    description.trim() ||
+    "Toplulugun kisa aciklamasi burada gorunecek.";
 
   async function handleOk() {
     if (name.trim().length < 3) {
-      setErrorMessage("Grup adı en az 3 karakter olmalı.");
+      setErrorMessage("Topluluk adi en az 3 karakter olmali.");
+      return;
+    }
+    if (shortDescription.trim().length > 0 && shortDescription.trim().length < 3) {
+      setErrorMessage("Kisa aciklama en az 3 karakter olmali.");
       return;
     }
     if (description.trim().length < 10) {
-      setErrorMessage("Açıklama en az 10 karakter olmalı.");
+      setErrorMessage("Aciklama en az 10 karakter olmali.");
+      return;
+    }
+    if (normalizedAvatarUrl && !isValidUrl(normalizedAvatarUrl)) {
+      setErrorMessage("Profil gorseli icin gecerli bir URL gir.");
+      return;
+    }
+    if (normalizedBannerUrl && !isValidUrl(normalizedBannerUrl)) {
+      setErrorMessage("Kapak gorseli icin gecerli bir URL gir.");
       return;
     }
 
     try {
       setErrorMessage(null);
-      await onSubmit({ name: name.trim(), description: description.trim(), category });
+      await onSubmit({
+        name: name.trim(),
+        shortDescription: normalizeOptionalUrl(shortDescription),
+        description: description.trim(),
+        category,
+        avatarUrl: normalizedAvatarUrl,
+        bannerUrl: normalizedBannerUrl,
+      });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Grup oluşturulamadı.");
+      setErrorMessage(error instanceof Error ? error.message : "Topluluk olusturulamadi.");
     }
   }
 
   return (
     <Modal
-      title="Yeni Grup Oluştur"
+      title={title}
       open={isOpen}
       onCancel={onClose}
+      width={680}
       footer={
         <Button type="primary" block loading={isSubmitting} onClick={handleOk}>
-          {isSubmitting ? "Oluşturuluyor" : "Grubu Oluştur"}
+          {isSubmitting ? "Kaydediliyor" : submitLabel}
         </Button>
       }
       destroyOnHidden
     >
-      <Form layout="vertical" style={{ marginTop: 16 }}>
-        <Form.Item label="Grup Adı">
-          <Input value={name} onChange={(e) => setName(e.target.value)} />
-        </Form.Item>
-        <Form.Item label="Açıklama">
-          <Input.TextArea
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+      <Flex vertical gap={18} style={{ marginTop: 16 }}>
+        <div
+          style={{
+            border: `1px solid ${token.colorBorderSecondary}`,
+            borderRadius: 18,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: 140,
+              background: normalizedBannerUrl
+                ? `url(${normalizedBannerUrl}) center / cover`
+                : token.colorFillSecondary,
+              borderBottom: `1px solid ${token.colorBorderSecondary}`,
+            }}
           />
-        </Form.Item>
-        <Form.Item label="Kategori">
-          <Select
-            value={category}
-            onChange={setCategory}
-            options={groupCategories.map((c) => ({ value: c, label: c }))}
-          />
-        </Form.Item>
-        {errorMessage && <Alert type="error" showIcon message={errorMessage} />}
-      </Form>
+          <Flex align="center" gap={14} style={{ padding: 16 }}>
+            <Avatar
+              size={64}
+              src={normalizedAvatarUrl}
+              style={{
+                flexShrink: 0,
+                background: token.colorFillSecondary,
+                color: token.colorText,
+                fontSize: 22,
+                fontWeight: 800,
+              }}
+            >
+              {name.trim().charAt(0).toUpperCase() || "T"}
+            </Avatar>
+            <div style={{ minWidth: 0 }}>
+              <Typography.Text strong style={{ display: "block", fontSize: 18 }}>
+                {name.trim() || "Topluluk adi"}
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ display: "block", marginTop: 4 }}>
+                {previewDescription}
+              </Typography.Text>
+              <Typography.Text
+                type="secondary"
+                style={{ display: "block", marginTop: 6, fontSize: 13 }}
+              >
+                {category}
+              </Typography.Text>
+            </div>
+          </Flex>
+        </div>
+
+        <Form layout="vertical">
+          <Form.Item label="Topluluk adi">
+            <Input
+              maxLength={150}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Orn. Yapay Zeka Baronlari"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Kisa aciklama"
+            extra="Kartlarda ve ust bilgi alaninda gorunur. Bos birakirsan uzun aciklamadan turetilir."
+          >
+            <Input
+              maxLength={220}
+              value={shortDescription}
+              onChange={(event) => setShortDescription(event.target.value)}
+              placeholder="Toplulugunu tek cumlede anlat."
+              showCount
+            />
+          </Form.Item>
+
+          <Form.Item label="Aciklama">
+            <Input.TextArea
+              rows={4}
+              maxLength={1000}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Toplulugun amaci, kimler icin oldugu ve ne paylasilacagi."
+              showCount
+            />
+          </Form.Item>
+
+          <Form.Item label="Kategori">
+            <Select
+              value={category}
+              onChange={setCategory}
+              options={groupCategories.map((item) => ({ value: item, label: item }))}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Hazir profil gorselleri"
+            extra="Bir preset sec veya alttan kendi URL'ni gir."
+          >
+            <Flex gap={12} wrap="wrap">
+              {resolvedAvatarPresets.map((preset) => (
+                <AvatarPresetButton
+                  key={preset.id}
+                  preset={preset}
+                  isSelected={normalizedAvatarUrl === preset.url}
+                  onSelect={() => setAvatarUrl(preset.url)}
+                />
+              ))}
+            </Flex>
+          </Form.Item>
+
+          <Form.Item
+            label="Profil gorseli URL"
+            extra="Hazir secimi degistirmek istersen kendi URL'ni kullanabilirsin."
+          >
+            <Input
+              value={avatarUrl}
+              onChange={(event) => setAvatarUrl(event.target.value)}
+              placeholder="https://..."
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Hazir kapaklar"
+            extra="Detay sayfasindaki ust kapak alani icin hizli secim."
+          >
+            <Flex vertical gap={12}>
+              {resolvedCoverPresets.map((preset) => (
+                <CoverPresetButton
+                  key={preset.id}
+                  preset={preset}
+                  isSelected={normalizedBannerUrl === preset.url}
+                  onSelect={() => setBannerUrl(preset.url)}
+                />
+              ))}
+            </Flex>
+          </Form.Item>
+
+          <Form.Item
+            label="Kapak gorseli URL"
+            extra="Istersen hazir secim yerine kendi kapak URL'ni kullan."
+          >
+            <Input
+              value={bannerUrl}
+              onChange={(event) => setBannerUrl(event.target.value)}
+              placeholder="https://..."
+            />
+          </Form.Item>
+
+          {errorMessage ? <Alert type="error" showIcon message={errorMessage} /> : null}
+        </Form>
+      </Flex>
     </Modal>
   );
+}
+
+function AvatarPresetButton({
+  preset,
+  isSelected,
+  onSelect,
+}: {
+  preset: GroupVisualPreset & { url: string };
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const { token } = theme.useToken();
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      style={{
+        border: `2px solid ${isSelected ? token.colorPrimary : token.colorBorderSecondary}`,
+        background: token.colorBgContainer,
+        borderRadius: 18,
+        padding: 10,
+        width: 92,
+        cursor: "pointer",
+      }}
+    >
+      <Flex vertical align="center" gap={8}>
+        <Avatar size={52} src={preset.url}>
+          {preset.label.charAt(0)}
+        </Avatar>
+        <Typography.Text style={{ fontSize: 12, fontWeight: isSelected ? 700 : 500 }}>
+          {preset.label}
+        </Typography.Text>
+      </Flex>
+    </button>
+  );
+}
+
+function CoverPresetButton({
+  preset,
+  isSelected,
+  onSelect,
+}: {
+  preset: GroupVisualPreset & { url: string };
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const { token } = theme.useToken();
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      style={{
+        border: `2px solid ${isSelected ? token.colorPrimary : token.colorBorderSecondary}`,
+        background: token.colorBgContainer,
+        borderRadius: 18,
+        padding: 8,
+        width: "100%",
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      <Flex vertical gap={8}>
+        <div
+          style={{
+            height: 96,
+            borderRadius: 12,
+            background: `url(${preset.url}) center / cover`,
+          }}
+        />
+        <Typography.Text style={{ fontSize: 13, fontWeight: isSelected ? 700 : 500 }}>
+          {preset.label}
+        </Typography.Text>
+      </Flex>
+    </button>
+  );
+}
+
+function normalizeOptionalUrl(value: string) {
+  const trimmedValue = value.trim();
+  return trimmedValue.length > 0 ? trimmedValue : undefined;
+}
+
+function isValidUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
 }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { AppEvent, CreateEventInput } from "@/features/events/types";
-import type { AppGroup } from "@/features/groups/types";
+import type { AppGroup, CreateGroupInput } from "@/features/groups/types";
 import {
   isPreviewEventId,
   isPreviewGroupId,
@@ -41,11 +41,14 @@ export function useExplorePreviewState({
   const createGroupsLocally = Boolean(groupsError) || liveGroups.length === 0;
   const createEventsLocally = Boolean(eventsError) || liveEvents.length === 0;
 
-  function createPreviewGroup(input: { name: string; description: string; category: string }) {
+  function createPreviewGroup(input: CreateGroupInput) {
     const nextGroup: AppGroup = {
       id: `local-group-${Date.now()}`,
       name: input.name,
+      shortDescription: input.shortDescription,
       description: input.description,
+      avatarUrl: input.avatarUrl,
+      bannerUrl: input.bannerUrl,
       category: input.category,
       creatorUserId: "current-user",
       creatorName: "Sen",
