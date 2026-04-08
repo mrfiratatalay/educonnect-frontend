@@ -4,12 +4,13 @@ import { Controller, useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { Alert, Button, Flex, Form, Input, Select } from "antd";
+import { Alert, Button, Flex, Input, Select } from "antd";
 import { getApiErrorMessage, getUniversities, register as registerRequest } from "@/features/auth/api";
 import {
   AuthPageFooter,
   AuthPageIntro,
   AuthStepLabel,
+  FieldWrapper,
   authAlertStyle,
   authInputStyle,
   authPrimaryButtonStyle,
@@ -18,22 +19,47 @@ import {
   authWarningAlertStyle,
 } from "./AuthPageParts";
 
+const normalizeStringInput = (value: unknown) => (typeof value === "string" ? value : "");
+const getSelectValue = (value: unknown) => {
+  const normalizedValue = normalizeStringInput(value);
+  return normalizedValue.length > 0 ? normalizedValue : undefined;
+};
+
 const registerSchema = z
   .object({
-    fullName: z.string().min(3, "Ad soyad en az 3 karakter olmali"),
-    email: z.string().email("Gecerli bir e-posta adresi girin"),
-    universityId: z.string().min(1, "Universite secin"),
-    department: z.string().min(2, "Bolum en az 2 karakter olmali"),
-    year: z.string().min(1, "Sinif secin"),
-    password: z.string().min(8, "Sifre en az 8 karakter olmali"),
-    confirmPassword: z.string(),
+    fullName: z.preprocess(
+      normalizeStringInput,
+      z.string().trim().min(3, "Ad soyad en az 3 karakter olmali"),
+    ),
+    email: z.preprocess(
+      normalizeStringInput,
+      z.string().trim().email("Gecerli bir e-posta adresi girin"),
+    ),
+    universityId: z.preprocess(
+      normalizeStringInput,
+      z.string().min(1, "Universite secin"),
+    ),
+    department: z.preprocess(
+      normalizeStringInput,
+      z.string().trim().min(2, "Bolum en az 2 karakter olmali"),
+    ),
+    year: z.preprocess(
+      normalizeStringInput,
+      z.string().min(1, "Sinif secin"),
+    ),
+    password: z.preprocess(
+      normalizeStringInput,
+      z.string().min(8, "Sifre en az 8 karakter olmali"),
+    ),
+    confirmPassword: z.preprocess(normalizeStringInput, z.string()),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Sifreler eslesmiyor",
     path: ["confirmPassword"],
   });
 
-type RegisterForm = z.infer<typeof registerSchema>;
+type RegisterFormInput = z.input<typeof registerSchema>;
+type RegisterForm = z.output<typeof registerSchema>;
 
 const stepOneFields = ["fullName", "email"] as const;
 const stepTwoFields = [
@@ -69,8 +95,9 @@ export default function RegisterPage() {
     setFocus,
     trigger,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterForm>({
+  } = useForm<RegisterFormInput, unknown, RegisterForm>({
     resolver: zodResolver(registerSchema),
+    shouldUnregister: false,
     defaultValues: {
       fullName: "",
       email: "",
@@ -113,7 +140,7 @@ export default function RegisterPage() {
     }
   };
 
-  const handleInvalidSubmit = (formErrors: FieldErrors<RegisterForm>) => {
+  const handleInvalidSubmit = (formErrors: FieldErrors<RegisterFormInput>) => {
     const firstStepInvalidField = stepOneFields.find((field) => formErrors[field]);
     const secondStepInvalidField = stepTwoFields.find((field) => formErrors[field]);
     const firstInvalidField = firstStepInvalidField ?? secondStepInvalidField;
@@ -164,179 +191,192 @@ export default function RegisterPage() {
         }
       />
 
-      <Form
-        layout="vertical"
-        size="large"
-        onSubmitCapture={(event) => {
+      <form
+        onSubmit={(event) => {
           event.preventDefault();
           void submitRegistration(event);
         }}
       >
-        {currentStep === 0 ? (
-          <Flex vertical>
-            <Form.Item
-              validateStatus={errors.fullName ? "error" : undefined}
-              help={errors.fullName?.message}
-            >
-              <Controller
-                name="fullName"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    autoFocus
-                    allowClear
-                    autoComplete="name"
-                    placeholder="Ad soyad"
-                    status={errors.fullName ? "error" : undefined}
-                    style={authInputStyle}
-                    maxLength={50}
-                  />
-                )}
-              />
-            </Form.Item>
+        <Flex
+          vertical
+          style={{ display: currentStep === 0 ? undefined : "none" }}
+          aria-hidden={currentStep !== 0}
+        >
+          <FieldWrapper error={errors.fullName?.message}>
+            <Controller
+              name="fullName"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  value={normalizeStringInput(field.value)}
+                  onChange={(e) => field.onChange(e.target?.value ?? "")}
+                  autoFocus
+                  allowClear
+                  autoComplete="name"
+                  placeholder="Ad soyad"
+                  size="large"
+                  status={errors.fullName ? "error" : undefined}
+                  style={authInputStyle}
+                  maxLength={50}
+                />
+              )}
+            />
+          </FieldWrapper>
 
-            <Form.Item validateStatus={errors.email ? "error" : undefined} help={errors.email?.message}>
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    allowClear
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    placeholder="E-posta"
-                    status={errors.email ? "error" : undefined}
-                    style={authInputStyle}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Flex>
-        ) : (
-          <Flex vertical>
-            <Form.Item
-              validateStatus={errors.universityId ? "error" : undefined}
-              help={errors.universityId?.message}
-            >
-              <Controller
-                name="universityId"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    allowClear
-                    loading={isUniversitiesLoading}
-                    notFoundContent={isUniversitiesLoading ? "Yukleniyor..." : "Sonuc bulunamadi"}
-                    options={universityOptions}
-                    placeholder="Universite sec"
-                    showSearch={{ optionFilterProp: "label" }}
-                    status={errors.universityId ? "error" : undefined}
-                    value={field.value || undefined}
-                    onChange={(value) => field.onChange(value ?? "")}
-                    getPopupContainer={(node) => node.parentElement ?? node}
-                    style={authSelectStyle}
-                  />
-                )}
-              />
-            </Form.Item>
+          <FieldWrapper error={errors.email?.message}>
+            <Controller
+              name="email"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  value={normalizeStringInput(field.value)}
+                  onChange={(e) => field.onChange(e.target?.value ?? "")}
+                  allowClear
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="E-posta"
+                  size="large"
+                  status={errors.email ? "error" : undefined}
+                  style={authInputStyle}
+                />
+              )}
+            />
+          </FieldWrapper>
+        </Flex>
 
-            <Form.Item
-              validateStatus={errors.department ? "error" : undefined}
-              help={errors.department?.message}
-            >
-              <Controller
-                name="department"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    allowClear
-                    autoComplete="organization-title"
-                    placeholder="Bolum"
-                    status={errors.department ? "error" : undefined}
-                    style={authInputStyle}
-                  />
-                )}
-              />
-            </Form.Item>
+        <Flex
+          vertical
+          style={{ display: currentStep === 1 ? undefined : "none" }}
+          aria-hidden={currentStep !== 1}
+        >
+          <FieldWrapper error={errors.universityId?.message}>
+            <Controller
+              name="universityId"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  allowClear
+                  loading={isUniversitiesLoading}
+                  notFoundContent={isUniversitiesLoading ? "Yukleniyor..." : "Sonuc bulunamadi"}
+                  options={universityOptions}
+                  placeholder="Universite sec"
+                  showSearch={{ optionFilterProp: "label" }}
+                  size="large"
+                  status={errors.universityId ? "error" : undefined}
+                  value={getSelectValue(field.value)}
+                  onChange={(value) => field.onChange(value ?? "")}
+                  getPopupContainer={(node) => node.parentElement ?? node}
+                  style={authSelectStyle}
+                />
+              )}
+            />
+          </FieldWrapper>
 
-            {isUniversitiesError ? (
-              <Alert
-                type="warning"
-                showIcon
-                message="Universiteler yuklenemedi."
-                description="Sayfayi yenileyip yeniden deneyin."
-                style={{ ...authWarningAlertStyle, marginBottom: 18 }}
-              />
-            ) : null}
+          <FieldWrapper error={errors.department?.message}>
+            <Controller
+              name="department"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  value={normalizeStringInput(field.value)}
+                  onChange={(e) => field.onChange(e.target?.value ?? "")}
+                  allowClear
+                  autoComplete="organization-title"
+                  placeholder="Bolum"
+                  size="large"
+                  status={errors.department ? "error" : undefined}
+                  style={authInputStyle}
+                />
+              )}
+            />
+          </FieldWrapper>
 
-            <Form.Item validateStatus={errors.year ? "error" : undefined} help={errors.year?.message}>
-              <Controller
-                name="year"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    options={yearOptions}
-                    placeholder="Sinif sec"
-                    status={errors.year ? "error" : undefined}
-                    value={field.value || undefined}
-                    onChange={(value) => field.onChange(value ?? "")}
-                    getPopupContainer={(node) => node.parentElement ?? node}
-                    style={authSelectStyle}
-                  />
-                )}
-              />
-            </Form.Item>
+          {isUniversitiesError ? (
+            <Alert
+              type="warning"
+              showIcon
+              title="Universiteler yuklenemedi."
+              description="Sayfayi yenileyip yeniden deneyin."
+              style={{ ...authWarningAlertStyle, marginBottom: 18 }}
+            />
+          ) : null}
 
-            <Form.Item
-              validateStatus={errors.password ? "error" : undefined}
-              help={errors.password?.message}
-            >
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    autoComplete="new-password"
-                    placeholder="Sifre"
-                    status={errors.password ? "error" : undefined}
-                    style={authInputStyle}
-                  />
-                )}
-              />
-            </Form.Item>
+          <FieldWrapper error={errors.year?.message}>
+            <Controller
+              name="year"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={yearOptions}
+                  placeholder="Sinif sec"
+                  size="large"
+                  status={errors.year ? "error" : undefined}
+                  value={getSelectValue(field.value)}
+                  onChange={(value) => field.onChange(value ?? "")}
+                  getPopupContainer={(node) => node.parentElement ?? node}
+                  style={authSelectStyle}
+                />
+              )}
+            />
+          </FieldWrapper>
 
-            <Form.Item
-              validateStatus={errors.confirmPassword ? "error" : undefined}
-              help={errors.confirmPassword?.message}
-            >
-              <Controller
-                name="confirmPassword"
-                control={control}
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    autoComplete="new-password"
-                    placeholder="Sifreyi tekrar gir"
-                    status={errors.confirmPassword ? "error" : undefined}
-                    style={authInputStyle}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Flex>
-        )}
+          <FieldWrapper error={errors.password?.message}>
+            <Controller
+              name="password"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  value={normalizeStringInput(field.value)}
+                  onChange={(e) => field.onChange(e.target?.value ?? "")}
+                  autoComplete="new-password"
+                  placeholder="Sifre"
+                  size="large"
+                  status={errors.password ? "error" : undefined}
+                  style={authInputStyle}
+                />
+              )}
+            />
+          </FieldWrapper>
+
+          <FieldWrapper error={errors.confirmPassword?.message}>
+            <Controller
+              name="confirmPassword"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  value={normalizeStringInput(field.value)}
+                  onChange={(e) => field.onChange(e.target?.value ?? "")}
+                  autoComplete="new-password"
+                  placeholder="Sifreyi tekrar gir"
+                  size="large"
+                  status={errors.confirmPassword ? "error" : undefined}
+                  style={authInputStyle}
+                />
+              )}
+            />
+          </FieldWrapper>
+        </Flex>
 
         {submitError ? (
           <Alert
             type="error"
             showIcon
-            message={submitError}
+            title={submitError}
             style={{ ...authAlertStyle, marginBottom: 20 }}
           />
         ) : null}
@@ -356,13 +396,10 @@ export default function RegisterPage() {
           <Flex vertical gap={12}>
             <Button
               type="primary"
-              htmlType="button"
+              htmlType="submit"
               block
               size="large"
               loading={isSubmitting}
-              onClick={() => {
-                void submitRegistration();
-              }}
               style={authPrimaryButtonStyle}
             >
               {isSubmitting ? "Hesap olusturuluyor..." : "Hesabi olustur"}
@@ -378,7 +415,7 @@ export default function RegisterPage() {
             </Button>
           </Flex>
         )}
-      </Form>
+      </form>
 
       <AuthPageFooter
         prompt="Zaten bir hesabin var mi?"

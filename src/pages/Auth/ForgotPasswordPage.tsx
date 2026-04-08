@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Alert, Button, Flex, Form, Input } from "antd";
+import { Alert, Button, Flex, Input } from "antd";
 import { ArrowLeft } from "lucide-react";
 import { forgotPassword, getApiErrorMessage } from "@/features/auth/api";
 import {
   AuthPageFooter,
   AuthPageIntro,
+  FieldWrapper,
   authAlertStyle,
   authInputStyle,
   authPrimaryButtonStyle,
@@ -61,7 +62,7 @@ export default function ForgotPasswordPage() {
           <Alert
             type="success"
             showIcon
-            message="Talep olusturuldu"
+            title="Talep olusturuldu"
             description="Ayni adresle tekrar denemek istersen birkac dakika beklemen yeterli."
             style={{ ...authSuccessAlertStyle, marginBottom: 24 }}
           />
@@ -85,32 +86,40 @@ export default function ForgotPasswordPage() {
             description="Kayitli e-posta adresini gir. Sifre sifirlama baglantisini oraya gonderelim."
           />
 
-          <Form layout="vertical" size="large" onFinish={handleSubmit(onSubmit)}>
-            <Form.Item validateStatus={errors.email ? "error" : undefined} help={errors.email?.message}>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleSubmit(onSubmit)(event);
+            }}
+          >
+            <FieldWrapper error={errors.email?.message}>
               <Controller
                 name="email"
                 control={control}
                 render={({ field }) => (
                   <Input
                     {...field}
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target?.value ?? "")}
                     autoFocus
                     allowClear
                     type="email"
                     inputMode="email"
                     autoComplete="email"
                     placeholder="E-posta adresi"
+                    size="large"
                     status={errors.email ? "error" : undefined}
                     style={authInputStyle}
                   />
                 )}
               />
-            </Form.Item>
+            </FieldWrapper>
 
             {submitError ? (
               <Alert
                 type="error"
                 showIcon
-                message={submitError}
+                title={submitError}
                 style={{ ...authAlertStyle, marginBottom: 20 }}
               />
             ) : null}
@@ -125,7 +134,7 @@ export default function ForgotPasswordPage() {
             >
               {isSubmitting ? "Gonderiliyor..." : "Sifirlama baglantisi gonder"}
             </Button>
-          </Form>
+          </form>
 
           <AuthPageFooter
             prompt="Sifreni hatirladiysan"

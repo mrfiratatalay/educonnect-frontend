@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Flex, Typography } from "antd";
 
 export const authPalette = {
@@ -204,3 +204,41 @@ export function AuthLegalText() {
     </Typography.Paragraph>
   );
 }
+
+interface FieldWrapperProps {
+  error?: string;
+  children: ReactNode;
+}
+
+/**
+ * Lightweight replacement for antd Form.Item when using react-hook-form.
+ *
+ * Ant Design v6's Form.Item uses cloneElement to inject its own form control
+ * props (value, onChange) from rc-field-form into child components. Even without
+ * a `name` prop, it still overrides children's value with `undefined`, which
+ * breaks Zod 4 validation ("expected string, received undefined").
+ *
+ * This wrapper provides the same visual spacing and error display without
+ * interfering with react-hook-form's controlled values.
+ */
+export function FieldWrapper({ error, children }: FieldWrapperProps) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      {children}
+      {error ? (
+        <Typography.Text
+          style={{
+            display: "block",
+            marginTop: 4,
+            color: "#ff4d4f",
+            fontSize: 14,
+            lineHeight: 1.4,
+          }}
+        >
+          {error}
+        </Typography.Text>
+      ) : null}
+    </div>
+  );
+}
+

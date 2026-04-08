@@ -3,11 +3,12 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Alert, Button, Flex, Form, Input, Result } from "antd";
+import { Alert, Button, Flex, Input, Result } from "antd";
 import { getApiErrorMessage, resendEmailVerification, verifyEmail } from "@/features/auth/api";
 import {
   AuthPageIntro,
   AuthPageFooter,
+  FieldWrapper,
   authAlertStyle,
   authInputStyle,
   authPrimaryButtonStyle,
@@ -123,51 +124,62 @@ export default function VerifyEmailPage() {
         description="Universite e-posta adresine gonderilen 6 haneli kodu gir. Kod gelmediyse ayni ekrandan yeni kod isteyebilirsin."
       />
 
-      <Form layout="vertical" requiredMark={false} size="large" onFinish={handleSubmit(onSubmit)}>
-        <Form.Item validateStatus={errors.email ? "error" : undefined} help={errors.email?.message}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit(onSubmit)(event);
+        }}
+      >
+        <FieldWrapper error={errors.email?.message}>
           <Controller
             name="email"
             control={control}
             render={({ field }) => (
               <Input
                 {...field}
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target?.value ?? "")}
                 autoFocus={!emailFromQuery}
                 allowClear
                 type="email"
                 inputMode="email"
                 autoComplete="email"
                 placeholder="Universite e-posta adresi"
+                size="large"
                 status={errors.email ? "error" : undefined}
                 style={authInputStyle}
               />
             )}
           />
-        </Form.Item>
+        </FieldWrapper>
 
-        <Form.Item validateStatus={errors.code ? "error" : undefined} help={errors.code?.message}>
+        <FieldWrapper error={errors.code?.message}>
           <Controller
             name="code"
             control={control}
             render={({ field }) => (
               <Input
                 {...field}
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target?.value ?? "")}
                 allowClear
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 maxLength={6}
                 placeholder="6 haneli dogrulama kodu"
+                size="large"
                 status={errors.code ? "error" : undefined}
                 style={authInputStyle}
               />
             )}
           />
-        </Form.Item>
+        </FieldWrapper>
 
         {resendSuccess ? (
           <Alert
             type="success"
             showIcon
-            message={resendSuccess}
+            title={resendSuccess}
             style={{ ...authAlertStyle, marginBottom: 20 }}
           />
         ) : null}
@@ -176,7 +188,7 @@ export default function VerifyEmailPage() {
           <Alert
             type="error"
             showIcon
-            message={submitError}
+            title={submitError}
             style={{ ...authAlertStyle, marginBottom: 20 }}
           />
         ) : null}
@@ -185,7 +197,7 @@ export default function VerifyEmailPage() {
           <Alert
             type="error"
             showIcon
-            message={resendError}
+            title={resendError}
             style={{ ...authAlertStyle, marginBottom: 20 }}
           />
         ) : null}
@@ -214,7 +226,7 @@ export default function VerifyEmailPage() {
             {isResending ? "Yeni kod gonderiliyor..." : "Yeni kod iste"}
           </Button>
         </Flex>
-      </Form>
+      </form>
 
       <AuthPageFooter
         prompt="Giris ekranina donmek ister misin?"

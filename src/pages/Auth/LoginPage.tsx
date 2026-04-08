@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Alert, Button, Flex, Form, Input } from "antd";
+import { Alert, Button, Flex, Input } from "antd";
 import { getApiErrorMessage, login as loginRequest } from "@/features/auth/api";
 import { useAuthStore } from "@/store/authStore";
 import {
   AuthPageFooter,
   AuthPageIntro,
+  FieldWrapper,
   authAlertStyle,
   authInputStyle,
   authPrimaryButtonStyle,
@@ -59,57 +60,60 @@ export default function LoginPage() {
         description="EduConnect hesabina erismek icin e-posta adresini ve sifreni gir."
       />
 
-      <Form
-        layout="vertical"
-        requiredMark={false}
-        size="large"
-        onFinish={handleSubmit(onSubmit)}
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit(onSubmit)(event);
+        }}
         style={{ width: "100%" }}
       >
-        <Form.Item validateStatus={errors.email ? "error" : undefined} help={errors.email?.message}>
+        <FieldWrapper error={errors.email?.message}>
           <Controller
             name="email"
             control={control}
             render={({ field }) => (
               <Input
                 {...field}
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target?.value ?? "")}
                 autoFocus
                 allowClear
                 type="email"
                 inputMode="email"
                 autoComplete="email"
                 placeholder="E-posta adresi"
+                size="large"
                 status={errors.email ? "error" : undefined}
                 style={authInputStyle}
               />
             )}
           />
-        </Form.Item>
+        </FieldWrapper>
 
-        <Form.Item
-          validateStatus={errors.password ? "error" : undefined}
-          help={errors.password?.message}
-        >
+        <FieldWrapper error={errors.password?.message}>
           <Controller
             name="password"
             control={control}
             render={({ field }) => (
               <Input.Password
                 {...field}
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target?.value ?? "")}
                 autoComplete="current-password"
                 placeholder="Sifre"
+                size="large"
                 status={errors.password ? "error" : undefined}
                 style={authInputStyle}
               />
             )}
           />
-        </Form.Item>
+        </FieldWrapper>
 
         {submitError ? (
           <Alert
             type="error"
             showIcon
-            message={submitError}
+            title={submitError}
             style={{ ...authAlertStyle, marginBottom: 20 }}
           />
         ) : null}
@@ -144,7 +148,7 @@ export default function LoginPage() {
             E-postami dogrula
           </Button>
         </Flex>
-      </Form>
+      </form>
 
       <AuthPageFooter
         prompt="Hesabin yok mu?"
