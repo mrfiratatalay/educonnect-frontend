@@ -1,379 +1,229 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
+  Alert,
   Button,
-  Card,
   Flex,
   Grid,
   Input,
+  Spin,
+  Tag,
   Typography,
   theme,
 } from "antd";
+import { Send, Sparkles, Trash2 } from "lucide-react";
+import Markdown from "react-markdown";
 import {
-  AudioLines,
-  ChevronDown,
-  History,
-  ImagePlus,
-  Maximize2,
-  Newspaper,
-  Paintbrush,
-  Paperclip,
-  Shield,
-  Sparkles,
-} from "lucide-react";
+  useMessagesQuery,
+  useSendMessageMutation,
+  useStartSessionMutation,
+  useEndSessionMutation,
+  useSessionsQuery,
+} from "@/features/chat/hooks";
+import type { ChatMessageItem } from "@/features/chat/types";
+import SessionHistory from "@/pages/EduAI/components/SessionHistory";
 
-const quickActions = [
-  {
-    key: "image-create",
-    label: "Resim Olustur",
-    icon: ImagePlus,
-  },
-  {
-    key: "image-edit",
-    label: "Resmi Duzenle",
-    icon: Paintbrush,
-  },
-  {
-    key: "latest-news",
-    label: "En Son Haberler",
-    icon: Newspaper,
-  },
+const QUICK_PROMPTS = [
+  "Vize sınavları ne zaman başlıyor?",
+  "Burs başvurusu nasıl yapılır?",
+  "Bu hafta kampüste etkinlik var mı?",
+  "Not ortalaması nasıl hesaplanır?",
 ];
 
 export default function EduAiPage() {
   const screens = Grid.useBreakpoint();
   const { token } = theme.useToken();
-  const [prompt, setPrompt] = useState("");
+  const [searchParams] = useSearchParams();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [input, setInput] = useState(searchParams.get("prompt") ?? "");
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
-  const isDesktop = !!screens.lg;
-  const isWide = !!screens.xl;
-  const pagePadding = screens.xs ? 16 : screens.lg ? 28 : 20;
-  const promptWidth = isWide ? 800 : isDesktop ? 760 : "100%";
+  const sessionsQuery = useSessionsQuery();
+  const sessions = sessionsQuery.data ?? [];
+  const activeSession = sessions.find((s) => s.isActive) ?? null;
+  const sessionId = selectedSessionId ?? activeSession?.sessionId ?? null;
+  const isViewingOldSession = sessionId !== null && sessionId !== activeSession?.sessionId;
+
+  const messagesQuery = useMessagesQuery(sessionId);
+  const messages = messagesQuery.data ?? [];
+
+  const startSession = useStartSessionMutation();
+  const sendMessage = useSendMessageMutation();
+  const endSessionMut = useEndSessionMutation();
+  const isLoading = sendMessage.isPending;
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length, isLoading]);
+
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSend = async () => {
+    const trimmed = input.trim();
+    if (!trimmed || isLoading) return;
+    setError(null);
+
+    if (isViewingOldSession) setSelectedSessionId(null);
+
+    try {
+      let sid = activeSession?.sessionId ?? null;
+      if (!sid) {
+        const session = await startSession.mutateAsync();
+        sid = session.sessionId;
+        setSelectedSessionId(null);
+      }
+
+      setInput("");
+      await sendMessage.mutateAsync({ sessionId: sid, message: trimmed });
+    } catch {
+      setError("Mesaj gonderilemedi. Lutfen tekrar deneyin.");
+    }
+  };
+
+  const handleNewChat = async () => {
+    if (activeSession) await endSessionMut.mutateAsync(activeSession.sessionId);
+    setSelectedSessionId(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  const padding = screens.xs ? 16 : 24;
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: `${pagePadding}px ${pagePadding}px ${isDesktop ? 120 : 96}px`,
-        position: "relative",
-      }}
-    >
-      <Flex align="center" justify="space-between" gap={16}>
-        <Button
-          type="text"
-          shape="circle"
-          aria-label="Tam ekran"
-          style={{
-            width: 36,
-            height: 36,
-            color: token.colorText,
-          }}
-          icon={<Maximize2 size={18} />}
+    <Flex style={{ height: "calc(100vh - 64px)", overflow: "hidden" }}>
+      {screens.md && (
+        <SessionHistory
+          sessions={sessions}
+          activeSessionId={sessionId}
+          onSelectSession={setSelectedSessionId}
+          onNewChat={handleNewChat}
         />
+      )}
 
-        <Flex align="center" gap={screens.xs ? 8 : 20} wrap justify="flex-end">
-          <Button
-            type="text"
-            icon={<History size={16} />}
-            style={{
-              paddingInline: 0,
-              fontWeight: 700,
-              color: token.colorText,
-            }}
-          >
-            Gecmis
-          </Button>
-          <Button
-            type="text"
-            icon={<Shield size={16} />}
-            style={{
-              paddingInline: 0,
-              fontWeight: 700,
-              color: token.colorText,
-            }}
-          >
-            Ozel
-          </Button>
-        </Flex>
-      </Flex>
-
-      <Flex
-        vertical
-        align="center"
-        justify="center"
-        style={{
-          minHeight: isDesktop ? "calc(100vh - 160px)" : "calc(100vh - 220px)",
-          padding: isDesktop ? "32px 0 0" : "20px 0 0",
-        }}
-      >
-        <EduAiWordmark />
-
-        <Card
-          variant="outlined"
-          style={{
-            width: promptWidth,
-            maxWidth: "100%",
-            marginTop: 26,
-            borderRadius: 999,
-            borderColor: token.colorBorderSecondary,
-            boxShadow: "none",
-          }}
-          styles={{
-            body: {
-              padding: isDesktop ? "10px 12px 10px 16px" : "8px 10px 8px 12px",
-            },
-          }}
-        >
-          <Flex
-            align="center"
-            gap={screens.xs ? 8 : 10}
-            wrap={screens.xs ? true : false}
-          >
-            <Button
-              type="text"
-              shape="circle"
-              aria-label="Dosya ekle"
-              icon={<Paperclip size={18} />}
-              style={{
-                width: 40,
-                height: 40,
-                color: token.colorTextSecondary,
-                flexShrink: 0,
-              }}
-            />
-
-            <Input
-              value={prompt}
-              onChange={(event) => setPrompt(event.target.value)}
-              placeholder="Istedigini sor"
-              variant="borderless"
-              style={{
-                flex: 1,
-                minWidth: screens.xs ? "100%" : 240,
-                fontSize: screens.xs ? 18 : 19,
-                fontWeight: 500,
-                paddingInline: 0,
-              }}
-            />
-
-            <Button
-              type="text"
-              style={{
-                height: 40,
-                paddingInline: 10,
-                borderRadius: 999,
-                fontWeight: 700,
-                color: token.colorText,
-                flexShrink: 0,
-              }}
-            >
-              <Flex align="center" gap={8}>
-                <Sparkles size={16} />
-                <span>Uzman</span>
-                <ChevronDown size={16} />
-              </Flex>
-            </Button>
-
-            <Button
-              color="default"
-              variant="solid"
-              shape="circle"
-              aria-label="Sesli giris"
-              style={{
-                width: 44,
-                height: 44,
-                border: "none",
-                background: "#111827",
-                color: "#FFFFFF",
-                flexShrink: 0,
-              }}
-              icon={<AudioLines size={18} />}
-            />
-          </Flex>
-        </Card>
-
+      <Flex vertical style={{ flex: 1, overflow: "hidden" }}>
         <Flex
           align="center"
-          justify="center"
-          gap={12}
-          wrap
-          style={{ marginTop: 16 }}
+          justify="space-between"
+          style={{ padding: `12px ${padding}px`, borderBottom: `1px solid ${token.colorBorderSecondary}` }}
         >
-          {quickActions.map((action) => (
-            <Button
-              key={action.key}
-              color="default"
-              variant="outlined"
-              shape="round"
-              style={{
-                height: 40,
-                paddingInline: 16,
-                fontWeight: 700,
-              }}
-            >
-              <Flex align="center" gap={8}>
-                <action.icon size={16} />
-                <span>{action.label}</span>
-              </Flex>
+          <Flex align="center" gap={10}>
+            <Sparkles size={20} />
+            <Typography.Title level={4} style={{ margin: 0 }}>EduAI Asistan</Typography.Title>
+            {isViewingOldSession && <Tag color="default">Gecmis sohbet</Tag>}
+          </Flex>
+          {activeSession && (
+            <Button type="text" icon={<Trash2 size={16} />} onClick={handleNewChat} loading={endSessionMut.isPending}>
+              Yeni Sohbet
             </Button>
-          ))}
+          )}
         </Flex>
 
-        {!isDesktop && (
-          <div style={{ width: "100%", maxWidth: 420, marginTop: 48 }}>
-            <PromoCard />
-          </div>
-        )}
-      </Flex>
-
-      {isDesktop && (
-        <div
-          style={{
-            position: "fixed",
-            right: 28,
-            bottom: 28,
-            width: 410,
-            maxWidth: "calc(100vw - 340px)",
-            zIndex: 12,
-          }}
-        >
-          <PromoCard />
+        <div style={{ flex: 1, overflowY: "auto", padding }}>
+          {messages.length === 0 && !isLoading ? (
+            <WelcomeView onQuickPrompt={(p) => { setInput(p); inputRef.current?.focus(); }} />
+          ) : (
+            <Flex vertical gap={16} style={{ maxWidth: 760, margin: "0 auto" }}>
+              {messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)}
+              {isLoading && (
+                <Flex gap={8} align="center" style={{ paddingLeft: 4 }}>
+                  <Spin size="small" />
+                  <Typography.Text type="secondary">EduAI dusunuyor...</Typography.Text>
+                </Flex>
+              )}
+              <div ref={messagesEndRef} />
+            </Flex>
+          )}
         </div>
-      )}
-    </div>
-  );
-}
 
-function EduAiWordmark() {
-  const screens = Grid.useBreakpoint();
-  const { token } = theme.useToken();
-  const size = screens.xs ? 38 : 46;
-  const stroke = screens.xs ? 3 : 4;
-
-  return (
-    <Flex align="center" gap={14}>
-      <div
-        aria-hidden
-        style={{
-          width: size,
-          height: size,
-          position: "relative",
-          flexShrink: 0,
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: size * 0.16,
-            borderRadius: 999,
-            border: `${stroke}px solid ${token.colorText}`,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: size * 0.04,
-            top: size * 0.45,
-            width: size * 0.92,
-            height: stroke,
-            borderRadius: 999,
-            background: token.colorText,
-            transform: "rotate(-48deg)",
-            transformOrigin: "center",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: size * 0.08,
-            top: size * 0.22,
-            width: size * 0.3,
-            height: size * 0.3,
-            borderRadius: "999px 0 999px 0",
-            borderTop: `${stroke}px solid ${token.colorText}`,
-            borderLeft: `${stroke}px solid ${token.colorText}`,
-            transform: "rotate(-18deg)",
-          }}
-        />
-      </div>
-
-      <Typography.Title
-        level={1}
-        style={{
-          margin: 0,
-          fontSize: screens.xs ? 32 : 44,
-          fontWeight: 800,
-          letterSpacing: "-0.05em",
-          lineHeight: 1,
-        }}
-      >
-        EduAI
-      </Typography.Title>
+        <div style={{ padding: `12px ${padding}px 16px`, borderTop: `1px solid ${token.colorBorderSecondary}` }}>
+          {error && (
+            <Alert message={error} type="error" closable onClose={() => setError(null)}
+              style={{ maxWidth: 760, margin: "0 auto 8px" }} />
+          )}
+          <Flex gap={8} style={{ maxWidth: 760, margin: "0 auto" }}>
+            <Input
+              ref={inputRef as never}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Sorunuzu yazin..."
+              size="large"
+              disabled={isLoading}
+              style={{ borderRadius: 12 }}
+            />
+            <Button
+              type="primary"
+              size="large"
+              icon={<Send size={18} />}
+              onClick={handleSend}
+              loading={isLoading}
+              disabled={!input.trim()}
+              style={{ borderRadius: 12, minWidth: 48 }}
+            />
+          </Flex>
+        </div>
+      </Flex>
     </Flex>
   );
 }
 
-function PromoCard() {
+function MessageBubble({ message }: { message: ChatMessageItem }) {
   const { token } = theme.useToken();
+  const isUser = message.senderType === "user";
 
   return (
-    <Card
-      variant="outlined"
-      style={{
-        borderRadius: 24,
-        borderColor: token.colorBorderSecondary,
-        boxShadow: token.boxShadowSecondary,
-      }}
-      styles={{
-        body: {
-          padding: 20,
-        },
-      }}
-    >
-      <Flex align="center" justify="space-between" gap={16}>
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <Flex align="center" gap={10}>
-            <AudioLines size={18} />
-            <Typography.Title
-              level={4}
-              style={{
-                margin: 0,
-                fontSize: 18,
-                fontWeight: 800,
-                letterSpacing: "-0.03em",
-              }}
-            >
-              EduAI ile konus
-            </Typography.Title>
-          </Flex>
+    <Flex justify={isUser ? "flex-end" : "flex-start"}>
+      <div
+        style={{
+          maxWidth: "80%",
+          padding: "10px 14px",
+          borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+          background: isUser ? token.colorPrimary : token.colorBgContainer,
+          color: isUser ? "#fff" : token.colorText,
+          border: isUser ? "none" : `1px solid ${token.colorBorderSecondary}`,
+        }}
+      >
+        {isUser ? (
+          <Typography.Text style={{ color: "inherit", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+            {message.content}
+          </Typography.Text>
+        ) : (
+          <div className="markdown-body" style={{ wordBreak: "break-word" }}>
+            <Markdown>{message.content}</Markdown>
+          </div>
+        )}
+        {!isUser && message.intentDetected && (
+          <div style={{ marginTop: 6 }}>
+            <Tag color="blue" style={{ fontSize: 11 }}>{message.intentDetected}</Tag>
+          </div>
+        )}
+      </div>
+    </Flex>
+  );
+}
 
-          <Typography.Paragraph
-            type="secondary"
-            style={{
-              margin: "6px 0 0",
-              fontSize: 15,
-              lineHeight: 1.45,
-            }}
-          >
-            EduAI odainda daha fazla ozellige eris.
-          </Typography.Paragraph>
-        </div>
+function WelcomeView({ onQuickPrompt }: { onQuickPrompt: (p: string) => void }) {
+  const screens = Grid.useBreakpoint();
 
-        <Button
-          color="default"
-          variant="solid"
-          shape="round"
-          style={{
-            height: 40,
-            paddingInline: 18,
-            background: "#111827",
-            color: "#FFFFFF",
-            border: "none",
-            fontWeight: 800,
-          }}
-        >
-          Kesfet
-        </Button>
+  return (
+    <Flex vertical align="center" justify="center" gap={24} style={{ minHeight: "60vh" }}>
+      <Sparkles size={48} strokeWidth={1.5} />
+      <Typography.Title level={screens.xs ? 3 : 2} style={{ margin: 0, textAlign: "center" }}>
+        EduAI Asistan
+      </Typography.Title>
+      <Typography.Text type="secondary" style={{ fontSize: 16, textAlign: "center", maxWidth: 480 }}>
+        Kampus yasami, dersler, sinavlar, burslar ve daha fazlasi hakkinda sorularinizi yanitliyorum.
+      </Typography.Text>
+      <Flex gap={8} wrap justify="center" style={{ maxWidth: 520 }}>
+        {QUICK_PROMPTS.map((p) => (
+          <Button key={p} shape="round" onClick={() => onQuickPrompt(p)} style={{ fontWeight: 500 }}>
+            {p}
+          </Button>
+        ))}
       </Flex>
-    </Card>
+    </Flex>
   );
 }

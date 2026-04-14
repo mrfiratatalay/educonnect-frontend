@@ -1,0 +1,61 @@
+import { useEffect, useRef } from "react";
+import * as signalR from "@microsoft/signalr";
+import { useQueryClient } from "@tanstack/react-query";
+import { getAccessToken } from "@/features/auth/token";
+import { messageKeys } from "@/features/messages/hooks";
+import type { ReceiveMessagePayload } from "@/features/messages/types";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
+
+export function useDirectMessagesSignalR(enabled: boolean) {
+  const queryClient = useQueryClient();
+  const connectionRef = useRef<signalR.HubConnection | null>(null);
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) {
+      return;
+    }
+
+    const base = API_BASE_URL.replace(/\/$/, "");
+    const url = `${base}/hubs/direct-messages?access_token=${encodeURIComponent(token)}`;
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(url, { transport: signalR.HttpTransportType.WebSockets })
+      .withAutomaticReconnect()
+      .build();
+
+    connection.on("ReceiveMessage", (payload: ReceiveMessagePayload) => {
+      if (!payload?.conversationId) {
+        return;
+      }
+
+      void queryClient.invalidateQueries({ queryKey: messageKeys.conversations() });
+      void queryClient.invalidateQueries({
+        predicate: (q) => {
+          const k = q.queryKey;
+          return (
+            Array.isArray(k) &&
+            k[0] === messageKeys.all[0] &&
+            k[1] === "messages" &&
+            k[2] === payload.conversationId
+          );
+        },
+      });
+    });
+
+    connectionRef.current = connection;
+    void connection.start().catch(() => {
+      /* REST ile devam */
+    });
+
+    return () => {
+      void connection.stop();
+      connectionRef.current = null;
+    };
+  }, [enabled, queryClient]);
+}

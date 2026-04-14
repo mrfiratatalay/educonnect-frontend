@@ -27,59 +27,18 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getUserInitials } from "@/components/layout/shellNavigation";
+import FollowSuggestionsCard from "@/components/shared/FollowSuggestionsCard";
 import {
   useMarkAllNotificationsReadMutation,
   useMarkNotificationReadMutation,
   useNotificationsQuery,
 } from "@/features/notifications/hooks";
+import { useTrendingHashtagsQuery } from "@/features/posts/hooks";
 import type {
   AppNotification,
   NotificationKind,
 } from "@/features/notifications/types";
 import { useAuthStore } from "@/store/authStore";
-
-const trendingItems = [
-  {
-    id: "trend-1",
-    category: "Universite gundemi",
-    title: "Bahar donemi final takvimi",
-    subtitle: "Kampus genelinde en cok konusulan baslik",
-  },
-  {
-    id: "trend-2",
-    category: "Teknoloji",
-    title: "#Hackathon2026",
-    subtitle: "Muhendislik ogrencileri arasinda gundemde",
-  },
-  {
-    id: "trend-3",
-    category: "Kulup etkinlikleri",
-    title: "IEEE workshop serisi",
-    subtitle: "Bu hafta yeni kayitlar acildi",
-  },
-];
-
-const suggestions = [
-  {
-    id: "follow-1",
-    name: "EduConnect Labs",
-    handle: "@educonnectlabs",
-    avatarSeed: "EduConnectLabs",
-  },
-  {
-    id: "follow-2",
-    name: "IEEE Student Branch",
-    handle: "@ieeerteu",
-    avatarSeed: "IEEE",
-  },
-  {
-    id: "follow-3",
-    name: "Kampus Duyurular",
-    handle: "@kampusduyurular",
-    avatarSeed: "KampusDuyurular",
-  },
-];
 
 const footerLinks = [
   "Hizmet Sartlari",
@@ -99,6 +58,7 @@ export default function NotificationsPage() {
   const notificationsQuery = useNotificationsQuery();
   const markReadMutation = useMarkNotificationReadMutation();
   const markAllReadMutation = useMarkAllNotificationsReadMutation();
+  const trendingQuery = useTrendingHashtagsQuery(3);
   const [activeTab, setActiveTab] = useState<NotificationTabKey>("all");
 
   const isDesktop = !!screens.xl;
@@ -278,93 +238,62 @@ export default function NotificationsPage() {
                 />
 
                 <SidebarCard title="Neler oluyor?" background={elevatedBackground}>
-                  {trendingItems.map((item) => (
-                    <SidebarActionRow key={item.id}>
-                      <div>
-                        <Typography.Text
-                          type="secondary"
-                          style={{ display: "block", fontSize: 13 }}
-                        >
-                          {item.category}
-                        </Typography.Text>
-                        <Typography.Text
-                          strong
-                          style={{
-                            display: "block",
-                            fontSize: 16,
-                            lineHeight: 1.35,
-                            marginTop: 2,
-                          }}
-                        >
-                          {item.title}
-                        </Typography.Text>
-                        <Typography.Text
-                          type="secondary"
-                          style={{ display: "block", fontSize: 13, marginTop: 2 }}
-                        >
-                          {item.subtitle}
-                        </Typography.Text>
-                      </div>
-                    </SidebarActionRow>
-                  ))}
-
-                  <Typography.Link style={{ fontSize: 15 }}>
-                    Daha fazla goster
-                  </Typography.Link>
+                  {trendingQuery.isLoading ? (
+                    <Skeleton active title={false} paragraph={{ rows: 3 }} />
+                  ) : trendingQuery.data && trendingQuery.data.length > 0 ? (
+                    <>
+                      {trendingQuery.data.map((trend) => (
+                        <SidebarActionRow key={trend.hashtag}>
+                          <div
+                            style={{ cursor: "pointer" }}
+                            onClick={() =>
+                              navigate(`/explore/tag/${encodeURIComponent(trend.hashtag.replace(/^#/, ""))}`)
+                            }
+                          >
+                            <Typography.Text
+                              type="secondary"
+                              style={{ display: "block", fontSize: 13 }}
+                            >
+                              {trend.contextLabel}
+                            </Typography.Text>
+                            <Typography.Text
+                              strong
+                              style={{
+                                display: "block",
+                                fontSize: 16,
+                                lineHeight: 1.35,
+                                marginTop: 2,
+                              }}
+                            >
+                              {trend.hashtag}
+                            </Typography.Text>
+                            <Typography.Text
+                              type="secondary"
+                              style={{ display: "block", fontSize: 13, marginTop: 2 }}
+                            >
+                              {trend.postCount} gonderi
+                            </Typography.Text>
+                          </div>
+                        </SidebarActionRow>
+                      ))}
+                      <Typography.Link
+                        style={{ fontSize: 15, padding: "0 16px 8px", display: "block" }}
+                        onClick={() => navigate("/explore")}
+                      >
+                        Daha fazla goster
+                      </Typography.Link>
+                    </>
+                  ) : (
+                    <Typography.Text
+                      type="secondary"
+                      style={{ fontSize: 13, padding: "0 16px 8px", display: "block" }}
+                    >
+                      Henuz aktif bir hashtag gundemi yok.
+                    </Typography.Text>
+                  )}
                 </SidebarCard>
 
-                <SidebarCard title="Kimi takip etmeli" background={elevatedBackground}>
-                  {suggestions.map((suggestion) => (
-                    <SidebarActionRow key={suggestion.id}>
-                      <Flex align="center" gap={12} style={{ width: "100%" }}>
-                        <Avatar
-                          size={40}
-                          src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${suggestion.avatarSeed}`}
-                          style={{
-                            background: token.colorPrimaryBg,
-                            color: token.colorPrimary,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {getUserInitials(suggestion.name)}
-                        </Avatar>
-
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <Typography.Text
-                            strong
-                            ellipsis
-                            style={{ display: "block", fontSize: 15 }}
-                          >
-                            {suggestion.name}
-                          </Typography.Text>
-                          <Typography.Text
-                            type="secondary"
-                            ellipsis
-                            style={{ display: "block", fontSize: 15 }}
-                          >
-                            {suggestion.handle}
-                          </Typography.Text>
-                        </div>
-
-                        <Button
-                          color="default"
-                          variant="solid"
-                          style={{
-                            height: 36,
-                            paddingInline: 16,
-                            fontWeight: 700,
-                          }}
-                        >
-                          Takip et
-                        </Button>
-                      </Flex>
-                    </SidebarActionRow>
-                  ))}
-
-                  <Typography.Link style={{ fontSize: 15 }}>
-                    Daha fazla goster
-                  </Typography.Link>
-                </SidebarCard>
+                <FollowSuggestionsCard background={elevatedBackground} bordered={false} />
 
                 <Flex wrap gap={8} style={{ paddingInline: 12 }}>
                   {footerLinks.map((item) => (

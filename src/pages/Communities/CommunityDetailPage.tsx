@@ -11,7 +11,6 @@ import {
   Avatar,
   Button,
   Card,
-  Empty,
   Flex,
   Grid,
   Input,
@@ -40,10 +39,9 @@ import {
 } from "@/features/groups/hooks";
 import type {
   AppGroup,
-  AppGroupDetail,
-  AppGroupMemberPreview,
   CreateGroupInput,
 } from "@/features/groups/types";
+import FollowSuggestionsCard from "@/components/shared/FollowSuggestionsCard";
 import CreateGroupDialog from "@/pages/Explore/components/CreateGroupDialog";
 import PostComposer from "@/pages/Feed/components/PostComposer";
 import PostList from "@/pages/Feed/components/PostList";
@@ -124,7 +122,6 @@ export default function CommunityDetailPage() {
   const allPosts = postsQuery.data?.pages.flatMap((page) => page.items) ?? [];
   const visiblePosts = getVisiblePosts(allPosts, activeTab);
   const summary = group ? getCommunitySummary(group) : "";
-  const followSuggestions = group ? getFollowSuggestionsFromMembers(group) : [];
   const isOwner = user?.id === group?.creatorUserId;
 
   async function handleToggleMembership(targetGroup: AppGroup) {
@@ -488,29 +485,7 @@ export default function CommunityDetailPage() {
                     </Flex>
                   </AsideCard>
 
-                  <AsideCard
-                    title="Kimi takip etmeli"
-                    footer={
-                      <Button type="link" style={{ padding: 0 }}>
-                        Daha fazla goster
-                      </Button>
-                    }
-                  >
-                    <Flex vertical gap={18}>
-                      {followSuggestions.length > 0 ? (
-                        followSuggestions.map((person) => (
-                          <FollowRow
-                            key={person.key}
-                            name={person.name}
-                            handle={person.handle}
-                            avatarUrl={person.avatarUrl}
-                          />
-                        ))
-                      ) : (
-                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Oneri bulunamadi" />
-                      )}
-                    </Flex>
-                  </AsideCard>
+                  <FollowSuggestionsCard />
                 </Flex>
               </div>
             </div>
@@ -625,47 +600,6 @@ function TrendRow({ label, title }: { label: string; title: string }) {
   );
 }
 
-function FollowRow({
-  name,
-  handle,
-  avatarUrl,
-}: {
-  name: string;
-  handle: string;
-  avatarUrl?: string;
-}) {
-  const { token } = theme.useToken();
-
-  return (
-    <Flex align="center" gap={12}>
-      <Avatar
-        size={40}
-        src={avatarUrl}
-        style={{
-          background: token.colorFillSecondary,
-          color: token.colorText,
-          flexShrink: 0,
-        }}
-      >
-        {!avatarUrl ? getCommunityInitials(name) : null}
-      </Avatar>
-
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <Typography.Text strong ellipsis style={{ display: "block", fontSize: 16 }}>
-          {name}
-        </Typography.Text>
-        <Typography.Text type="secondary" ellipsis style={{ display: "block", fontSize: 14 }}>
-          @{handle}
-        </Typography.Text>
-      </div>
-
-      <Button type="primary" shape="round" style={{ paddingInline: 16 }}>
-        Takip et
-      </Button>
-    </Flex>
-  );
-}
-
 function CommunityDetailSkeleton() {
   return (
     <div style={{ maxWidth: 990, margin: "0 auto", padding: 24 }}>
@@ -689,41 +623,6 @@ function getVisiblePosts(posts: FeedPost[], activeTab: DetailTab) {
   }
 
   return posts;
-}
-
-function getFollowSuggestionsFromMembers(group: AppGroupDetail) {
-  const map = new Map<
-    string,
-    { key: string; name: string; handle: string; avatarUrl?: string }
-  >();
-
-  const pool: AppGroupMemberPreview[] = [
-    ...group.moderatorPreviewMembers,
-    ...(group.previewMembers ?? []),
-  ];
-
-  pool.forEach((member) => {
-    if (map.size >= 3 || map.has(member.userId)) {
-      return;
-    }
-
-    map.set(member.userId, {
-      key: member.userId,
-      name: member.fullName,
-      handle: member.fullName.replace(/\s+/g, "").toLowerCase(),
-      avatarUrl: member.avatarUrl,
-    });
-  });
-
-  if (map.size === 0) {
-    return [
-      { key: "1", name: "Astro", handle: "astrodotbuild" },
-      { key: "2", name: "Yusuf Demirci", handle: "meyusufdemirci" },
-      { key: "3", name: "Deniz Oktar", handle: "denizoktar" },
-    ];
-  }
-
-  return Array.from(map.values()).slice(0, 3);
 }
 
 async function copyTextToClipboard(value: string) {

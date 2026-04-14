@@ -397,6 +397,48 @@ export async function addPostComment(input: CreatePostCommentInput): Promise<Pos
   }
 }
 
+export async function getUserPosts(userId: string, input: GetPostsInput = {}): Promise<PostsPage> {
+  const page = input.page ?? 1;
+  const pageSize = input.pageSize ?? 20;
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPagedResponse<ApiPostResponse>>("/api/posts", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        params: { userId, page, pageSize },
+      }),
+    );
+    return { items: response.data.items.map(normalizePost), page: response.data.page, pageSize: response.data.pageSize, totalCount: response.data.totalCount };
+  } catch (error) { throw new Error(getApiErrorMessage(error)); }
+}
+
+export async function getUserMediaPosts(userId: string, input: GetPostsInput = {}): Promise<PostsPage> {
+  const page = input.page ?? 1;
+  const pageSize = input.pageSize ?? 20;
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPagedResponse<ApiPostResponse>>("/api/posts", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        params: { userId, mediaOnly: true, page, pageSize },
+      }),
+    );
+    return { items: response.data.items.map(normalizePost), page: response.data.page, pageSize: response.data.pageSize, totalCount: response.data.totalCount };
+  } catch (error) { throw new Error(getApiErrorMessage(error)); }
+}
+
+export async function getLikedPosts(userId: string, input: GetPostsInput = {}): Promise<PostsPage> {
+  const page = input.page ?? 1;
+  const pageSize = input.pageSize ?? 20;
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      postsApi.get<ApiPagedResponse<ApiPostResponse>>("/api/posts/liked", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        params: { userId, page, pageSize },
+      }),
+    );
+    return { items: response.data.items.map(normalizePost), page: response.data.page, pageSize: response.data.pageSize, totalCount: response.data.totalCount };
+  } catch (error) { throw new Error(getApiErrorMessage(error)); }
+}
+
 export async function deletePost(postId: string) {
   try {
     await executeAuthorizedRequest((accessToken) =>

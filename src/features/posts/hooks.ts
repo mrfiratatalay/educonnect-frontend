@@ -12,10 +12,13 @@ import {
   getBookmarkedPosts,
   getForYouPosts,
   getFollowingPosts,
+  getLikedPosts,
   getPostDetail,
   getPostsByTag,
   getPosts,
   getTrendingHashtags,
+  getUserMediaPosts,
+  getUserPosts,
   togglePostBookmark,
   togglePostLike,
   trackPostView,
@@ -45,6 +48,9 @@ export const postKeys = {
     [...postKeys.all, "list", page, pageSize] as const,
   trending: (limit: number) => [...postKeys.all, "trending", limit] as const,
   detail: (postId: string) => [...postKeys.all, "detail", postId] as const,
+  userPosts: (userId: string, page: number) => [...postKeys.all, "user", userId, page] as const,
+  userMedia: (userId: string, page: number) => [...postKeys.all, "userMedia", userId, page] as const,
+  userLiked: (userId: string, page: number) => [...postKeys.all, "userLiked", userId, page] as const,
 };
 
 export function useInfinitePostsQuery(pageSize = 10, enabled = true) {
@@ -281,7 +287,33 @@ export function useTogglePostLikeMutation() {
 
   return useMutation({
     mutationFn: (postId: string) => togglePostLike(postId),
-    onSuccess: async (_, postId) => {
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({
+        predicate: (query) =>
+          query.queryKey[0] === "posts" || isGroupsPostQuery(query.queryKey),
+      });
+
+      const snapshot = queryClient.getQueriesData<
+        PostsPage | InfiniteData<PostsPage> | PostDetail
+      >({
+        predicate: (query) =>
+          query.queryKey[0] === "posts" || isGroupsPostQuery(query.queryKey),
+      });
+
+      updatePostAcrossCaches(queryClient, postId, (post) => ({
+        ...post,
+        isLiked: !post.isLiked,
+        likesCount: post.likesCount + (post.isLiked ? -1 : 1),
+      }));
+
+      return { snapshot };
+    },
+    onError: (_error, _postId, context) => {
+      context?.snapshot.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+    onSettled: async (_, __, postId) => {
       await invalidateFeedQueries(queryClient, postId);
     },
   });
@@ -422,4 +454,28 @@ function isGroupsPostQuery(queryKey: readonly unknown[]) {
     queryKey[0] === "groups" &&
     (queryKey[1] === "feed" || queryKey[1] === "posts")
   );
+}
+
+export function useUserPostsQuery(userId: string | undefined, page = 1, enabled = true) {
+  return useQuery({
+    queryKey: postKeys.userPosts(userId ?? "", page),
+    queryFn: () => getUserPosts(userId!, { page, pageSize: 10 }),
+    enabled: enabled && !!userId,
+  });
+}
+
+export function useUserMediaPostsQuery(userId: string | undefined, page = 1, enabled = true) {
+  return useQuery({
+    queryKey: postKeys.userMedia(userId ?? "", page),
+    queryFn: () => getUserMediaPosts(userId!, { page, pageSize: 20 }),
+    enabled: enabled && !!userId,
+  });
+}
+
+export function useUserLikedPostsQuery(userId: string | undefined, page = 1, enabled = true) {
+  return useQuery({
+    queryKey: postKeys.userLiked(userId ?? "", page),
+    queryFn: () => getLikedPosts(userId!, { page, pageSize: 10 }),
+    enabled: enabled && !!userId,
+  });
 }

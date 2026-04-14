@@ -1,5 +1,5 @@
 import { type FormEvent, useState, useRef, useEffect } from "react";
-import { Button, Flex, Avatar, theme } from "antd";
+import { Button, Flex, Avatar, message, theme } from "antd";
 import { useAuthStore } from "@/store/authStore";
 import { getUserInitials } from "@/components/layout/shellNavigation";
 
@@ -37,8 +37,8 @@ export default function PostCommentComposer({
       await onSubmit(trimmedContent);
       setContent("");
       if (textareaRef.current) textareaRef.current.style.height = "auto";
-    } catch (error) {
-      // Handle error gracefully if needed
+    } catch {
+      message.error("Yorum gonderilemedi. Lutfen tekrar deneyin.");
     }
   }
 

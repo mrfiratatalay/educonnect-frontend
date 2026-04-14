@@ -32,14 +32,14 @@ import PostEditForm from "@/pages/Feed/components/PostEditForm";
 
 interface PostCardProps {
   post: FeedPost;
-  canManage: boolean;
-  isDeleting: boolean;
-  isUpdating: boolean;
+  canManage?: boolean;
+  isDeleting?: boolean;
+  isUpdating?: boolean;
   mode?: "feed" | "detail";
-  onDelete: (postId: string) => void;
+  onDelete?: (postId: string) => void;
   showGroupContext?: boolean;
   showRecommendationReason?: boolean;
-  onUpdate: (postId: string, content: string) => Promise<void>;
+  onUpdate?: (postId: string, content: string) => Promise<void>;
 }
 
 interface ActionBtnProps {
@@ -118,9 +118,9 @@ function ActionStat({
 
 export default function PostCard({
   post,
-  canManage,
-  isDeleting,
-  isUpdating,
+  canManage = false,
+  isDeleting = false,
+  isUpdating = false,
   mode = "feed",
   onDelete,
   showGroupContext = false,
@@ -216,7 +216,7 @@ export default function PostCard({
   }
 
   async function handleUpdate(content: string) {
-    await onUpdate(post.id, content);
+    await onUpdate?.(post.id, content);
     setIsEditing(false);
   }
 
@@ -227,7 +227,7 @@ export default function PostCard({
     }
 
     if (key === "delete") {
-      onDelete(post.id);
+      onDelete?.(post.id);
     }
   }
 

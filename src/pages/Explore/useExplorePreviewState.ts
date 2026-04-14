@@ -1,15 +1,7 @@
 import { useMemo, useState } from "react";
 import type { AppEvent, CreateEventInput } from "@/features/events/types";
 import type { AppGroup, CreateGroupInput } from "@/features/groups/types";
-import {
-  isPreviewEventId,
-  isPreviewGroupId,
-  mergePreviewEvents,
-  mergePreviewGroups,
-  previewDiscountsSeed,
-  previewEventsSeed,
-  previewGroupsSeed,
-} from "@/pages/Explore/exploreMockData";
+import type { Discount } from "@/types";
 
 interface UseExplorePreviewStateParams {
   liveEvents: AppEvent[];
@@ -24,20 +16,18 @@ export function useExplorePreviewState({
   eventsError,
   groupsError,
 }: UseExplorePreviewStateParams) {
-  const [previewGroups, setPreviewGroups] = useState(() => cloneGroups(previewGroupsSeed));
-  const [previewEvents, setPreviewEvents] = useState(() => cloneEvents(previewEventsSeed));
-  const [discounts] = useState(() => [...previewDiscountsSeed]);
+  const [localGroups, setLocalGroups] = useState<AppGroup[]>([]);
+  const [localEvents, setLocalEvents] = useState<AppEvent[]>([]);
 
   const groups = useMemo(
-    () => mergePreviewGroups(liveGroups, previewGroups),
-    [liveGroups, previewGroups],
+    () => dedupeById([...liveGroups, ...localGroups]),
+    [liveGroups, localGroups],
   );
   const events = useMemo(
-    () => mergePreviewEvents(liveEvents, previewEvents),
-    [liveEvents, previewEvents],
+    () => dedupeById([...liveEvents, ...localEvents]),
+    [liveEvents, localEvents],
   );
-  const groupsUsePreview = Boolean(groupsError) || groups.some((group) => isPreviewGroupId(group.id));
-  const eventsUsePreview = Boolean(eventsError) || events.some((event) => isPreviewEventId(event.id));
+  const discounts: Discount[] = [];
   const createGroupsLocally = Boolean(groupsError) || liveGroups.length === 0;
   const createEventsLocally = Boolean(eventsError) || liveEvents.length === 0;
 
@@ -57,7 +47,7 @@ export function useExplorePreviewState({
       createdAt: new Date().toISOString(),
     };
 
-    setPreviewGroups((currentGroups) => [nextGroup, ...currentGroups]);
+    setLocalGroups((current) => [nextGroup, ...current]);
   }
 
   function createPreviewEvent(input: CreateEventInput) {
@@ -77,16 +67,16 @@ export function useExplorePreviewState({
       category: input.category,
     };
 
-    setPreviewEvents((currentEvents) =>
-      [...currentEvents, nextEvent].sort(
+    setLocalEvents((current) =>
+      [...current, nextEvent].sort(
         (left, right) => new Date(left.startDate).getTime() - new Date(right.startDate).getTime(),
       ),
     );
   }
 
   function togglePreviewMembership(groupId: string) {
-    setPreviewGroups((currentGroups) =>
-      currentGroups.map((group) =>
+    setLocalGroups((current) =>
+      current.map((group) =>
         group.id !== groupId
           ? group
           : {
@@ -101,42 +91,28 @@ export function useExplorePreviewState({
   }
 
   function togglePreviewRegistration(eventId: string) {
-    setPreviewEvents((currentEvents) =>
-      currentEvents.map((event) => {
-        if (event.id !== eventId) {
-          return event;
-        }
-
+    setLocalEvents((current) =>
+      current.map((event) => {
+        if (event.id !== eventId) return event;
         if (event.isRegistered) {
-          return {
-            ...event,
-            isRegistered: false,
-            participantCount: Math.max(0, event.participantCount - 1),
-          };
+          return { ...event, isRegistered: false, participantCount: Math.max(0, event.participantCount - 1) };
         }
-
-        return {
-          ...event,
-          isRegistered: true,
-          participantCount: Math.min(event.maxParticipants, event.participantCount + 1),
-        };
+        return { ...event, isRegistered: true, participantCount: Math.min(event.maxParticipants, event.participantCount + 1) };
       }),
     );
   }
 
-  function getPreviewGroup(groupId: string | null) {
-    if (!isPreviewGroupId(groupId)) {
-      return null;
-    }
+  function isLocalId(id: string | null) {
+    return Boolean(id?.startsWith("local-group-") || id?.startsWith("local-event-"));
+  }
 
+  function getPreviewGroup(groupId: string | null) {
+    if (!groupId || !isLocalId(groupId)) return null;
     return groups.find((group) => group.id === groupId) ?? null;
   }
 
   function getPreviewEvent(eventId: string | null) {
-    if (!isPreviewEventId(eventId)) {
-      return null;
-    }
-
+    if (!eventId || !isLocalId(eventId)) return null;
     return events.find((event) => event.id === eventId) ?? null;
   }
 
@@ -147,22 +123,23 @@ export function useExplorePreviewState({
     createPreviewGroup,
     discounts,
     events,
-    eventsUsePreview,
+    eventsUsePreview: false,
     getPreviewEvent,
     getPreviewGroup,
     groups,
-    groupsUsePreview,
-    isPreviewEventId,
-    isPreviewGroupId,
+    groupsUsePreview: false,
+    isPreviewEventId: isLocalId,
+    isPreviewGroupId: isLocalId,
     togglePreviewMembership,
     togglePreviewRegistration,
   };
 }
 
-function cloneGroups(groups: AppGroup[]) {
-  return groups.map((group) => ({ ...group }));
-}
-
-function cloneEvents(events: AppEvent[]) {
-  return events.map((event) => ({ ...event }));
+function dedupeById<T extends { id: string }>(items: T[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
 }

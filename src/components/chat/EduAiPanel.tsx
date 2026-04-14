@@ -1,277 +1,229 @@
-import { forwardRef } from "react";
-import { Button, Card, Flex, Grid, Input, Typography, theme } from "antd";
-import type { InputRef } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  AudioLines,
-  ChevronDown,
-  Ghost,
-  History,
-  ImagePlus,
-  Maximize2,
-  Newspaper,
-  Paintbrush,
-  Paperclip,
-  Sparkles,
-} from "lucide-react";
+  Alert,
+  Button,
+  Card,
+  Flex,
+  Grid,
+  Input,
+  Spin,
+  Tag,
+  Typography,
+  theme,
+} from "antd";
+import { Maximize2, Send, Sparkles, X } from "lucide-react";
+import Markdown from "react-markdown";
+import {
+  useMessagesQuery,
+  useSendMessageMutation,
+  useStartSessionMutation,
+  useSessionsQuery,
+} from "@/features/chat/hooks";
+import type { ChatMessageItem } from "@/features/chat/types";
 
-const quickActions = [
-  {
-    key: "image-create",
-    label: "Resim Olustur",
-    prompt: "Benim icin yeni bir gorsel olustur.",
-    icon: ImagePlus,
-  },
-  {
-    key: "image-edit",
-    label: "Resmi Duzenle",
-    prompt: "Bir gorseli duzenlememe yardim et.",
-    icon: Paintbrush,
-  },
-  {
-    key: "latest-news",
-    label: "En Son Haberler",
-    prompt: "Bugunun en onemli haberlerini ozetle.",
-    icon: Newspaper,
-  },
-] as const;
+const QUICK_PROMPTS = [
+  "Vize ne zaman?",
+  "Burs başvurusu?",
+  "Etkinlikler?",
+];
 
 interface EduAiPanelProps {
-  prompt: string;
-  onPromptChange: (value: string) => void;
-  onSubmit: () => void;
-  onQuickAction: (value: string) => void;
   onClose?: () => void;
-  onExpand?: () => void;
-  showClose?: boolean;
-  showExpand?: boolean;
 }
 
-const panelShadow = "0 24px 80px rgba(15, 23, 42, 0.18), 0 10px 32px rgba(15, 23, 42, 0.08)";
-
-const triggerlessIconButtonStyle = {
-  width: 36,
-  height: 36,
-  borderRadius: 999,
-  padding: 0,
-} as const;
-
-const composerBorderColor = "#C7D2E0";
-
-const EduAiPanel = forwardRef<InputRef, EduAiPanelProps>(function EduAiPanel(
-  {
-    prompt,
-    onPromptChange,
-    onSubmit,
-    onQuickAction,
-    onClose,
-    onExpand,
-    showClose = true,
-    showExpand = true,
-  },
-  ref,
-) {
+export default function EduAiPanel({ onClose }: EduAiPanelProps) {
   const screens = Grid.useBreakpoint();
   const { token } = theme.useToken();
-  const iconSize = screens.xs ? 16 : 17;
+  const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [input, setInput] = useState("");
+
+  const sessionsQuery = useSessionsQuery();
+  const activeSession = sessionsQuery.data?.find((s) => s.isActive) ?? null;
+  const sessionId = activeSession?.sessionId ?? null;
+
+  const messagesQuery = useMessagesQuery(sessionId);
+  const messages = messagesQuery.data ?? [];
+
+  const startSession = useStartSessionMutation();
+  const sendMessage = useSendMessageMutation();
+  const isLoading = sendMessage.isPending;
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages.length, isLoading]);
+
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSend = async () => {
+    const trimmed = input.trim();
+    if (!trimmed || isLoading) return;
+    setError(null);
+
+    try {
+      let currentSessionId = sessionId;
+      if (!currentSessionId) {
+        const session = await startSession.mutateAsync();
+        currentSessionId = session.sessionId;
+      }
+
+      setInput("");
+      await sendMessage.mutateAsync({ sessionId: currentSessionId, message: trimmed });
+    } catch {
+      setError("Mesaj gonderilemedi.");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
   return (
     <Card
       variant="outlined"
       style={{
-        borderRadius: 32,
-        borderColor: "#E5EAF1",
-        background: "linear-gradient(180deg, #FFFFFF 0%, #FBFCFE 100%)",
-        boxShadow: panelShadow,
+        borderRadius: 24,
+        boxShadow: "0 24px 80px rgba(15,23,42,0.18)",
+        overflow: "hidden",
       }}
-      styles={{
-        body: {
-          padding: screens.xs ? 18 : 24,
-        },
-      }}
+      styles={{ body: { padding: 0 } }}
     >
-      <Flex align="center" justify="flex-end" gap={screens.xs ? 2 : 4}>
-        <Button
-          type="text"
-          shape="circle"
-          aria-label="Asistan modu"
-          icon={<Ghost size={iconSize} />}
-          style={{
-            ...triggerlessIconButtonStyle,
-            color: token.colorTextSecondary,
-          }}
-        />
-        <Button
-          type="text"
-          shape="circle"
-          aria-label="Gecmis"
-          icon={<History size={iconSize} />}
-          style={{
-            ...triggerlessIconButtonStyle,
-            color: token.colorTextSecondary,
-          }}
-        />
-        {showExpand ? (
-          <Button
-            type="text"
-            shape="circle"
-            aria-label="Tam ekran"
-            icon={<Maximize2 size={iconSize} />}
-            onClick={onExpand}
-            style={{
-              ...triggerlessIconButtonStyle,
-              color: token.colorTextSecondary,
-            }}
-          />
-        ) : null}
-        {showClose ? (
-          <Button
-            type="text"
-            shape="circle"
-            aria-label="Kapat"
-            icon={<ChevronDown size={iconSize + 1} />}
-            onClick={onClose}
-            style={{
-              ...triggerlessIconButtonStyle,
-              color: token.colorText,
-            }}
-          />
-        ) : null}
-      </Flex>
-
-      <div style={{ padding: screens.xs ? "12px 4px 8px" : "18px 12px 10px" }}>
-        <Typography.Title
-          level={1}
-          style={{
-            margin: 0,
-            textAlign: "center",
-            fontSize: screens.xs ? 22 : 28,
-            lineHeight: 1.12,
-            fontWeight: 700,
-            letterSpacing: "-0.04em",
-            color: "#0F172A",
-          }}
-        >
-          Bugun size nasil yardimci olabilirim?
-        </Typography.Title>
-      </div>
-
-      <div style={{ paddingInline: screens.xs ? 0 : 6 }}>
-        <div
-          style={{
-            minHeight: screens.xs ? 118 : 126,
-            padding: screens.xs ? "14px 14px 12px" : "16px 18px 14px",
-            borderRadius: 28,
-            border: `1.5px solid ${composerBorderColor}`,
-            background: "#FFFFFF",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
-          <Input
-            ref={ref}
-            value={prompt}
-            onChange={(event) => onPromptChange(event.target.value)}
-            onPressEnter={onSubmit}
-            placeholder="Istedigini sor"
-            variant="borderless"
-            style={{
-              padding: 0,
-              fontSize: screens.xs ? 16 : 17,
-              fontWeight: 500,
-              color: "#475569",
-            }}
-          />
-
-          <Flex align="center" justify="space-between" gap={12}>
-            <Button
-              type="text"
-              shape="circle"
-              aria-label="Dosya ekle"
-              icon={<Paperclip size={18} />}
-              style={{
-                width: 34,
-                height: 34,
-                padding: 0,
-                color: token.colorTextSecondary,
-                flexShrink: 0,
-              }}
-            />
-
-            <Flex align="center" gap={8} style={{ minWidth: 0 }}>
-              <Button
-                type="text"
-                style={{
-                  height: 36,
-                  paddingInline: 10,
-                  borderRadius: 999,
-                  fontWeight: 700,
-                  color: "#1E293B",
-                  flexShrink: 0,
-                }}
-              >
-                <Flex align="center" gap={8}>
-                  <Sparkles size={15} />
-                  <span>Uzman</span>
-                  <ChevronDown size={15} />
-                </Flex>
-              </Button>
-
-              <Button
-                color="default"
-                variant="solid"
-                shape="circle"
-                aria-label="Sesli giris"
-                onClick={onSubmit}
-                style={{
-                  width: 42,
-                  height: 42,
-                  border: "none",
-                  background: "#111827",
-                  color: "#FFFFFF",
-                  flexShrink: 0,
-                }}
-                icon={<AudioLines size={17} />}
-              />
-            </Flex>
-          </Flex>
-        </div>
-      </div>
-
       <Flex
         align="center"
-        justify="center"
-        gap={12}
-        wrap
-        style={{ marginTop: 16 }}
+        justify="space-between"
+        style={{
+          padding: "10px 14px",
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
+        }}
       >
-        {quickActions.map((action) => (
+        <Flex align="center" gap={8}>
+          <Sparkles size={16} />
+          <Typography.Text strong>EduAI</Typography.Text>
+        </Flex>
+        <Flex gap={2}>
           <Button
-            key={action.key}
-            color="default"
-            variant="outlined"
-            shape="round"
-            onClick={() => onQuickAction(action.prompt)}
-            style={{
-              height: 40,
-              paddingInline: 16,
-              borderColor: "#DFE7F1",
-              fontWeight: 700,
-              color: "#243041",
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
-            }}
-          >
-            <Flex align="center" gap={8}>
-              <action.icon size={16} />
-              <span>{action.label}</span>
-            </Flex>
-          </Button>
-        ))}
+            type="text"
+            size="small"
+            icon={<Maximize2 size={14} />}
+            onClick={() => { onClose?.(); navigate("/edu-ai"); }}
+          />
+          <Button
+            type="text"
+            size="small"
+            icon={<X size={14} />}
+            onClick={onClose}
+          />
+        </Flex>
       </Flex>
+
+      <div
+        ref={scrollRef}
+        style={{
+          height: screens.xs ? 280 : 320,
+          overflowY: "auto",
+          padding: 12,
+        }}
+      >
+        {messages.length === 0 && !isLoading ? (
+          <Flex vertical align="center" justify="center" gap={12} style={{ height: "100%" }}>
+            <Sparkles size={28} strokeWidth={1.5} />
+            <Typography.Text type="secondary" style={{ textAlign: "center" }}>
+              Merhaba! Size nasıl yardımcı olabilirim?
+            </Typography.Text>
+            <Flex gap={6} wrap justify="center">
+              {QUICK_PROMPTS.map((p) => (
+                <Button
+                  key={p}
+                  size="small"
+                  shape="round"
+                  onClick={() => { setInput(p); }}
+                >
+                  {p}
+                </Button>
+              ))}
+            </Flex>
+          </Flex>
+        ) : (
+          <Flex vertical gap={10}>
+            {messages.map((msg) => (
+              <PanelBubble key={msg.id} message={msg} />
+            ))}
+            {isLoading && (
+              <Flex gap={6} align="center">
+                <Spin size="small" />
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  Düşünüyor...
+                </Typography.Text>
+              </Flex>
+            )}
+          </Flex>
+        )}
+      </div>
+
+      <div style={{ padding: "8px 12px 12px", borderTop: `1px solid ${token.colorBorderSecondary}` }}>
+        {error && <Alert message={error} type="error" closable onClose={() => setError(null)} style={{ marginBottom: 6 }} />}
+        <Flex gap={6}>
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Sorunuzu yazın..."
+            size="middle"
+            disabled={isLoading}
+            style={{ borderRadius: 10 }}
+          />
+          <Button
+            type="primary"
+            icon={<Send size={14} />}
+            onClick={handleSend}
+            loading={isLoading}
+            disabled={!input.trim()}
+            style={{ borderRadius: 10 }}
+          />
+        </Flex>
+      </div>
     </Card>
   );
-});
+}
 
-export default EduAiPanel;
+function PanelBubble({ message }: { message: ChatMessageItem }) {
+  const { token } = theme.useToken();
+  const isUser = message.senderType === "user";
+
+  return (
+    <Flex justify={isUser ? "flex-end" : "flex-start"}>
+      <div
+        style={{
+          maxWidth: "85%",
+          padding: "8px 12px",
+          borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+          background: isUser ? token.colorPrimary : token.colorBgContainer,
+          color: isUser ? "#fff" : token.colorText,
+          border: isUser ? "none" : `1px solid ${token.colorBorderSecondary}`,
+          fontSize: 13,
+        }}
+      >
+        {isUser ? (
+          <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+            {message.content}
+          </span>
+        ) : (
+          <div className="markdown-body" style={{ wordBreak: "break-word", fontSize: 13 }}>
+            <Markdown>{message.content}</Markdown>
+          </div>
+        )}
+        {!isUser && message.intentDetected && (
+          <div style={{ marginTop: 4 }}>
+            <Tag color="blue" style={{ fontSize: 10, lineHeight: "16px" }}>
+              {message.intentDetected}
+            </Tag>
+          </div>
+        )}
+      </div>
+    </Flex>
+  );
+}

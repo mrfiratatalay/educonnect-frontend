@@ -217,9 +217,7 @@ export default function CommunitiesPage() {
           {screens.xl ? (
             <div style={{ width: 350, flexShrink: 0, paddingLeft: 20 }}>
               <div style={{ position: "sticky", top: 12 }}>
-                <CommunitiesRail
-                  suggestedGroups={suggestedGroups}
-                />
+                <CommunitiesRail />
               </div>
             </div>
           ) : null}

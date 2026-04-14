@@ -28,7 +28,6 @@ import {
   type ExploreGroupSort,
   type GroupMembershipFilter,
 } from "@/pages/Explore/exploreFilters";
-import { filterPreviewDiscounts } from "@/pages/Explore/exploreMockData";
 import { getActiveFilterCount, getExploreActionConfig, getExplorePreviewMessage, getExploreTab } from "@/pages/Explore/explorePageUtils";
 import { useExplorePreviewState } from "@/pages/Explore/useExplorePreviewState";
 
@@ -73,7 +72,7 @@ export function ExploreWorkspacePage({
   const previewState = useExplorePreviewState({ liveEvents: eventsQuery.data ?? [], liveGroups: groupsQuery.data ?? [], eventsError: eventsQuery.error, groupsError: groupsQuery.error });
   const groups = previewState.groups;
   const events = previewState.events;
-  const discounts = useMemo(() => filterPreviewDiscounts(previewState.discounts, searchQuery), [previewState.discounts, searchQuery]);
+  const discounts = previewState.discounts;
   const pagePadding = screens.xs ? 16 : screens.lg ? 32 : 24;
   const groupCategories = useMemo(() => getGroupCategories(groups), [groups]);
   const eventCategories = useMemo(() => getEventCategories(events), [events]);

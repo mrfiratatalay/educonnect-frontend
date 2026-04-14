@@ -54,6 +54,7 @@ interface ProfileSummaryCardProps {
   onFollowToggle?: () => void | Promise<void>;
   onOpenFollowers?: () => void;
   onOpenFollowing?: () => void;
+  onSendMessage?: () => void | Promise<void>;
 }
 
 export default function ProfileSummaryCard({
@@ -66,6 +67,7 @@ export default function ProfileSummaryCard({
   onFollowToggle,
   onOpenFollowers,
   onOpenFollowing,
+  onSendMessage,
 }: ProfileSummaryCardProps) {
   const { token } = theme.useToken();
   const screens = Grid.useBreakpoint();
@@ -293,30 +295,46 @@ export default function ProfileSummaryCard({
             </Button>
           ) : null}
 
-          {!isOwnProfile && onFollowToggle ? (
-            <Button
-              shape="round"
-              loading={followActionPending}
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                void onFollowToggle();
-              }}
-              color={isFollowing ? undefined : "default"}
-              variant={isFollowing ? "outlined" : "solid"}
-              style={{
-                height: 38,
-                paddingInline: 18,
-                fontWeight: 700,
-                background: isFollowing ? token.colorBgContainer : undefined,
-                borderColor: isFollowing ? token.colorBorder : undefined,
-                boxShadow: "none",
-                position: "relative",
-                zIndex: 1,
-              }}
-            >
-              {followButtonLabel}
-            </Button>
+          {!isOwnProfile && (onFollowToggle || onSendMessage) ? (
+            <Flex gap={8} align="center" style={{ position: "relative", zIndex: 1 }}>
+              {onFollowToggle ? (
+                <Button
+                  shape="round"
+                  loading={followActionPending}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void onFollowToggle();
+                  }}
+                  color={isFollowing ? undefined : "default"}
+                  variant={isFollowing ? "outlined" : "solid"}
+                  style={{
+                    height: 38,
+                    paddingInline: 18,
+                    fontWeight: 700,
+                    background: isFollowing ? token.colorBgContainer : undefined,
+                    borderColor: isFollowing ? token.colorBorder : undefined,
+                    boxShadow: "none",
+                  }}
+                >
+                  {followButtonLabel}
+                </Button>
+              ) : null}
+              {onSendMessage ? (
+                <Button
+                  shape="round"
+                  type="default"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void onSendMessage();
+                  }}
+                  style={{ height: 38, paddingInline: 18, fontWeight: 700 }}
+                >
+                  Mesaj gonder
+                </Button>
+              ) : null}
+            </Flex>
           ) : null}
         </Flex>
 

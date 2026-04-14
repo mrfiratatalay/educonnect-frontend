@@ -1,141 +1,160 @@
-import { Button, Flex, Input, Typography, theme, Tooltip } from "antd";
-import { MessageSquarePlus, MessageSquare, Search, Settings } from "lucide-react";
-import { useThemeStore } from "@/store/themeStore";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Alert, Avatar, Flex, Typography, theme } from "antd";
+import { useAuthStore } from "@/store/authStore";
+import {
+  useConversationsQuery,
+  useMessagesQuery,
+  useSendMessageMutation,
+  useStartConversationMutation,
+} from "@/features/messages/hooks";
+import { useDirectMessagesSignalR } from "@/features/messages/useDirectMessagesSignalR";
+import ConversationList from "@/pages/Messages/components/ConversationList";
+import MessageComposer from "@/pages/Messages/components/MessageComposer";
+import MessageThread from "@/pages/Messages/components/MessageThread";
 
 export default function MessagesPage() {
   const { token } = theme.useToken();
-  const isDark = useThemeStore((state) => state.isDark);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => searchParams.get("conversation"),
+  );
+  const withUserHandled = useRef<string | null>(null);
+
+  useDirectMessagesSignalR(isAuthenticated);
+
+  const conversationsQuery = useConversationsQuery(isAuthenticated);
+  const startMutation = useStartConversationMutation();
+  const sendMutation = useSendMessageMutation();
+
+  const withUser = searchParams.get("with");
+  const conversationParam = searchParams.get("conversation");
+
+  useEffect(() => {
+    if (conversationParam && conversationParam !== selectedId) {
+      setSelectedId(conversationParam);
+    }
+  }, [conversationParam, selectedId]);
+
+  useEffect(() => {
+    if (!withUser || !isAuthenticated || withUserHandled.current === withUser) {
+      return;
+    }
+
+    if (withUser === user?.id) {
+      withUserHandled.current = withUser;
+      return;
+    }
+
+    withUserHandled.current = withUser;
+    startMutation
+      .mutateAsync(withUser)
+      .then((res) => {
+        setSelectedId(res.conversationId);
+        setSearchParams({ conversation: res.conversationId }, { replace: true });
+      })
+      .catch(() => {
+        withUserHandled.current = null;
+      });
+  }, [withUser, isAuthenticated, user?.id, startMutation, setSearchParams]);
+
+  const messagesQuery = useMessagesQuery(selectedId ?? undefined, 1, Boolean(selectedId));
+
+  const conversations = conversationsQuery.data ?? [];
+  const selected = conversations.find((c) => c.id === selectedId);
+  const messages = messagesQuery.data?.items ?? [];
+
+  function handleSelectConversation(id: string) {
+    setSelectedId(id);
+    setSearchParams({ conversation: id }, { replace: true });
+  }
+
+  async function handleSend(text: string) {
+    if (!selectedId) {
+      return;
+    }
+    await sendMutation.mutateAsync({ conversationId: selectedId, content: text });
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Flex justify="center" style={{ padding: 48 }}>
+        <Alert type="info" showIcon message="Mesajlar icin giris yapmalisiniz." />
+      </Flex>
+    );
+  }
 
   return (
-    <Flex style={{ height: "100%", overflow: "hidden" }}>
-      {/* Left Panel: Chat List */}
+    <Flex style={{ minHeight: "calc(100vh - 64px)", maxWidth: 1200, margin: "0 auto", width: "100%" }}>
       <Flex
         vertical
         style={{
-          width: 390,
+          width: 340,
+          flexShrink: 0,
           borderRight: `1px solid ${token.colorBorderSecondary}`,
-          height: "100%",
+          background: token.colorBgContainer,
         }}
       >
-        {/* Header */}
-        <Flex
-          align="center"
-          justify="space-between"
-          style={{ padding: "0 16px", height: 53, flexShrink: 0 }}
-        >
-          <Typography.Title
-            level={2}
-            style={{ margin: 0, fontSize: 20, fontWeight: 700 }}
-          >
-            Sohbet
+        <Flex align="center" style={{ padding: "12px 16px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
+          <Typography.Title level={4} style={{ margin: 0, flex: 1 }}>
+            Mesajlar
           </Typography.Title>
-
-          <Flex align="center" gap={8}>
-            <Tooltip title="Tümü">
-              <Button
-                type="text"
-                style={{
-                  borderRadius: 9999,
-                  height: 32,
-                  fontWeight: 700,
-                  fontSize: 15,
-                  padding: "0 12px",
-                  background: isDark ? "#202327" : "#EFF3F4",
-                }}
-              >
-                Tümü <span style={{ marginLeft: 4, fontSize: 10 }}>▼</span>
-              </Button>
-            </Tooltip>
-
-            <Tooltip title="Yeni Mesaj">
-              <Button
-                type="text"
-                shape="circle"
-                icon={<MessageSquarePlus size={20} />}
-              />
-            </Tooltip>
-          </Flex>
         </Flex>
-
-        {/* Search */}
-        <div style={{ padding: "4px 16px 12px", flexShrink: 0 }}>
-          <Input
-            prefix={<Search size={18} style={{ color: token.colorTextSecondary, marginRight: 8 }} />}
-            placeholder="Ara"
-            style={{
-              borderRadius: 9999,
-              background: isDark ? "#202327" : "#EFF3F4",
-              border: "none",
-              height: 44,
-              fontSize: 15,
-            }}
-          />
-        </div>
-
-        {/* Empty State Left */}
-        <Flex
-          vertical
-          align="center"
-          justify="center"
-          style={{ flex: 1, padding: 32, textAlign: "center" }}
-        >
-          <div style={{ marginBottom: 16 }}>
-            <MessageSquare size={72} strokeWidth={1} style={{ opacity: 0.8 }} />
-          </div>
-          <Typography.Title level={3} style={{ margin: "0 0 8px 0", fontSize: 31, fontWeight: 800 }}>
-            Gelen kutusu boş
-          </Typography.Title>
-          <Typography.Text type="secondary" style={{ fontSize: 15 }}>
-            Birilerine mesaj gönder
-          </Typography.Text>
-        </Flex>
+        <ConversationList
+          items={conversations}
+          selectedId={selectedId}
+          onSelect={handleSelectConversation}
+          isLoading={conversationsQuery.isLoading}
+        />
       </Flex>
 
-      {/* Right Panel: Chat Content */}
-      <Flex
-        vertical
-        align="center"
-        justify="center"
-        style={{ flex: 1, height: "100%", padding: 32, textAlign: "center" }}
-      >
-        <div
-          style={{
-            width: 96,
-            height: 96,
-            borderRadius: "50%",
-            background: isDark ? "#202327" : "#EFF3F4",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 32,
-          }}
-        >
-          <MessageSquare size={48} strokeWidth={1.5} style={{ opacity: 0.9 }} />
-        </div>
+      <Flex vertical style={{ flex: 1, minWidth: 0, background: token.colorBgContainer }}>
+        {!selectedId ? (
+          <Flex align="center" justify="center" style={{ flex: 1, padding: 32 }}>
+            <Typography.Text type="secondary">Bir konusma secin veya profilden mesaj baslatin.</Typography.Text>
+          </Flex>
+        ) : (
+          <>
+            <Flex
+              align="center"
+              gap={12}
+              style={{
+                padding: "12px 16px",
+                borderBottom: `1px solid ${token.colorBorderSecondary}`,
+              }}
+            >
+              <Avatar src={selected?.otherUserAvatarUrl ?? undefined} size={40}>
+                {selected?.otherUserName.charAt(0) ?? "?"}
+              </Avatar>
+              <div style={{ minWidth: 0 }}>
+                <Typography.Text strong style={{ fontSize: 16 }}>
+                  {selected?.otherUserName ?? "Kullanici"}
+                </Typography.Text>
+              </div>
+            </Flex>
 
-        <Typography.Title level={2} style={{ margin: "0 0 12px 0", fontSize: 31, fontWeight: 800 }}>
-          Sohbet Başlat
-        </Typography.Title>
-        <Typography.Text type="secondary" style={{ fontSize: 15, marginBottom: 28, maxWidth: 400 }}>
-          Mevcut sohbetlerin arasından seçim yap veya yeni bir sohbet başlat.
-        </Typography.Text>
+            {messagesQuery.isError ? (
+              <Alert type="error" showIcon message="Mesajlar yuklenemedi." style={{ margin: 16 }} />
+            ) : (
+              <MessageThread
+                messages={messages}
+                currentUserId={user?.id}
+                otherUserName={selected?.otherUserName ?? ""}
+                otherAvatarUrl={selected?.otherUserAvatarUrl}
+                isLoading={messagesQuery.isLoading}
+              />
+            )}
 
-        <Button
-          type="primary"
-          size="large"
-          style={{
-            height: 52,
-            padding: "0 32px",
-            fontSize: 17,
-            fontWeight: 700,
-            borderRadius: 9999,
-            background: isDark ? "#FFFFFF" : "#0F1419",
-            color: isDark ? "#0F1419" : "#FFFFFF",
-            border: "none",
-          }}
-        >
-          Yeni sohbet
-        </Button>
+            <MessageComposer
+              isSending={sendMutation.isPending}
+              onSend={handleSend}
+              disabled={!selectedId}
+            />
+          </>
+        )}
       </Flex>
     </Flex>
   );
