@@ -76,7 +76,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               style={{
                 flex: 1,
                 overflowX: "hidden",
-                paddingTop: isMobile ? 54 : 0,
+                paddingTop: isMobile && !location.pathname.startsWith("/profile") ? 54 : 0,
                 paddingBottom: isDesktop ? 0 : 74,
               }}
             >
