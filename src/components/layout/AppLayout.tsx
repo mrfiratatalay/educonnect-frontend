@@ -61,24 +61,28 @@ export default function AppLayout({ children }: AppLayoutProps) {
         >
           <Sidebar />
 
-          <Layout
+          <div
             style={{
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
               minWidth: 0,
               background: "transparent",
             }}
           >
             <Header />
 
-            <Layout.Content
+            <div
               style={{
                 flex: 1,
                 overflowX: "hidden",
+                paddingTop: isMobile ? 54 : 0,
                 paddingBottom: isDesktop ? 0 : 74,
               }}
             >
               {children ?? <Outlet />}
-            </Layout.Content>
-          </Layout>
+            </div>
+          </div>
         </Layout>
       </div>
 

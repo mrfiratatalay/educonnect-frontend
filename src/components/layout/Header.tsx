@@ -1,4 +1,4 @@
-import { Avatar, Button, Flex, Grid, Layout, Typography, theme } from "antd";
+import { Avatar, Button, Flex, Grid, Typography, theme } from "antd";
 import { GraduationCap } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -28,10 +28,12 @@ export default function Header() {
   const title = isHome ? "" : getShellLabel(location.pathname);
 
   return (
-    <Layout.Header
+    <div
       style={{
-        position: "sticky",
+        position: "fixed",
         top: 0,
+        left: 0,
+        right: 0,
         zIndex: 60,
         height: 54,
         paddingInline: 12,
@@ -109,23 +111,7 @@ export default function Header() {
         )}
       </Flex>
 
-      {isHome ? (
-        <Button
-          shape="round"
-          style={{
-            height: 36,
-            paddingInline: 16,
-            fontWeight: 700,
-            borderColor: token.colorBorder,
-            background: token.colorBgContainer,
-            boxShadow: "none",
-          }}
-        >
-          Abone ol
-        </Button>
-      ) : (
-        <div style={{ width: 84 }} />
-      )}
-    </Layout.Header>
+      <div style={{ width: 34 }} />
+    </div>
   );
 }

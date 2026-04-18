@@ -314,3 +314,20 @@ img {
 .discount-card-wrapper .ant-ribbon-wrapper {
   height: 100%;
 }
+
+.feed-page-tabs .ant-tabs-nav {
+  margin: 0 !important;
+}
+
+.feed-page-tabs .ant-tabs-nav-wrap {
+  padding-top: 0 !important;
+}
+
+.feed-page-tabs .ant-tabs-tab {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+.feed-page-tabs .ant-tabs-content-holder {
+  display: none;
+}

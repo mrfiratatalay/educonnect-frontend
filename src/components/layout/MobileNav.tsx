@@ -10,6 +10,7 @@ import {
 } from "@/components/layout/shellNavigation";
 import { useUnreadMessages } from "@/features/messages/unread";
 import { useNotificationsQuery } from "@/features/notifications/hooks";
+import { useMyProfileQuery } from "@/features/users/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
 import { useUIStore } from "@/store/uiStore";
@@ -55,13 +56,21 @@ export default function MobileNav() {
   const { token } = theme.useToken();
   const notificationsQuery = useNotificationsQuery();
   const { unreadCount: unreadMessageCount } = useUnreadMessages();
+  const myProfileQuery = useMyProfileQuery();
   const selectedKey = getSelectedShellKey(location.pathname);
   const userHandle = user?.email?.split("@")[0] ?? "kullanıcı";
+  const hideFab =
+    location.pathname.startsWith("/edu-ai") ||
+    location.pathname.startsWith("/messages") ||
+    location.pathname.startsWith("/communities") ||
+    location.pathname.startsWith("/events");
   const unreadCount = (notificationsQuery.data ?? []).filter((item) => !item.isRead).length;
   const previousUnreadCountRef = useRef(0);
   const previousUnreadMessageCountRef = useRef(0);
   const [shouldPulseNotifications, setShouldPulseNotifications] = useState(false);
   const [shouldPulseMessages, setShouldPulseMessages] = useState(false);
+  const [isFabFaded, setIsFabFaded] = useState(false);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     if (unreadCount > previousUnreadCountRef.current) {
@@ -74,6 +83,21 @@ export default function MobileNav() {
     previousUnreadCountRef.current = unreadCount;
     return undefined;
   }, [unreadCount]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY.current + 8) {
+        setIsFabFaded(true);
+      } else if (currentY < lastScrollY.current - 8) {
+        setIsFabFaded(false);
+      }
+      lastScrollY.current = currentY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (unreadMessageCount > previousUnreadMessageCountRef.current) {
@@ -132,11 +156,11 @@ export default function MobileNav() {
 
               <Flex align="center" gap={24} style={{ marginTop: 16 }}>
                 <Typography.Text style={{ fontSize: 15 }}>
-                  <span style={{ fontWeight: 700, color: token.colorText }}>0</span>{" "}
+                  <span style={{ fontWeight: 700, color: token.colorText }}>{myProfileQuery.data?.followingCount ?? 0}</span>{" "}
                   <span style={{ color: token.colorTextSecondary }}>Takip edilen</span>
                 </Typography.Text>
                 <Typography.Text style={{ fontSize: 15 }}>
-                  <span style={{ fontWeight: 700, color: token.colorText }}>0</span>{" "}
+                  <span style={{ fontWeight: 700, color: token.colorText }}>{myProfileQuery.data?.followersCount ?? 0}</span>{" "}
                   <span style={{ color: token.colorTextSecondary }}>Takipçi</span>
                 </Typography.Text>
               </Flex>
@@ -237,7 +261,7 @@ export default function MobileNav() {
         </div>
       </Drawer>
 
-      {!isComposeModalOpen && (
+      {!isComposeModalOpen && !hideFab && (
         <FloatButton
           type="primary"
           icon={<ComposeFabIcon />}
@@ -247,7 +271,9 @@ export default function MobileNav() {
             bottom: 84,
             width: 54,
             height: 54,
-            boxShadow: "0 8px 24px rgba(29, 155, 240, 0.35)",
+            boxShadow: "0 8px 24px rgba(13, 148, 136, 0.35)",
+            opacity: isFabFaded ? 0.3 : 1,
+            transition: "opacity 0.25s ease",
           }}
         />
       )}

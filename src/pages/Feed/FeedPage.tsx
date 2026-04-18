@@ -27,7 +27,7 @@ export default function FeedPage() {
   const user = useAuthStore((state) => state.user);
   const openComposeModal = useUIStore((state) => state.openComposeModal);
   const screens = Grid.useBreakpoint();
-  const isMobile = !screens.md;
+  const isMobile = !screens.lg;
   const postsQuery = useInfinitePostsQuery(10, activeTab === "foryou");
   const followingPostsQuery = useInfiniteFollowingPostsQuery(10, activeTab === "following");
   const groupsFeedQuery = useInfiniteJoinedGroupsFeedQuery(10, activeTab === "groups");
@@ -94,19 +94,18 @@ export default function FeedPage() {
           >
             <div
               style={{
-                background: isMobile ? "rgba(255, 255, 255, 0.92)" : `${token.colorBgLayout}CC`,
+                background: `${token.colorBgContainer}EB`,
                 backdropFilter: "blur(12px)",
                 WebkitBackdropFilter: "blur(12px)",
                 borderBottom: `1px solid ${token.colorBorderSecondary}`,
                 position: "sticky",
-                top: isMobile ? 54 : 0,
                 zIndex: 10,
               }}
             >
               <Tabs
+                className="feed-page-tabs"
                 activeKey={activeTab}
                 centered={!isMobile}
-                size="large"
                 indicator={{ size: isMobile ? 84 : 56, align: "center" }}
                 onChange={(key) => setActiveTab(key as FeedTabKey)}
                 tabBarGutter={isMobile ? 20 : undefined}
@@ -114,6 +113,8 @@ export default function FeedPage() {
                   margin: 0,
                   borderBottom: "none",
                   paddingInline: isMobile ? 6 : 0,
+                  paddingTop: 0,
+                  paddingBottom: 0,
                 }}
                 items={[
                   {
@@ -149,30 +150,32 @@ export default function FeedPage() {
               />
             ) : null}
 
-            <PostList
-              posts={posts}
-              currentUserId={user?.id}
-              currentUserRole={user?.role}
-              deletingPostId={deletingPostId}
-              updatingPostId={updatingPostId}
-              errorMessage={errorMessage}
-              emptyDescription={
-                isGroupsTab
-                  ? "Katıldigin topluluklardaki paylaşımlar burada akaçak."
-                  : isFollowingTab
-                    ? "Takip ettigin kullanıcıların kişisel paylaşımlari burada akaçak."
-                  : undefined
-              }
-              emptyActionLabel={isGroupsTab ? "Topluluklari keşfet" : undefined}
-              isLoading={activeFeedQuery.isLoading}
-              onCreatePostClick={handleCreatePostClick}
-              onDelete={handleDeletePost}
-              onEmptyActionClick={isGroupsTab ? () => navigate("/communities") : undefined}
-              onUpdate={handleUpdatePost}
-              showGroupContext={isGroupsTab}
-              showRecommendationReason={isForYouTab}
-              showCreateAction={!isGroupsTab && !isFollowingTab}
-            />
+            <div style={{ paddingTop: 24, paddingBottom: 24 }}>
+              <PostList
+                posts={posts}
+                currentUserId={user?.id}
+                currentUserRole={user?.role}
+                deletingPostId={deletingPostId}
+                updatingPostId={updatingPostId}
+                errorMessage={errorMessage}
+                emptyDescription={
+                  isGroupsTab
+                    ? "Katıldigin topluluklardaki paylaşımlar burada akaçak."
+                    : isFollowingTab
+                      ? "Takip ettigin kullanıcıların kişisel paylaşımlari burada akaçak."
+                      : undefined
+                }
+                emptyActionLabel={isGroupsTab ? "Topluluklari keşfet" : undefined}
+                isLoading={activeFeedQuery.isLoading}
+                onCreatePostClick={handleCreatePostClick}
+                onDelete={handleDeletePost}
+                onEmptyActionClick={isGroupsTab ? () => navigate("/communities") : undefined}
+                onUpdate={handleUpdatePost}
+                showGroupContext={isGroupsTab}
+                showRecommendationReason={isForYouTab}
+                showCreateAction={!isGroupsTab && !isFollowingTab}
+              />
+            </div>
 
             {activeFeedQuery.hasNextPage && (
               <Flex justify="center" style={{ padding: "8px 0" }}>

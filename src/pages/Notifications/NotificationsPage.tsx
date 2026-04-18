@@ -114,14 +114,14 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div style={{ maxWidth: 990, margin: "0 auto", padding: "0 16px" }}>
+    <div style={{ maxWidth: 990, margin: "0 auto", paddingInline: screens.md ? 16 : 0 }}>
       <Flex align="flex-start">
         <div style={{ flex: 1, maxWidth: 600, minWidth: 0 }}>
           <div
             style={{
               minHeight: "100vh",
               background: shellBackground,
-              borderInline: `1px solid ${shellBorderColor}`,
+              borderInline: screens.md ? `1px solid ${shellBorderColor}` : "none",
             }}
           >
             <Affix offsetTop={0}>

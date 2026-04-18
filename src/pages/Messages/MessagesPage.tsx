@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import {
   Alert,
   Avatar,
@@ -7,6 +8,7 @@ import {
   Card,
   Empty,
   Flex,
+  Grid,
   Input,
   Modal,
   Skeleton,
@@ -28,6 +30,8 @@ import MessageThread from "@/pages/Messages/components/MessageThread";
 
 export default function MessagesPage() {
   const { token } = theme.useToken();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   const [searchParams, setSearchParams] = useSearchParams();
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -137,6 +141,10 @@ export default function MessagesPage() {
     );
   }
 
+  // Mobilde: konuşma seçiliyse thread göster, seçili değilse liste göster
+  const showThreadOnMobile = isMobile && selectedId !== null;
+  const showListOnMobile = isMobile && selectedId === null;
+
   return (
     <>
       <Flex
@@ -148,115 +156,132 @@ export default function MessagesPage() {
         }}
       >
         {/* Sol panel — konuşma listesi */}
-        <Flex
-          vertical
-          style={{
-            width: 340,
-            flexShrink: 0,
-            borderRight: `1px solid ${token.colorBorderSecondary}`,
-            background: token.colorBgContainer,
-          }}
-        >
+        {(!isMobile || showListOnMobile) && (
           <Flex
-            align="center"
+            vertical
             style={{
-              padding: "12px 16px",
-              borderBottom: `1px solid ${token.colorBorderSecondary}`,
+              width: isMobile ? "100%" : 340,
+              flexShrink: 0,
+              borderRight: isMobile ? "none" : `1px solid ${token.colorBorderSecondary}`,
+              background: token.colorBgContainer,
             }}
           >
-            <Typography.Title level={4} style={{ margin: 0, flex: 1 }}>
-              Mesajlar
-            </Typography.Title>
-            <Button
-              type="text"
-              shape="circle"
-              icon={<SquarePen size={20} />}
-              onClick={() => setNewConvOpen(true)}
-              title="Yeni mesaj"
+            <Flex
+              align="center"
+              style={{
+                padding: "12px 16px",
+                borderBottom: `1px solid ${token.colorBorderSecondary}`,
+              }}
+            >
+              <Typography.Title level={4} style={{ margin: 0, flex: 1 }}>
+                Mesajlar
+              </Typography.Title>
+              <Button
+                type="text"
+                shape="circle"
+                icon={<SquarePen size={20} />}
+                onClick={() => setNewConvOpen(true)}
+                title="Yeni mesaj"
+              />
+            </Flex>
+
+            <ConversationList
+              items={conversations}
+              selectedId={selectedId}
+              onSelect={handleSelectConversation}
+              isLoading={conversationsQuery.isLoading}
             />
           </Flex>
-
-          <ConversationList
-            items={conversations}
-            selectedId={selectedId}
-            onSelect={handleSelectConversation}
-            isLoading={conversationsQuery.isLoading}
-          />
-        </Flex>
+        )}
 
         {/* Sağ panel — mesaj thread */}
-        <Flex vertical style={{ flex: 1, minWidth: 0, background: token.colorBgContainer }}>
-          {!selectedId ? (
-            <Flex align="center" justify="center" style={{ flex: 1, padding: 32 }}>
-              <Typography.Text type="secondary">
-                Bir konusma secin veya yeni mesaj baslatin.
-              </Typography.Text>
-            </Flex>
-          ) : (
-            <>
-              <Flex
-                align="center"
-                gap={12}
-                style={{
-                  padding: "12px 16px",
-                  borderBottom: `1px solid ${token.colorBorderSecondary}`,
-                  flexShrink: 0,
-                }}
-              >
-                <Avatar src={selected?.otherUserAvatarUrl ?? undefined} size={40}>
-                  {selected?.otherUserName.charAt(0) ?? "?"}
-                </Avatar>
-                <div style={{ minWidth: 0 }}>
-                  <Typography.Text strong style={{ fontSize: 16 }}>
-                    {selected?.otherUserName ?? "Kullanıcı"}
-                  </Typography.Text>
-                </div>
+        {(!isMobile || showThreadOnMobile) && (
+          <Flex vertical style={{ flex: 1, minWidth: 0, background: token.colorBgContainer }}>
+            {!selectedId ? (
+              <Flex align="center" justify="center" style={{ flex: 1, padding: 32 }}>
+                <Typography.Text type="secondary">
+                  Bir konuşma seçin veya yeni mesaj başlatın.
+                </Typography.Text>
               </Flex>
+            ) : (
+              <>
+                <Flex
+                  align="center"
+                  gap={12}
+                  style={{
+                    padding: "12px 16px",
+                    borderBottom: `1px solid ${token.colorBorderSecondary}`,
+                    flexShrink: 0,
+                  }}
+                >
+                  {isMobile && (
+                    <Button
+                      type="text"
+                      shape="circle"
+                      icon={<ArrowLeft size={20} />}
+                      onClick={() => {
+                        setSelectedId(null);
+                        const nextParams = new URLSearchParams();
+                        setSearchParams(nextParams, { replace: true });
+                      }}
+                      style={{ marginRight: 4 }}
+                    />
+                  )}
+                  <Avatar src={selected?.otherUserAvatarUrl ?? undefined} size={40}>
+                    {selected?.otherUserName.charAt(0) ?? "?"}
+                  </Avatar>
+                  <div style={{ minWidth: 0 }}>
+                    <Typography.Text strong style={{ fontSize: 16 }}>
+                      {selected?.otherUserName ?? "Kullanıcı"}
+                    </Typography.Text>
+                  </div>
+                </Flex>
 
-              {messagesQuery.isError ? (
-                <Alert
-                  type="error"
-                  showIcon
-                  message="Mesajlar yüklenemedi."
-                  style={{ margin: 16 }}
-                />
-              ) : (
-                <>
-                  {productTitle ? (
-                    <div style={{ padding: "12px 16px 0" }}>
-                      <Card size="small" styles={{ body: { padding: 12 } }}>
-                        <Typography.Text strong style={{ display: "block" }}>
-                          Ilan baglami
-                        </Typography.Text>
-                        <Typography.Text type="secondary">
-                          Bu konusma su ilan için acildi: {productTitle}
-                        </Typography.Text>
-                      </Card>
-                    </div>
-                  ) : null}
-                  <MessageThread
-                    messages={messages}
-                    currentUserId={user?.id}
-                    otherUserName={selected?.otherUserName ?? ""}
-                    otherAvatarUrl={selected?.otherUserAvatarUrl}
-                    isLoading={messagesQuery.isLoading}
-                    hasOlderMessages={messagesQuery.data?.hasOlderMessages ?? false}
-                    isFetchingOlder={messagesQuery.isFetchingNextPage}
-                    onLoadOlder={() => void messagesQuery.fetchNextPage()}
+                {messagesQuery.isError ? (
+                  <Alert
+                    type="error"
+                    showIcon
+                    message="Mesajlar yüklenemedi."
+                    style={{ margin: 16 }}
                   />
-                </>
-              )}
+                ) : (
+                  <>
+                    {productTitle ? (
+                      <div style={{ padding: "12px 16px 0" }}>
+                        <Card size="small" styles={{ body: { padding: 12 } }}>
+                          <Typography.Text strong style={{ display: "block" }}>
+                            İlan bağlamı
+                          </Typography.Text>
+                          <Typography.Text type="secondary">
+                            Bu konuşma şu ilan için açıldı: {productTitle}
+                          </Typography.Text>
+                        </Card>
+                      </div>
+                    ) : null}
+                    <MessageThread
+                      messages={messages}
+                      currentUserId={user?.id}
+                      otherUserName={selected?.otherUserName ?? ""}
+                      otherAvatarUrl={selected?.otherUserAvatarUrl}
+                      isLoading={messagesQuery.isLoading}
+                      hasOlderMessages={messagesQuery.data?.hasOlderMessages ?? false}
+                      isFetchingOlder={messagesQuery.isFetchingNextPage}
+                      onLoadOlder={() => void messagesQuery.fetchNextPage()}
+                    />
+                  </>
+                )}
 
-              <MessageComposer
-                isSending={sendMutation.isPending}
-                onSend={handleSend}
-                disabled={!selectedId}
-                value={composerText}
-                onValueChange={setComposerText}
-              />
-            </>
-          )}
-        </Flex>
+                <MessageComposer
+                  isSending={sendMutation.isPending}
+                  onSend={handleSend}
+                  disabled={!selectedId}
+                  value={composerText}
+                  onValueChange={setComposerText}
+                />
+              </>
+            )}
+          </Flex>
+        )}
       </Flex>
 
       {/* Yeni konuşma modalı */}
