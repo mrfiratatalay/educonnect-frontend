@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { Alert, Avatar, Button, Flex, Form, Input, Modal, Select, Typography, theme } from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Avatar, Button, Flex, Form, Input, Modal, Select, Spin, Typography, theme } from "antd";
+import { Upload } from "lucide-react";
 import type { CreateGroupInput } from "@/features/groups/types";
+import { uploadGroupAvatar, uploadGroupBanner } from "@/features/groups/api";
 import {
   avatarPresets,
   coverPresets,
@@ -37,6 +39,10 @@ export default function CreateGroupDialog({
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
+  const bannerFileInputRef = useRef<HTMLInputElement>(null);
   const { token } = theme.useToken();
 
   useEffect(() => {
@@ -68,6 +74,38 @@ export default function CreateGroupDialog({
     shortDescription.trim() ||
     description.trim() ||
     "Toplulugun kisa aciklamasi burada gorunecek.";
+
+  async function handleBannerFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setIsUploadingBanner(true);
+    setErrorMessage(null);
+    try {
+      const url = await uploadGroupBanner(file);
+      setBannerUrl(url);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Kapak gorseli yuklenemedi.");
+    } finally {
+      setIsUploadingBanner(false);
+      if (bannerFileInputRef.current) bannerFileInputRef.current.value = "";
+    }
+  }
+
+  async function handleAvatarFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setIsUploadingAvatar(true);
+    setErrorMessage(null);
+    try {
+      const url = await uploadGroupAvatar(file);
+      setAvatarUrl(url);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Gorsel yuklenemedi.");
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarFileInputRef.current) avatarFileInputRef.current.value = "";
+    }
+  }
 
   async function handleOk() {
     if (name.trim().length < 3) {
@@ -140,22 +178,82 @@ export default function CreateGroupDialog({
                 ? `url(${normalizedBannerUrl}) center / cover`
                 : token.colorFillSecondary,
               borderBottom: `1px solid ${token.colorBorderSecondary}`,
+              position: "relative",
+              cursor: "pointer",
             }}
-          />
-          <Flex align="center" gap={14} style={{ padding: 16 }}>
-            <Avatar
-              size={64}
-              src={normalizedAvatarUrl}
-              style={{
-                flexShrink: 0,
-                background: token.colorFillSecondary,
-                color: token.colorText,
-                fontSize: 22,
-                fontWeight: 800,
-              }}
+            onClick={() => bannerFileInputRef.current?.click()}
+          >
+            <input
+              ref={bannerFileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif"
+              style={{ display: "none" }}
+              onChange={handleBannerFileChange}
+            />
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              background: "rgba(0,0,0,0.18)",
+              color: "#fff",
+              fontSize: 14,
+              fontWeight: 600,
+              opacity: isUploadingBanner ? 1 : 0,
+              transition: "opacity 0.18s",
+            }}
+              onMouseEnter={(e) => { if (!isUploadingBanner) (e.currentTarget as HTMLDivElement).style.opacity = "1"; }}
+              onMouseLeave={(e) => { if (!isUploadingBanner) (e.currentTarget as HTMLDivElement).style.opacity = "0"; }}
             >
-              {name.trim().charAt(0).toUpperCase() || "T"}
-            </Avatar>
+              <Upload size={18} />
+              {isUploadingBanner ? "Yukleniyor..." : "Kapak fotografi ekle"}
+            </div>
+          </div>
+          <Flex align="center" gap={14} style={{ padding: 16 }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <input
+                ref={avatarFileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif"
+                style={{ display: "none" }}
+                onChange={handleAvatarFileChange}
+              />
+              <Avatar
+                size={64}
+                src={normalizedAvatarUrl}
+                style={{
+                  background: token.colorFillSecondary,
+                  color: token.colorText,
+                  fontSize: 22,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+                onClick={() => avatarFileInputRef.current?.click()}
+              >
+                {isUploadingAvatar ? <Spin size="small" /> : (name.trim().charAt(0).toUpperCase() || "T")}
+              </Avatar>
+              <div
+                onClick={() => avatarFileInputRef.current?.click()}
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  width: 22,
+                  height: 22,
+                  borderRadius: "50%",
+                  background: token.colorPrimary,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  border: `2px solid ${token.colorBgContainer}`,
+                }}
+              >
+                <Upload size={11} color="#fff" />
+              </div>
+            </div>
             <div style={{ minWidth: 0 }}>
               <Typography.Text strong style={{ display: "block", fontSize: 18 }}>
                 {name.trim() || "Topluluk adi"}

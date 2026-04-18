@@ -1,7 +1,6 @@
 import { type ReactNode, useRef, useState } from "react";
 import {
   ArrowLeftOutlined,
-  EditOutlined,
   EllipsisOutlined,
   LinkOutlined,
 } from "@ant-design/icons";
@@ -69,7 +68,7 @@ import {
   getCommunitySummary,
 } from "@/pages/Communities/communitySurface";
 
-type DetailTab = "latest" | "popular" | "media" | "events" | "about";
+type DetailTab = "latest" | "popular" | "events" | "about";
 
 export default function CommunityDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -400,14 +399,6 @@ export default function CommunityDetailPage() {
                     justifyContent: "flex-start",
                   }}
                 >
-                  {group.canCurrentUserPost ? (
-                    <Button
-                      shape="circle"
-                      icon={<EditOutlined />}
-                      onClick={() => setShowComposer((current) => !current)}
-                      style={{ borderColor: token.colorBorderSecondary, boxShadow: "none" }}
-                    />
-                  ) : null}
                   <Button
                     shape="circle"
                     icon={<LinkOutlined />}
@@ -490,7 +481,6 @@ export default function CommunityDetailPage() {
               items={[
                 { key: "popular", label: "Populer" },
                 { key: "latest", label: "En Son" },
-                { key: "media", label: "Medya" },
                 { key: "events", label: "Etkinlikler" },
                 { key: "about", label: "Hakkinda" },
               ]}
@@ -799,10 +789,6 @@ function CommunityDetailSkeleton() {
 }
 
 function getVisiblePosts(posts: FeedPost[], activeTab: DetailTab) {
-  if (activeTab === "media") {
-    return posts.filter((post) => Boolean(post.imageUrl));
-  }
-
   if (activeTab === "popular") {
     return [...posts].sort(
       (left, right) =>

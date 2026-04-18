@@ -270,6 +270,42 @@ export async function leaveGroup(groupId: string) {
   }
 }
 
+export async function uploadGroupBanner(file: File): Promise<string> {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await executeAuthorizedRequest((accessToken) =>
+      groupsApi.post<{ url: string }>("/api/groups/upload-banner", formData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }),
+    );
+    return response.data.url;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function uploadGroupAvatar(file: File): Promise<string> {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await executeAuthorizedRequest((accessToken) =>
+      groupsApi.post<{ url: string }>("/api/groups/upload-avatar", formData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }),
+    );
+    return response.data.url;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
 export async function deleteGroup(groupId: string) {
   try {
     await executeAuthorizedRequest((accessToken) =>
