@@ -1,6 +1,6 @@
 import { Button, ConfigProvider, Flex, Grid, Layout, Modal, Typography, theme } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { GraduationCap, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   authPalette,
   authPrimaryButtonStyle,
@@ -55,23 +55,11 @@ function AuthLayoutContent() {
                 padding: screens.lg ? 48 : "8px 0 32px",
               }}
             >
-              <div
-                style={{
-                  width: screens.lg ? 320 : 82,
-                  height: screens.lg ? 320 : 82,
-                  borderRadius: "50%",
-                  display: "grid",
-                  placeItems: "center",
-                  border: "1px solid rgba(15, 20, 25, 0.08)",
-                  background: "rgba(15, 20, 25, 0.02)",
-                  boxShadow: "0 24px 60px rgba(0, 0, 0, 0.08)",
-                }}
-              >
-                <GraduationCap
-                  size={screens.lg ? 180 : 44}
-                  strokeWidth={0.9}
-                  color={authPalette.text}
-                  style={{ opacity: 0.92 }}
+              <div style={{ display: "inline-flex" }}>
+                <img
+                  src="/logo.png"
+                  alt="EduConnect"
+                  style={{ width: screens.lg ? 680 : 260, height: screens.lg ? 680 : 260, objectFit: "contain", display: "block" }}
                 />
               </div>
             </Flex>
@@ -86,33 +74,34 @@ function AuthLayoutContent() {
                 maxWidth: screens.lg ? 620 : 420,
               }}
             >
-              <Flex align="center" gap={12} style={{ marginBottom: screens.lg ? 72 : 36 }}>
-                <GraduationCap size={screens.lg ? 36 : 30} color={authPalette.text} />
-                <Typography.Text
+              <div style={{ marginBottom: 20 }}>
+                <Typography.Title
+                  level={1}
                   style={{
                     color: authPalette.text,
-                    fontSize: screens.lg ? 28 : 24,
+                    fontSize: screens.lg ? 72 : 42,
                     fontWeight: 800,
-                    letterSpacing: "-0.03em",
+                    lineHeight: 1,
+                    letterSpacing: "-0.05em",
+                    margin: 0,
                   }}
                 >
                   EduConnect
-                </Typography.Text>
-              </Flex>
-
-              <Typography.Title
-                level={1}
-                style={{
-                  color: authPalette.text,
-                  fontSize: screens.lg ? 72 : 42,
-                  fontWeight: 800,
-                  lineHeight: 1,
-                  letterSpacing: "-0.05em",
-                  margin: "0 0 20px 0",
-                }}
-              >
-                Kampüste şimdi ne oluyor?
-              </Typography.Title>
+                </Typography.Title>
+                <Typography.Title
+                  level={1}
+                  style={{
+                    color: authPalette.text,
+                    fontSize: screens.lg ? 72 : 42,
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    letterSpacing: "-0.05em",
+                    margin: 0,
+                  }}
+                >
+                  Kampüste şimdi ne oluyor?
+                </Typography.Title>
+              </div>
 
               <Typography.Title
                 level={2}
@@ -238,7 +227,6 @@ function AuthLayoutContent() {
                   }}
                 />
 
-                <GraduationCap size={isMobile ? 32 : 34} color={authPalette.text} />
                 <div style={{ width: 40, height: 40 }} />
               </Flex>
 

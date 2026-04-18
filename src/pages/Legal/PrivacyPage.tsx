@@ -1,5 +1,4 @@
 import { Typography, Divider, Flex, Table } from "antd";
-import { GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const { Title, Paragraph, Text, Link } = Typography;
@@ -72,7 +71,7 @@ export default function PrivacyPage() {
       }}
     >
       <Flex align="center" gap={10} style={{ marginBottom: 8, cursor: "pointer" }} onClick={() => navigate("/")}>
-        <GraduationCap size={24} />
+        <img src="/logo.png" alt="EduConnect" style={{ width: 64, height: 64, objectFit: "contain" }} />
         <Text strong style={{ fontSize: 18 }}>{PLATFORM_NAME}</Text>
       </Flex>
 

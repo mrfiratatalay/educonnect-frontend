@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Avatar, Badge, Button, Flex, Grid, Layout, Popover, Typography, theme } from "antd";
-import { Feather, GraduationCap, MoreHorizontal } from "lucide-react";
+import { Feather, MoreHorizontal } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getSelectedShellKey,
@@ -159,14 +159,14 @@ export default function Sidebar() {
 
   return (
     <Layout.Sider
-      width={275}
+      width={240}
       collapsed={isMessages}
       collapsedWidth={88}
       theme="light"
       trigger={null}
       style={{
         background: "transparent",
-        borderInlineEnd: "none",
+        borderInlineEnd: `1px solid ${token.colorBorderSecondary}`,
         overflowX: "hidden",
         overflowY: "auto",
         height: "100vh",
@@ -178,13 +178,12 @@ export default function Sidebar() {
       <Flex vertical justify="space-between" style={{ minHeight: "100%", padding: "6px 10px 12px" }}>
         <div>
           <div style={{ padding: "6px 12px 6px" }}>
-            <Button
-              type="text"
+            <div
               onClick={() => navigate("/")}
-              style={{ height: "auto", padding: 6, borderRadius: 10 }}
+              style={{ cursor: "pointer", padding: 6, borderRadius: 10, display: "inline-flex" }}
             >
-              <GraduationCap size={28} strokeWidth={2} color={token.colorPrimary} />
-            </Button>
+              <img src="/logo.png" alt="EduConnect" style={{ width: isMessages ? 52 : 110, height: isMessages ? 52 : 110, objectFit: "contain", display: "block" }} />
+            </div>
           </div>
 
           <Flex vertical gap={2} style={{ marginTop: 2 }}>
@@ -202,6 +201,7 @@ export default function Sidebar() {
                     cursor: "pointer",
                     transition: "background-color 0.18s",
                     width: isMessages ? "auto" : "max-content",
+                    color: selectedKey === item.key ? token.colorPrimary : token.colorText,
                   }}
                   onClick={() => navigate(item.key)}
                   onMouseEnter={(event) => {

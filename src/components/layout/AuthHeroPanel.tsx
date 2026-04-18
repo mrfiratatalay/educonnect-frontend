@@ -1,5 +1,5 @@
 import { Avatar, Card, Flex, Grid, Typography, theme } from "antd";
-import { BadgePercent, BrainCircuit, GraduationCap, Users } from "lucide-react";
+import { BadgePercent, BrainCircuit, Users } from "lucide-react";
 
 const heroCopy = {
   "/login": {
@@ -113,18 +113,7 @@ export default function AuthHeroPanel({ pathname }: AuthHeroPanelProps) {
 
       <Flex vertical gap={28} style={{ position: "relative", zIndex: 1 }}>
         <Flex align="center" gap={16}>
-          <Avatar
-            shape="square"
-            size={56}
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.18)",
-              color: token.colorTextLightSolid,
-              borderRadius: token.borderRadiusLG,
-              backdropFilter: "blur(16px)",
-            }}
-          >
-            <GraduationCap size={28} />
-          </Avatar>
+          <img src="/logo.png" alt="EduConnect" style={{ width: 80, height: 80, objectFit: "contain", flexShrink: 0 }} />
 
           <div>
             <Typography.Title

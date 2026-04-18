@@ -66,12 +66,12 @@ export default function BookmarksPage() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto" }}>
+    <div style={{ maxWidth: 600 }}>
       <div
         style={{
           minHeight: "100vh",
           background: token.colorBgContainer,
-          borderInline: `1px solid ${token.colorBorderSecondary}`,
+          borderInlineEnd: `1px solid ${token.colorBorderSecondary}`,
         }}
       >
         <Affix offsetTop={0}>

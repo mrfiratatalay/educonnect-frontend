@@ -31,20 +31,20 @@ import type { VisualSearchResult } from "@/pages/Market/components/VisualSearchP
 
 const conditionOptions: { label: string; value: ProductCondition | "all" }[] = [
   { label: "Tüm durumlar", value: "all" },
-  { label: "Sifir", value: "new" },
+  { label: "Sıfır", value: "new" },
   { label: "Yeni gibi", value: "likeNew" },
-  { label: "Iyi", value: "good" },
-  { label: "Kullanilmis", value: "fair" },
+  { label: "İyi", value: "good" },
+  { label: "Kullanılmış", value: "fair" },
 ];
 
 const PAGE_SIZE = 12;
 type MarketTabKey = "products" | "discounts";
 type DiscountCategory =
   | "all"
-  | "Yeme Icme"
-  | "Kirtasiye"
+  | "Yeme İçme"
+  | "Kırtasiye"
   | "Teknoloji"
-  | "Ulasim"
+  | "Ulaşım"
   | "Giyim"
   | "Diğer";
 
@@ -151,12 +151,12 @@ export default function MarketPage() {
           <div>
             <Typography.Title level={screens.lg ? 2 : 3} style={{ margin: 0 }}>Pazar</Typography.Title>
             <Typography.Text type="secondary">
-              Öğrenciden öğrenciye ikinci el ilanlar ve öğrenciye ozel indirimler
+              Öğrenciden öğrenciye ikinci el ilanlar ve öğrenciye özel indirimler
             </Typography.Text>
           </div>
           {activeTab === "products" ? (
             <Button type="primary" icon={<Plus size={14} />} onClick={() => setIsCreateOpen(true)}>
-              Ilan Oluştur
+              İlan Oluştur
             </Button>
           ) : null}
         </Flex>
@@ -165,15 +165,15 @@ export default function MarketPage() {
           activeKey={activeTab}
           onChange={handleTabChange}
           items={[
-            { key: "products", label: "Ilanlar" },
-            { key: "discounts", label: "Indirimler" },
+            { key: "products", label: "İlanlar" },
+            { key: "discounts", label: "İndirimler" },
           ]}
           style={{ marginBottom: -8 }}
         />
 
         <Flex gap={8} align="center" wrap>
           <Input.Search
-            placeholder={activeTab === "products" ? "Urun ara..." : "Indirim veya isletme ara..."}
+            placeholder={activeTab === "products" ? "Ürün ara..." : "İndirim veya işletme ara..."}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             onSearch={(v) => setDebouncedSearch(v.trim())}
@@ -225,7 +225,7 @@ export default function MarketPage() {
               <InputNumber placeholder="Max TL" min={0} value={maxPrice}
                 onChange={(v) => { setMaxPrice(v ?? undefined); setPage(1); }}
                 style={{ width: 110 }} />
-              <Button icon={<ReloadOutlined />} onClick={handleResetFilters} type="text">Sifirla</Button>
+              <Button icon={<ReloadOutlined />} onClick={handleResetFilters} type="text">Sıfırla</Button>
             </Flex>
           </Card>
         )}
@@ -242,17 +242,17 @@ export default function MarketPage() {
                 onChange={(value) => setSelectedDiscountCategory(value)}
                 options={[
                   { label: "Tüm kategoriler", value: "all" },
-                  { label: "Yeme Icme", value: "Yeme Icme" },
-                  { label: "Kirtasiye", value: "Kirtasiye" },
+                  { label: "Yeme İçme", value: "Yeme İçme" },
+                  { label: "Kırtasiye", value: "Kırtasiye" },
                   { label: "Teknoloji", value: "Teknoloji" },
-                  { label: "Ulasim", value: "Ulasim" },
+                  { label: "Ulaşım", value: "Ulaşım" },
                   { label: "Giyim", value: "Giyim" },
                   { label: "Diğer", value: "Diğer" },
                 ]}
                 style={{ minWidth: 180 }}
               />
               <Select
-                placeholder="Isletme"
+                placeholder="İşletme"
                 value={selectedBusiness}
                 onChange={(value) => setSelectedBusiness(value)}
                 options={discountBusinesses.map((business) => ({
@@ -263,7 +263,7 @@ export default function MarketPage() {
                 allowClear
               />
               <Button icon={<ReloadOutlined />} onClick={handleResetFilters} type="text">
-                Sifirla
+                Sıfırla
               </Button>
             </Flex>
           </Card>
@@ -278,7 +278,7 @@ export default function MarketPage() {
         ) : activeTab === "products" ? productsQuery.isLoading ? (
           <Flex justify="center" style={{ padding: 60 }}><Spin size="large" /></Flex>
         ) : products.length === 0 ? (
-          <Card><Empty description="Henuz ilan bulunamadi." /></Card>
+          <Card><Empty description="Henüz ilan bulunamadı." /></Card>
         ) : (
           <>
             <Row gutter={[20, 20]}>
@@ -303,7 +303,7 @@ export default function MarketPage() {
         ) : discountsQuery.isLoading ? (
           <Flex justify="center" style={{ padding: 60 }}><Spin size="large" /></Flex>
         ) : discounts.length === 0 ? (
-          <Card><Empty description="Aramana uygun aktif indirim bulunamadi." /></Card>
+          <Card><Empty description="Aramanıza uygun aktif indirim bulunamadı." /></Card>
         ) : (
           <Row gutter={[20, 20]}>
             {discounts.map((discount) => (
@@ -315,10 +315,10 @@ export default function MarketPage() {
         )}
 
         {activeTab === "products" && productsQuery.isError && !showingVs && (
-          <Card><Empty description="Urunler yüklenirken hata olustu." /></Card>
+          <Card><Empty description="Ürünler yüklenirken hata oluştu." /></Card>
         )}
         {activeTab === "discounts" && discountsQuery.isError ? (
-          <Card><Empty description="Indirimler yüklenirken hata olustu." /></Card>
+          <Card><Empty description="İndirimler yüklenirken hata oluştu." /></Card>
         ) : null}
       </Flex>
 
@@ -332,7 +332,7 @@ function VsResultsGrid({ results, onNavigate }: { results: VisualSearchResult[];
   return (
     <>
       <Typography.Text strong style={{ fontSize: 15 }}>
-        Görsel Arama Sonuclari ({results.length})
+        Görsel Arama Sonuçları ({results.length})
       </Typography.Text>
       <Row gutter={[16, 16]}>
         {results.map((r) => (
@@ -361,11 +361,11 @@ function inferDiscountCategory(discount: AppDiscount): DiscountCategory {
   const source = `${discount.businessName} ${discount.title} ${discount.description}`.toLocaleLowerCase("tr-TR");
 
   if (containsAny(source, ["kafe", "cafe", "kahve", "burger", "pizza", "yemek", "restoran"])) {
-    return "Yeme Icme";
+    return "Yeme İçme";
   }
 
   if (containsAny(source, ["kirtasiye", "defter", "kalem", "baski", "fotokopi", "kitap"])) {
-    return "Kirtasiye";
+    return "Kırtasiye";
   }
 
   if (containsAny(source, ["teknoloji", "telefon", "laptop", "kulaklik", "bilgisayar", "tablet"])) {
@@ -373,7 +373,7 @@ function inferDiscountCategory(discount: AppDiscount): DiscountCategory {
   }
 
   if (containsAny(source, ["ulasim", "otobus", "servis", "taksi", "yolculuk"])) {
-    return "Ulasim";
+    return "Ulaşım";
   }
 
   if (containsAny(source, ["giyim", "ayakkabi", "ceket", "magaza", "tekstil"])) {

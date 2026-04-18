@@ -121,7 +121,7 @@ export default function NotificationsPage() {
             style={{
               minHeight: "100vh",
               background: shellBackground,
-              borderInline: screens.md ? `1px solid ${shellBorderColor}` : "none",
+              borderInlineEnd: screens.md ? `1px solid ${shellBorderColor}` : "none",
             }}
           >
             <Affix offsetTop={0}>

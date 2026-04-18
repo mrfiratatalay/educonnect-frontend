@@ -1,5 +1,4 @@
-import { Avatar, Button, Flex, Typography, theme } from "antd";
-import { GraduationCap } from "lucide-react";
+import { Flex, Typography, theme } from "antd";
 import { useNavigate } from "react-router-dom";
 
 interface AppShellBrandProps {
@@ -15,27 +14,24 @@ export default function AppShellBrand({
   const { token } = theme.useToken();
 
   return (
-    <Button
-      type="text"
+    <div
       onClick={() => navigate(to)}
       style={{
-        height: "auto",
+        cursor: "pointer",
         padding: 0,
         borderRadius: token.borderRadiusLG,
+        display: "inline-flex",
+        alignItems: "center",
       }}
     >
       <Flex align="center" gap={compact ? 10 : 12}>
-        <Avatar
-          shape="square"
-          size={compact ? 32 : 36}
-          style={{
-            backgroundColor: token.colorPrimary,
-            color: token.colorTextLightSolid,
-            borderRadius: compact ? token.borderRadius : token.borderRadiusLG,
-          }}
-        >
-          <GraduationCap size={compact ? 16 : 18} />
-        </Avatar>
+        <div style={{ display: "inline-flex", flexShrink: 0 }}>
+          <img
+            src="/logo.png"
+            alt="EduConnect"
+            style={{ width: compact ? 64 : 72, height: compact ? 64 : 72, objectFit: "contain", display: "block" }}
+          />
+        </div>
 
         <Typography.Text
           strong
@@ -48,6 +44,6 @@ export default function AppShellBrand({
           Edu<span style={{ color: token.colorPrimary }}>Connect</span>
         </Typography.Text>
       </Flex>
-    </Button>
+    </div>
   );
 }

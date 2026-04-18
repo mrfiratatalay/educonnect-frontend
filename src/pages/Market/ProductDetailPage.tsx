@@ -63,7 +63,7 @@ export default function ProductDetailPage() {
     if (!product) return;
     try {
       await deleteMutation.mutateAsync(product.id);
-      message.success("Ilan silindi.");
+      message.success("İlan silindi.");
       navigate("/market");
     } catch {
       message.error("Silinemedi.");
@@ -81,8 +81,8 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <Flex vertical align="center" style={{ padding: 60 }}>
-        <Empty description="Urun bulunamadi." />
-        <Button type="link" onClick={() => navigate("/market")}>Pazara don</Button>
+        <Empty description="Ürün bulunamadı." />
+        <Button type="link" onClick={() => navigate("/market")}>Pazara dön</Button>
       </Flex>
     );
   }
@@ -95,7 +95,7 @@ export default function ProductDetailPage() {
         onClick={() => navigate("/market")}
         style={{ marginBottom: 16 }}
       >
-        Pazara Don
+        Pazara Dön
       </Button>
 
       <Flex gap={24} wrap vertical={!screens.md}>
@@ -136,7 +136,7 @@ export default function ProductDetailPage() {
             <Tag color={CONDITION_COLORS[product.condition]}>
               {CONDITION_LABELS[product.condition]}
             </Tag>
-            {product.isNegotiable && <Tag color="orange">Pazarlik yapilir</Tag>}
+            {product.isNegotiable && <Tag color="orange">Pazarlık yapılır</Tag>}
           </Flex>
 
           <Typography.Title level={3} style={{ margin: 0 }}>
@@ -152,11 +152,11 @@ export default function ProductDetailPage() {
           </Typography.Paragraph>
 
           <Descriptions column={1} size="small" bordered>
-            <Descriptions.Item label="Satici">{product.sellerName}</Descriptions.Item>
-            <Descriptions.Item label="Sehir">
+            <Descriptions.Item label="Satıcı">{product.sellerName}</Descriptions.Item>
+            <Descriptions.Item label="Şehir">
               <Flex align="center" gap={4}><MapPin size={14} /> {product.city}</Flex>
             </Descriptions.Item>
-            <Descriptions.Item label="Ilan Tarihi">
+            <Descriptions.Item label="İlan Tarihi">
               {dayjs(product.createdAtUtc).format("DD MMMM YYYY")}
             </Descriptions.Item>
           </Descriptions>
@@ -175,13 +175,13 @@ export default function ProductDetailPage() {
                     <Typography.Text type="secondary">
                       {sellerListingCount > 0
                         ? `${sellerListingCount} aktif ilan`
-                        : "Satici profili"}
+                        : "Satıcı profili"}
                     </Typography.Text>
                   </div>
                 </Flex>
                 <Flex gap={8} wrap>
                   <Button onClick={handleOpenSellerProfile}>
-                    Profili gor
+                    Profili gör
                   </Button>
                   <Button type="primary" onClick={handleMessageSeller}>
                     Mesaj gönder
@@ -194,16 +194,16 @@ export default function ProductDetailPage() {
           {isOwner && (
             <Flex gap={8}>
               <Button icon={<Pencil size={14} />} onClick={() => setIsEditOpen(true)}>
-                Ilani Düzenle
+                İlanı Düzenle
               </Button>
               <Popconfirm
-                title="Bu ilani silmek istediginize emin misiniz?"
+                title="Bu ilanı silmek istediğinize emin misiniz?"
                 onConfirm={handleDelete}
                 okText="Evet, sil"
                 cancelText="Vazgeç"
               >
                 <Button danger icon={<Trash2 size={14} />} loading={deleteMutation.isPending}>
-                  Ilani Sil
+                  İlanı Sil
                 </Button>
               </Popconfirm>
             </Flex>

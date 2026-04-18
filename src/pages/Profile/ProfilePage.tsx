@@ -191,7 +191,7 @@ function ProfileColumn({ children, borderInline }: { children: ReactNode; border
   const { token } = theme.useToken();
   return (
     <div style={{ flex: 1, maxWidth: 600, minWidth: 0 }}>
-      <div style={{ minHeight: "100vh", background: token.colorBgContainer, borderInline }}>{children}</div>
+      <div style={{ minHeight: "100vh", background: token.colorBgContainer, borderInlineEnd: borderInline }}>{children}</div>
     </div>
   );
 }

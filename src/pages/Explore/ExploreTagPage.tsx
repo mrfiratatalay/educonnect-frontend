@@ -57,7 +57,7 @@ export default function ExploreTagPage() {
           <div
             style={{
               background: token.colorBgContainer,
-              borderInline: isMobile ? "none" : `1px solid ${token.colorBorderSecondary}`,
+              borderInlineEnd: isMobile ? "none" : `1px solid ${token.colorBorderSecondary}`,
               minHeight: isMobile ? "calc(100vh - 108px)" : "100vh",
             }}
           >

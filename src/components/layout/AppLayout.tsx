@@ -54,7 +54,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           style={{
             minHeight: "100vh",
             width: "100%",
-            maxWidth: 1265, // Sidebar (275) + Feed Max Width (990)
+            maxWidth: 1230, // Sidebar (240) + Feed Max Width (990)
             margin: "0 auto",
             background: "transparent",
           }}

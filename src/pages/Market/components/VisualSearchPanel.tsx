@@ -87,9 +87,9 @@ export default function VisualSearchPanel({ onResultsChange }: VisualSearchPanel
         >
           <Flex vertical align="center" gap={8} style={{ padding: "12px 0" }}>
             <Camera size={28} color={token.colorTextSecondary} />
-            <Typography.Text strong>Fotoğrafla Urun Ara</Typography.Text>
+            <Typography.Text strong>Fotoğrafla Ürün Ara</Typography.Text>
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              Bir urun fotoğrafı yükleyin, butcenize uygun benzer urunleri bulalim
+              Bir ürün fotoğrafı yükleyin, bütçenize uygun benzer ürünleri bulalım
             </Typography.Text>
           </Flex>
         </Upload.Dragger>
@@ -119,7 +119,7 @@ export default function VisualSearchPanel({ onResultsChange }: VisualSearchPanel
                 <Alert message="Görsel analiz ediliyor..." type="info" showIcon />
               )}
               {visualSearch.isError && (
-                <Alert message="Arama sirasinda hata olustu." type="error" showIcon />
+                <Alert message="Arama sırasında hata oluştu." type="error" showIcon />
               )}
               {analysis && (
                 <>
@@ -127,7 +127,7 @@ export default function VisualSearchPanel({ onResultsChange }: VisualSearchPanel
                     <Search size={14} />
                     <Typography.Text strong>{analysis.productName}</Typography.Text>
                     <Tag color="blue">{analysis.categoryLabel}</Tag>
-                    <Tag>%{analysis.confidence} guven</Tag>
+                    <Tag>%{analysis.confidence} güven</Tag>
                   </Flex>
                   {analysis.keywords.length > 0 && (
                     <Flex gap={4} wrap>

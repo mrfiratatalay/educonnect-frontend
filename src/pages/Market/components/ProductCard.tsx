@@ -96,7 +96,7 @@ export default function ProductCard({ product, onClick, onSellerClick }: Product
                 }}
                 style={{ paddingInline: 0, flexShrink: 0 }}
               >
-                Profili gor
+                Profili gör
               </Button>
             ) : null}
           </Flex>

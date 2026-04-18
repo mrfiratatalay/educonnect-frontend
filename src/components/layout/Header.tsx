@@ -1,5 +1,4 @@
 import { Avatar, Button, Flex, Grid, Typography, theme } from "antd";
-import { GraduationCap } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getShellLabel,
@@ -83,19 +82,12 @@ export default function Header() {
         }}
       >
         {isHome ? (
-          <Button
-            type="text"
+          <div
             onClick={() => navigate("/")}
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: 8,
-              padding: 0,
-              color: token.colorPrimary,
-            }}
+            style={{ cursor: "pointer", borderRadius: 8, display: "inline-flex" }}
           >
-            <GraduationCap size={24} strokeWidth={2.1} />
-          </Button>
+            <img src="/logo.png" alt="EduConnect" style={{ width: 64, height: 64, objectFit: "contain", display: "block" }} />
+          </div>
         ) : (
           <Typography.Text
             strong

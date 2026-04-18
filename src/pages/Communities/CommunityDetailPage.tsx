@@ -298,7 +298,7 @@ export default function CommunityDetailPage() {
               flex: 1,
               maxWidth: screens.xl ? 620 : "100%",
               minWidth: 0,
-              borderInline: screens.sm ? `1px solid ${token.colorBorderSecondary}` : "none",
+              borderInlineEnd: screens.sm ? `1px solid ${token.colorBorderSecondary}` : "none",
               background: token.colorBgContainer,
               minHeight: "100vh",
             }}

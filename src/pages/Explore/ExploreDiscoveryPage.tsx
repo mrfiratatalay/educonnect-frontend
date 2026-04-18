@@ -79,7 +79,7 @@ export default function ExploreDiscoveryPage() {
             style={{
               minHeight: "100vh",
               background: token.colorBgContainer,
-              borderInline: isTablet ? `1px solid ${shellBorderColor}` : "none",
+              borderInlineEnd: isTablet ? `1px solid ${shellBorderColor}` : "none",
             }}
           >
             <div

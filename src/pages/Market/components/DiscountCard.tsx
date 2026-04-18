@@ -28,9 +28,9 @@ export default function DiscountCard({ discount }: DiscountCardProps) {
 
     try {
       await navigator.clipboard.writeText(discount.code);
-      messageApi.success("Indirim kodu kopyalandi.");
+      messageApi.success("İndirim kodu kopyalandı.");
     } catch {
-      messageApi.error("Indirim kodu kopyalanamadi.");
+      messageApi.error("İndirim kodu kopyalanamadı.");
     }
   }
 
