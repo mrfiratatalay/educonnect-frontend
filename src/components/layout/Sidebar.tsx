@@ -181,9 +181,9 @@ export default function Sidebar() {
             <Button
               type="text"
               onClick={() => navigate("/")}
-              style={{ height: "auto", padding: 6, borderRadius: 9999 }}
+              style={{ height: "auto", padding: 6, borderRadius: 10 }}
             >
-              <GraduationCap size={28} strokeWidth={2} />
+              <GraduationCap size={28} strokeWidth={2} color={token.colorPrimary} />
             </Button>
           </div>
 
@@ -198,14 +198,14 @@ export default function Sidebar() {
                   gap={18}
                   style={{
                     padding: navRowPadding,
-                    borderRadius: 9999,
+                    borderRadius: 8,
                     cursor: "pointer",
-                    transition: "background-color 0.2s",
+                    transition: "background-color 0.18s",
                     width: isMessages ? "auto" : "max-content",
                   }}
                   onClick={() => navigate(item.key)}
                   onMouseEnter={(event) => {
-                    event.currentTarget.style.background = token.colorFillTertiary;
+                    event.currentTarget.style.background = token.colorFillSecondary;
                   }}
                   onMouseLeave={(event) => {
                     event.currentTarget.style.background = "transparent";
@@ -311,18 +311,18 @@ export default function Sidebar() {
                   gap={18}
                   style={{
                     padding: navRowPadding,
-                    borderRadius: 9999,
+                    borderRadius: 8,
                     cursor: "pointer",
-                    transition: "background-color 0.2s",
+                    transition: "background-color 0.18s",
                     width: isMessages ? "auto" : "max-content",
-                    background: morePopoverOpen || isMoreSelected ? token.colorFillTertiary : "transparent",
+                    background: morePopoverOpen || isMoreSelected ? token.colorFillSecondary : "transparent",
                   }}
                   onMouseEnter={(event) => {
-                    event.currentTarget.style.background = token.colorFillTertiary;
+                    event.currentTarget.style.background = token.colorFillSecondary;
                   }}
                   onMouseLeave={(event) => {
                     event.currentTarget.style.background =
-                      morePopoverOpen || isMoreSelected ? token.colorFillTertiary : "transparent";
+                      morePopoverOpen || isMoreSelected ? token.colorFillSecondary : "transparent";
                   }}
                 >
                   <MoreHorizontal size={navIconSize} fill={morePopoverOpen || isMoreSelected ? "currentColor" : "none"} />
@@ -368,7 +368,6 @@ export default function Sidebar() {
                   fontWeight: 700,
                   letterSpacing: "0.01em",
                   border: "none",
-                  borderRadius: 9999,
                 }}
                 onClick={openComposeModal}
               >
