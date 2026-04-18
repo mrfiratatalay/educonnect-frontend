@@ -23,6 +23,8 @@ import NotificationsPage from "@/pages/Notifications/NotificationsPage";
 import MessagesPage from "@/pages/Messages/MessagesPage";
 import ProfilePage from "@/pages/Profile/ProfilePage";
 import SettingsPage from "@/pages/Settings/SettingsPage";
+import TermsPage from "@/pages/Legal/TermsPage";
+import PrivacyPage from "@/pages/Legal/PrivacyPage";
 import { Spin, Flex } from "antd";
 
 function RouteLoading() {
@@ -131,6 +133,9 @@ export default function App() {
         <Route path="/profile/:userId" element={<ProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
+
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

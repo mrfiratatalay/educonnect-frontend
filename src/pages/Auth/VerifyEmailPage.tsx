@@ -16,11 +16,11 @@ import {
 } from "./AuthPageParts";
 
 const schema = z.object({
-  email: z.string().email("Gecerli bir üniversite e-posta adresi girin"),
+  email: z.string().email("Geçerli bir üniversite e-posta adresi girin"),
   code: z
     .string()
     .trim()
-    .regex(/^\d{6}$/, "Doğrulama kodu 6 haneli olmali"),
+    .regex(/^\d{6}$/, "Doğrulama kodu 6 haneli olmalı"),
 });
 
 type VerifyEmailForm = z.infer<typeof schema>;
@@ -99,8 +99,8 @@ export default function VerifyEmailPage() {
       <Flex vertical style={{ width: "100%", maxWidth: 380 }}>
         <Result
           status="success"
-          title="Kurumsal e-posta doğrulandi"
-          subTitle="Hesabin artik aktif. Üniversite e-posta adresinle giriş yapabilirsin."
+          title="Kurumsal e-posta doğrulandı"
+          subTitle="Hesabın artık aktif. Üniversite e-posta adresinle giriş yapabilirsin."
           extra={
             <Button
               type="primary"
@@ -119,9 +119,9 @@ export default function VerifyEmailPage() {
   return (
     <Flex vertical style={{ width: "100%", maxWidth: 380 }}>
       <AuthPageIntro
-        eyebrow="Kurumsal e-posta kontrolu"
-        title="E-postani doğrula"
-        description="Üniversite e-posta adresine gönderilen 6 haneli kodu gir. Kod gelmediyse ayni ekrandan yeni kod isteyebilirsin."
+        eyebrow="Kurumsal e-posta kontrolü"
+        title="E-postanı doğrula"
+        description="Üniversite e-posta adresine gönderilen 6 haneli kodu gir. Kod gelmediyse aynı ekrandan yeni kod isteyebilirsin."
       />
 
       <form
@@ -211,7 +211,7 @@ export default function VerifyEmailPage() {
             loading={isSubmitting}
             style={authPrimaryButtonStyle}
           >
-            {isSubmitting ? "Doğrulaniyor..." : "E-postayi doğrula"}
+            {isSubmitting ? "Doğrulanıyor..." : "E-postayı doğrula"}
           </Button>
 
           <Button
@@ -229,7 +229,7 @@ export default function VerifyEmailPage() {
       </form>
 
       <AuthPageFooter
-        prompt="Giriş ekranina donmek ister misin?"
+        prompt="Giriş ekranına dönmek ister misin?"
         linkText="Giriş yap"
         onClick={() => navigate("/login")}
       />

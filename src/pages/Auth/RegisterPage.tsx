@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Alert, Button, Flex, Input, Select } from "antd";
 import { getApiErrorMessage, getUniversities, register as registerRequest } from "@/features/auth/api";
 import {
+  AuthLegalText,
   AuthPageFooter,
   AuthPageIntro,
   AuthStepLabel,
@@ -29,32 +30,32 @@ const registerSchema = z
   .object({
     fullName: z.preprocess(
       normalizeStringInput,
-      z.string().trim().min(3, "Ad soyad en az 3 karakter olmali"),
+      z.string().trim().min(3, "Ad soyad en az 3 karakter olmalı"),
     ),
     email: z.preprocess(
       normalizeStringInput,
-      z.string().trim().email("Gecerli bir e-posta adresi girin"),
+      z.string().trim().email("Geçerli bir e-posta adresi girin"),
     ),
     universityId: z.preprocess(
       normalizeStringInput,
-      z.string().min(1, "Üniversite secin"),
+      z.string().min(1, "Üniversite seçin"),
     ),
     department: z.preprocess(
       normalizeStringInput,
-      z.string().trim().min(2, "Bölüm en az 2 karakter olmali"),
+      z.string().trim().min(2, "Bölüm en az 2 karakter olmalı"),
     ),
     year: z.preprocess(
       normalizeStringInput,
-      z.string().min(1, "Sinif secin"),
+      z.string().min(1, "Sınıf seçin"),
     ),
     password: z.preprocess(
       normalizeStringInput,
-      z.string().min(8, "Şifre en az 8 karakter olmali"),
+      z.string().min(8, "Şifre en az 8 karakter olmalı"),
     ),
     confirmPassword: z.preprocess(normalizeStringInput, z.string()),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Şifreler eslesmiyor",
+    message: "Şifreler eşleşmiyor",
     path: ["confirmPassword"],
   });
 
@@ -71,11 +72,11 @@ const stepTwoFields = [
 ] as const;
 
 const yearOptions = [
-  { value: "1", label: "1. Sinif" },
-  { value: "2", label: "2. Sinif" },
-  { value: "3", label: "3. Sinif" },
-  { value: "4", label: "4. Sinif" },
-  { value: "5", label: "5. Sinif+" },
+  { value: "1", label: "1. Sınıf" },
+  { value: "2", label: "2. Sınıf" },
+  { value: "3", label: "3. Sınıf" },
+  { value: "4", label: "4. Sınıf" },
+  { value: "5", label: "5. Sınıf+" },
 ];
 
 export default function RegisterPage() {
@@ -157,7 +158,7 @@ export default function RegisterPage() {
       }, 0);
     }
 
-    setSubmitError("Devam etmeden once tüm zorunlu alanlari doldurun.");
+    setSubmitError("Devam etmeden önce tüm zorunlu alanları doldurun.");
   };
 
   const submitRegistration = handleSubmit(onSubmit, handleInvalidSubmit);
@@ -186,8 +187,8 @@ export default function RegisterPage() {
         title="Hesap oluştur"
         description={
           currentStep === 0
-            ? "Adini ve üniversiteye ait kurumsal e-posta adresini gir. Sonraki adimda profilini ve şifreni tamamlayacaksin."
-            : "Üniversiteni ekle, profilini tamamla ve hesabın için şifre belirle. Kayıt sonrasi doğrulama kodu e-posta adresine gönderilecek."
+            ? "Adını ve üniversiteye ait kurumsal e-posta adresini gir. Sonraki adımda profilini ve şifreni tamamlayacaksın."
+            : "Üniversiteni ekle, profilini tamamla ve hesabın için şifre belirle. Kayıt sonrası doğrulama kodu e-posta adresine gönderilecek."
         }
       />
 
@@ -264,9 +265,9 @@ export default function RegisterPage() {
                   {...field}
                   allowClear
                   loading={isUniversitiesLoading}
-                  notFoundContent={isUniversitiesLoading ? "Yükleniyor..." : "Sonuc bulunamadi"}
+                  notFoundContent={isUniversitiesLoading ? "Yükleniyor..." : "Sonuç bulunamadı"}
                   options={universityOptions}
-                  placeholder="Üniversite sec"
+                  placeholder="Üniversite seç"
                   showSearch={{ optionFilterProp: "label" }}
                   size="large"
                   status={errors.universityId ? "error" : undefined}
@@ -305,7 +306,7 @@ export default function RegisterPage() {
               type="warning"
               showIcon
               title="Üniversiteler yüklenemedi."
-              description="Sayfayi yenileyip yeniden deneyin."
+              description="Sayfayı yenileyip yeniden deneyin."
               style={{ ...authWarningAlertStyle, marginBottom: 18 }}
             />
           ) : null}
@@ -319,7 +320,7 @@ export default function RegisterPage() {
                 <Select
                   {...field}
                   options={yearOptions}
-                  placeholder="Sinif sec"
+                  placeholder="Sınıf seç"
                   size="large"
                   status={errors.year ? "error" : undefined}
                   value={getSelectValue(field.value)}
@@ -402,7 +403,7 @@ export default function RegisterPage() {
               loading={isSubmitting}
               style={authPrimaryButtonStyle}
             >
-              {isSubmitting ? "Hesap oluşturuluyor..." : "Hesabi oluştur"}
+              {isSubmitting ? "Hesap oluşturuluyor..." : "Hesabı oluştur"}
             </Button>
 
             <Button
@@ -413,12 +414,14 @@ export default function RegisterPage() {
             >
               Geri
             </Button>
+
+            <AuthLegalText />
           </Flex>
         )}
       </form>
 
       <AuthPageFooter
-        prompt="Zaten bir hesabın var mi?"
+        prompt="Zaten bir hesabın var mı?"
         linkText="Giriş yap"
         onClick={() => navigate("/login")}
       />

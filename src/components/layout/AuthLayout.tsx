@@ -2,21 +2,10 @@ import { Button, ConfigProvider, Flex, Grid, Layout, Modal, Typography, theme } 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { GraduationCap, X } from "lucide-react";
 import {
-  AuthLegalText,
   authPalette,
   authPrimaryButtonStyle,
   authSecondaryButtonStyle,
 } from "@/pages/Auth/AuthPageParts";
-
-const footerLinks = [
-  "Hakkinda",
-  "Kampüs rehberi",
-  "Gizlilik",
-  "Cerezler",
-  "Kariyer",
-  "Yardim merkezi",
-  "(c) 2026 EduConnect Corp.",
-];
 
 function AuthLayoutContent() {
   const { pathname } = useLocation();
@@ -134,7 +123,7 @@ function AuthLayoutContent() {
                   margin: "0 0 28px 0",
                 }}
               >
-                Üniversite agina bugun katıl.
+                Üniversite ağına bugün katıl.
               </Typography.Title>
 
               <Flex vertical gap={14} style={{ width: "100%", maxWidth: 360 }}>
@@ -148,7 +137,6 @@ function AuthLayoutContent() {
                   Hesap oluştur
                 </Button>
 
-                <AuthLegalText />
               </Flex>
 
               <Flex vertical gap={14} style={{ width: "100%", maxWidth: 360, marginTop: 44 }}>
@@ -159,7 +147,7 @@ function AuthLayoutContent() {
                     fontWeight: 800,
                   }}
                 >
-                  Zaten bir hesabın var mi?
+                  Zaten bir hesabın var mı?
                 </Typography.Text>
 
                 <Button
@@ -176,25 +164,23 @@ function AuthLayoutContent() {
 
           <Flex
             wrap="wrap"
-            gap={12}
+            gap={16}
             justify={screens.lg ? "center" : "flex-start"}
             style={{
               position: "relative",
               zIndex: 1,
-              padding: screens.lg ? "0 24px 24px" : "0 24px 28px",
+              padding: screens.lg ? "0 24px 28px" : "0 24px 32px",
             }}
           >
-            {footerLinks.map((text) => (
-              <Typography.Text
-                key={text}
-                style={{
-                  color: authPalette.muted,
-                  fontSize: 13,
-                }}
-              >
-                {text}
-              </Typography.Text>
-            ))}
+            <Typography.Link href="/terms" target="_blank" style={{ color: authPalette.muted, fontSize: 13 }}>
+              Hizmet Şartları
+            </Typography.Link>
+            <Typography.Link href="/privacy" target="_blank" style={{ color: authPalette.muted, fontSize: 13 }}>
+              Gizlilik Politikası
+            </Typography.Link>
+            <Typography.Text style={{ color: authPalette.muted, fontSize: 13 }}>
+              © {new Date().getFullYear()} EduConnect
+            </Typography.Text>
           </Flex>
 
           <Modal

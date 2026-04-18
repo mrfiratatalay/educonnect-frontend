@@ -17,7 +17,7 @@ import {
 } from "./AuthPageParts";
 
 const schema = z.object({
-  email: z.string().email("Gecerli bir e-posta adresi girin"),
+  email: z.string().email("Geçerli bir e-posta adresi girin"),
 });
 
 type ForgotForm = z.infer<typeof schema>;
@@ -55,15 +55,15 @@ export default function ForgotPasswordPage() {
         <>
           <AuthPageIntro
             eyebrow="E-posta gönderildi"
-            title="Baglanti hazır"
-            description="Hesap varsa şifre sifirlama adimlarini e-posta adresine gönderdik. Gelen kutunu ve spam klasorunu kontrol et."
+            title="Bağlantı hazır"
+            description="Hesap varsa şifre sıfırlama adımlarını e-posta adresine gönderdik. Gelen kutunu ve spam klasörünü kontrol et."
           />
 
           <Alert
             type="success"
             showIcon
             title="Talep oluşturuldu"
-            description="Ayni adresle tekrar denemek istersen birkaç dakika beklemen yeterli."
+            description="Aynı adresle tekrar denemek istersen birkaç dakika beklemen yeterli."
             style={{ ...authSuccessAlertStyle, marginBottom: 24 }}
           />
 
@@ -75,15 +75,15 @@ export default function ForgotPasswordPage() {
             icon={<ArrowLeft size={16} />}
             style={authPrimaryButtonStyle}
           >
-            Giriş sayfasına don
+            Giriş sayfasına dön
           </Button>
         </>
       ) : (
         <>
           <AuthPageIntro
-            eyebrow="Hesap erisimi"
-            title="Şifreni sifirla"
-            description="Kayıtlı e-posta adresini gir. Şifre sifirlama baglantisini oraya gönderelim."
+            eyebrow="Hesap erişimi"
+            title="Şifreni sıfırla"
+            description="Kayıtlı e-posta adresini gir. Şifre sıfırlama bağlantısını oraya gönderelim."
           />
 
           <form
@@ -132,12 +132,12 @@ export default function ForgotPasswordPage() {
               loading={isSubmitting}
               style={authPrimaryButtonStyle}
             >
-              {isSubmitting ? "Gönderiliyor..." : "Sifirlama baglantisi gönder"}
+              {isSubmitting ? "Gönderiliyor..." : "Sıfırlama bağlantısı gönder"}
             </Button>
           </form>
 
           <AuthPageFooter
-            prompt="Şifreni hatirladiysan"
+            prompt="Şifreni hatırladıysan"
             linkText="giriş yap"
             onClick={() => navigate("/login", { replace: true })}
           />

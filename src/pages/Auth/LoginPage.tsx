@@ -17,8 +17,8 @@ import {
 } from "./AuthPageParts";
 
 const loginSchema = z.object({
-  email: z.string().email("Gecerli bir e-posta adresi girin"),
-  password: z.string().min(8, "Şifre en az 8 karakter olmali"),
+  email: z.string().email("Geçerli bir e-posta adresi girin"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -55,9 +55,9 @@ export default function LoginPage() {
   return (
     <Flex vertical style={{ width: "100%", maxWidth: 380 }}>
       <AuthPageIntro
-        eyebrow="Hesabına don"
+        eyebrow="Hesabına dön"
         title="Giriş yap"
-        description="EduConnect hesabına erismek için e-posta adresini ve şifreni gir."
+        description="EduConnect hesabına erişmek için e-posta adresini ve şifreni gir."
       />
 
       <form
@@ -136,7 +136,7 @@ export default function LoginPage() {
             onClick={() => navigate("/forgot-password")}
             style={authSecondaryButtonStyle}
           >
-            Şifremi unuttüm
+            Şifremi unuttum
           </Button>
 
           <Button
@@ -145,13 +145,13 @@ export default function LoginPage() {
             onClick={() => navigate("/verify-email")}
             style={authSecondaryButtonStyle}
           >
-            E-postami doğrula
+            E-postamı doğrula
           </Button>
         </Flex>
       </form>
 
       <AuthPageFooter
-        prompt="Hesabin yok mu?"
+        prompt="Hesabın yok mu?"
         linkText="Kayıt ol"
         onClick={() => navigate("/register")}
       />

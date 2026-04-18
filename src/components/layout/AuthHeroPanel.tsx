@@ -3,47 +3,47 @@ import { BadgePercent, BrainCircuit, GraduationCap, Users } from "lucide-react";
 
 const heroCopy = {
   "/login": {
-    eyebrow: "Akademik ve sosyal aginiz tek yerde",
-    title: "Üniversite topluluğuna hizli bir geri donus yapin.",
+    eyebrow: "Akademik ve sosyal ağınız tek yerde",
+    title: "Üniversite topluluğuna hızlı bir geri dönüş yapın.",
     subtitle:
-      "Ders paylaşımlari, sosyal baglantilar ve kampüs odakli firsatlar tek bir akis içinde sizi bekliyor.",
+      "Ders paylaşımları, sosyal bağlantılar ve kampüs odaklı fırsatlar tek bir akış içinde sizi bekliyor.",
   },
   "/register": {
-    eyebrow: "Yeni üye kaydi",
-    title: "Birkaç bilgiyle EduConnect topluluğuna katılin.",
+    eyebrow: "Yeni üye kaydı",
+    title: "Birkaç bilgiyle EduConnect topluluğuna katılın.",
     subtitle:
-      "Üniversitenizi secin, profilinizi oluştürün ve hem akademik hem sosyal akisa doğrudan baglanin.",
+      "Üniversitenizi seçin, profilinizi oluşturun ve hem akademik hem sosyal akışa doğrudan bağlanın.",
   },
   "/forgot-password": {
-    eyebrow: "Hesap erisimi",
-    title: "Hesabiniza guvenli sekilde yeniden ulasmanizi saglayin.",
+    eyebrow: "Hesap erişimi",
+    title: "Hesabınıza güvenli şekilde yeniden ulaşmanızı sağlayın.",
     subtitle:
-      "Şifre sifirlama akişi e-posta uzerinden ilerler; hesap varsa yonlendirmeler size aninda gönderilir.",
+      "Şifre sıfırlama akışı e-posta üzerinden ilerler; hesap varsa yönlendirmeler size anında gönderilir.",
   },
 } as const;
 
 const highlights = [
   {
     icon: BrainCircuit,
-    title: "AI destekli çalışma akişi",
-    description: "Ders, ödev ve kampüs süreçlerini tek ekrandan daha hizli yönetin.",
+    title: "AI destekli çalışma akışı",
+    description: "Ders, ödev ve kampüs süreçlerini tek ekrandan daha hızlı yönetin.",
   },
   {
     icon: Users,
-    title: "Üniversite odakli topluluk",
-    description: "Benzer bölümlerden öğrencilerle kolayca baglanti kurun.",
+    title: "Üniversite odaklı topluluk",
+    description: "Benzer bölümlerden öğrencilerle kolayca bağlantı kurun.",
   },
   {
     icon: BadgePercent,
-    title: "Öğrenci avantajlari",
-    description: "Platform içindeki indirimleri ve firsatlari tek yerde takip edin.",
+    title: "Öğrenci avantajları",
+    description: "Platform içindeki indirimleri ve fırsatları tek yerde takip edin.",
   },
 ] as const;
 
 const stats = [
   { value: "7/24", label: "AI Asistan" },
   { value: "500+", label: "Öğrenci" },
-  { value: "20+", label: "Kampüs avantaji" },
+  { value: "20+", label: "Kampüs avantajı" },
 ] as const;
 
 interface AuthHeroPanelProps {

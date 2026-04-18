@@ -50,9 +50,6 @@ export default function CommunitiesRail() {
 
       <FollowSuggestionsCard />
 
-      <div className="communities-meta-links">
-        Hizmet Şartları | Gizlilik Politikası | Cerez Politikasi | Reklam bilgisi | Daha fazla
-      </div>
     </Flex>
   );
 }

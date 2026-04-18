@@ -5,8 +5,6 @@ import { useNavigate } from "react-router-dom";
 import FollowSuggestionsCard from "@/components/shared/FollowSuggestionsCard";
 import { useTrendingHashtagsQuery } from "@/features/posts/hooks";
 
-const footerLinks = ["Hizmet Şartları", "Gizlilik Politikası", "Cerez Politikasi", "Reklam bilgisi"];
-
 export default function ProfileRightRail() {
   const { token } = theme.useToken();
   const navigate = useNavigate();
@@ -70,12 +68,6 @@ export default function ProfileRightRail() {
             </Typography.Link>
           </RailCard>
 
-          <Flex wrap gap={8} style={{ paddingInline: 12 }}>
-            {footerLinks.map((item) => (
-              <Typography.Text key={item} type="secondary" style={{ fontSize: 13 }}>{item}</Typography.Text>
-            ))}
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>(c) 2026 EduConnect Corp.</Typography.Text>
-          </Flex>
         </Flex>
       </div>
     </div>

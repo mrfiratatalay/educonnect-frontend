@@ -193,14 +193,14 @@ export function AuthLegalText() {
       }}
     >
       Kayıt olarak{" "}
-      <Typography.Text style={{ color: authPalette.primary, fontSize: 12 }}>
+      <Typography.Link href="/terms" target="_blank" style={{ fontSize: 12 }}>
         Hizmet Şartları
-      </Typography.Text>{" "}
-      ve{" "}
-      <Typography.Text style={{ color: authPalette.primary, fontSize: 12 }}>
+      </Typography.Link>
+      {" "}ve{" "}
+      <Typography.Link href="/privacy" target="_blank" style={{ fontSize: 12 }}>
         Gizlilik Politikası
-      </Typography.Text>
-      'ni kabul etmis olursun.
+      </Typography.Link>
+      'nı okuduğunu ve kabul ettiğini beyan edersin.
     </Typography.Paragraph>
   );
 }
