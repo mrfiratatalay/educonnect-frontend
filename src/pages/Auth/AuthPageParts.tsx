@@ -3,18 +3,18 @@ import { Flex, Typography } from "antd";
 
 export const authPalette = {
   background: "#FFFFFF",
-  text: "#0F1419",
-  muted: "#536471",
-  border: "#CFD9DE",
-  borderStrong: "#9BA6AD",
-  primary: "#1D9BF0",
+  text: "#0F172A",
+  muted: "#475569",
+  border: "#E2E8F0",
+  borderStrong: "#94A3B8",
+  primary: "#0D9488",
   white: "#FFFFFF",
-  ink: "#0F1419",
+  ink: "#0F766E",
 } as const;
 
 export const authInputStyle: CSSProperties = {
   height: 56,
-  borderRadius: 14,
+  borderRadius: 8,
   background: "transparent",
   borderColor: authPalette.border,
   color: authPalette.text,
@@ -27,9 +27,9 @@ export const authSelectStyle: CSSProperties = {
 
 export const authPrimaryButtonStyle: CSSProperties = {
   height: 48,
-  borderRadius: 999,
+  borderRadius: 8,
   fontSize: 16,
-  fontWeight: 800,
+  fontWeight: 700,
   background: authPalette.ink,
   color: authPalette.white,
   border: "none",
@@ -38,9 +38,9 @@ export const authPrimaryButtonStyle: CSSProperties = {
 
 export const authSecondaryButtonStyle: CSSProperties = {
   height: 48,
-  borderRadius: 999,
+  borderRadius: 8,
   fontSize: 16,
-  fontWeight: 700,
+  fontWeight: 600,
   background: "transparent",
   color: authPalette.text,
   borderColor: authPalette.borderStrong,

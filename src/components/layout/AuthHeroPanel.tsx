@@ -62,7 +62,7 @@ export default function AuthHeroPanel({ pathname }: AuthHeroPanelProps) {
         height: "100%",
         overflow: "hidden",
         borderRadius: token.borderRadiusLG * 2,
-        background: `linear-gradient(158deg, ${token.colorPrimary} 0%, #4338CA 46%, #1E1B4B 100%)`,
+        background: `linear-gradient(158deg, #14B8A6 0%, #0F766E 45%, #134E4A 100%)`,
         boxShadow: token.boxShadow,
         position: "relative",
       }}
