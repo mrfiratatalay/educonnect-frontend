@@ -12,7 +12,7 @@ import {
   Typography,
   theme,
 } from "antd";
-import { Maximize2, Send, Sparkles, X } from "lucide-react";
+import { Maximize2, Send, Sparkles, SquarePen, X } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -20,6 +20,7 @@ import {
   useSendMessageMutation,
   useStartSessionMutation,
   useSessionsQuery,
+  useEndSessionMutation,
 } from "@/features/chat/hooks";
 import type { ChatMessageItem, ConfidenceBand } from "@/features/chat/types";
 import { normalizeExternalHref } from "@/features/chat/linkUtils";
@@ -54,8 +55,18 @@ export default function EduAiPanel({ onClose }: EduAiPanelProps) {
   const visibleMessages = [...messages, ...pendingUserMessages];
 
   const startSession = useStartSessionMutation();
+  const endSession = useEndSessionMutation();
   const sendMessage = useSendMessageMutation();
   const isLoading = sendMessage.isPending;
+
+  const handleNewChat = async () => {
+    if (sessionId) {
+      await endSession.mutateAsync(sessionId);
+    }
+    setInput("");
+    setPendingUserMessages([]);
+    setError(null);
+  };
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -140,6 +151,14 @@ export default function EduAiPanel({ onClose }: EduAiPanelProps) {
           <Typography.Text strong>EduAI</Typography.Text>
         </Flex>
         <Flex gap={2}>
+          <Button
+            type="text"
+            size="small"
+            icon={<SquarePen size={14} />}
+            title="Yeni sohbet"
+            disabled={!sessionId || endSession.isPending}
+            onClick={handleNewChat}
+          />
           <Button
             type="text"
             size="small"

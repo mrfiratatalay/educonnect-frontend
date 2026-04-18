@@ -26,7 +26,7 @@ export default function ProfileRightRail() {
           />
 
           <FollowSuggestionsCard
-            title="Bunlari begenebilirsin"
+            title="Kimi takip etmeli"
             background={railSurface}
             bordered={false}
           />
