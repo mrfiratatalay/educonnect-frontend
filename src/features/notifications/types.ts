@@ -14,3 +14,5 @@ export interface AppNotification {
   createdAt: string;
   link: string;
 }
+
+export type NotificationTypeValue = NotificationKind | number | string;

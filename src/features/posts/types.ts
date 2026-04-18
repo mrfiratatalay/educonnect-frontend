@@ -65,7 +65,9 @@ export interface CreatePostInput {
 export interface UpdatePostInput {
   postId: string;
   content: string;
-  imageUrl?: string;
+  imageFile?: File | null;
+  removeImage?: boolean;
+  currentImageUrl?: string;
 }
 
 export interface CreatePostCommentInput {

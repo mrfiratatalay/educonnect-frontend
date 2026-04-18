@@ -9,10 +9,11 @@ const PRODUCT_KEYS = {
   categories: ["categories"] as const,
 };
 
-export function useProductsQuery(filters: ProductFilters = {}) {
+export function useProductsQuery(filters: ProductFilters = {}, enabled = true) {
   return useQuery({
     queryKey: PRODUCT_KEYS.list(filters),
     queryFn: () => productsApi.getProducts(filters),
+    enabled,
   });
 }
 
@@ -24,11 +25,12 @@ export function useProductDetailQuery(id: string | null) {
   });
 }
 
-export function useCategoriesQuery() {
+export function useCategoriesQuery(enabled = true) {
   return useQuery({
     queryKey: PRODUCT_KEYS.categories,
     queryFn: productsApi.getCategories,
     staleTime: 5 * 60 * 1000,
+    enabled,
   });
 }
 

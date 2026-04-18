@@ -33,6 +33,7 @@ export interface FollowSuggestion {
   universityName?: string;
   mutualGroupCount: number;
   reasonLabel: string;
+  isFollowedByCurrentUser: boolean;
 }
 
 export interface UserConnection {
@@ -230,6 +231,7 @@ function normalizeFollowSuggestion(suggestion: FollowSuggestion): FollowSuggesti
     avatarUrl: suggestion.avatarUrl || undefined,
     department: suggestion.department || undefined,
     universityName: suggestion.universityName || undefined,
+    isFollowedByCurrentUser: Boolean(suggestion.isFollowedByCurrentUser),
   };
 }
 

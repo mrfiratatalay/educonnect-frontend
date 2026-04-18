@@ -1,4 +1,5 @@
 import dayjs, { type Dayjs } from "dayjs";
+import type { AppDiscount } from "@/features/discounts/types";
 import type { AppEvent } from "@/features/events/types";
 import type { AppGroup } from "@/features/groups/types";
 
@@ -34,6 +35,11 @@ interface ApplyEventFiltersInput {
   registrationFilter: EventRegistrationFilter;
   selectedDate: Dayjs | null;
   sort: ExploreEventSort;
+}
+
+interface ApplyDiscountFiltersInput {
+  discounts: AppDiscount[];
+  searchQuery: string;
 }
 
 export function getGroupCategories(groups: AppGroup[]) {
@@ -147,6 +153,34 @@ export function applyEventFilters({
 
     return new Date(left.startDate).getTime() - new Date(right.startDate).getTime();
   });
+}
+
+export function applyDiscountFilters({
+  discounts,
+  searchQuery,
+}: ApplyDiscountFiltersInput) {
+  const query = searchQuery.trim().toLocaleLowerCase("tr");
+
+  if (!query) {
+    return [...discounts].sort(
+      (left, right) => new Date(left.validUntil).getTime() - new Date(right.validUntil).getTime(),
+    );
+  }
+
+  return discounts
+    .filter((discount) =>
+      [
+        discount.businessName,
+        discount.title,
+        discount.description,
+        discount.code,
+      ]
+        .filter(Boolean)
+        .some((value) => value!.toLocaleLowerCase("tr").includes(query)),
+    )
+    .sort(
+      (left, right) => new Date(left.validUntil).getTime() - new Date(right.validUntil).getTime(),
+    );
 }
 
 export function getUpcomingTimelineEvents(events: AppEvent[], limit = 5) {

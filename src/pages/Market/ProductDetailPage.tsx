@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  Avatar,
   Button,
   Card,
   Carousel,
@@ -18,7 +19,7 @@ import {
 } from "antd";
 import { ArrowLeft, MapPin, Pencil, Store, Trash2 } from "lucide-react";
 import dayjs from "dayjs";
-import { useProductDetailQuery, useDeleteProductMutation } from "@/features/products/hooks";
+import { useDeleteProductMutation, useProductDetailQuery, useProductsQuery } from "@/features/products/hooks";
 import { CONDITION_LABELS, CONDITION_COLORS } from "@/features/products/types";
 import { useAuthStore } from "@/store/authStore";
 import ProductFormModal from "@/pages/Market/components/ProductFormModal";
@@ -37,6 +38,26 @@ export default function ProductDetailPage() {
 
   const product = productQuery.data;
   const isOwner = product && currentUserId && product.sellerId === currentUserId;
+  const sellerProductsQuery = useProductsQuery(
+    { sellerId: product?.sellerId, page: 1, pageSize: 1 },
+    Boolean(product?.sellerId),
+  );
+  const sellerListingCount = sellerProductsQuery.data?.totalCount ?? 0;
+
+  const handleOpenSellerProfile = () => {
+    if (!product) return;
+    navigate(`/profile/${product.sellerId}`);
+  };
+
+  const handleMessageSeller = () => {
+    if (!product || isOwner) return;
+    const params = new URLSearchParams({
+      with: product.sellerId,
+      productId: product.id,
+      productTitle: product.title,
+    });
+    navigate(`/messages?${params.toString()}`);
+  };
 
   const handleDelete = async () => {
     if (!product) return;
@@ -139,6 +160,36 @@ export default function ProductDetailPage() {
               {dayjs(product.createdAtUtc).format("DD MMMM YYYY")}
             </Descriptions.Item>
           </Descriptions>
+
+          {!isOwner ? (
+            <Card size="small" styles={{ body: { padding: 16 } }}>
+              <Flex align="center" justify="space-between" gap={16} wrap>
+                <Flex align="center" gap={12} style={{ minWidth: 0 }}>
+                  <Avatar size={52} icon={<Store size={20} />}>
+                    {product.sellerName.charAt(0)}
+                  </Avatar>
+                  <div style={{ minWidth: 0 }}>
+                    <Typography.Text strong style={{ display: "block", fontSize: 16 }}>
+                      {product.sellerName}
+                    </Typography.Text>
+                    <Typography.Text type="secondary">
+                      {sellerListingCount > 0
+                        ? `${sellerListingCount} aktif ilan`
+                        : "Satici profili"}
+                    </Typography.Text>
+                  </div>
+                </Flex>
+                <Flex gap={8} wrap>
+                  <Button onClick={handleOpenSellerProfile}>
+                    Profili gor
+                  </Button>
+                  <Button type="primary" onClick={handleMessageSeller}>
+                    Mesaj gonder
+                  </Button>
+                </Flex>
+              </Flex>
+            </Card>
+          ) : null}
 
           {isOwner && (
             <Flex gap={8}>

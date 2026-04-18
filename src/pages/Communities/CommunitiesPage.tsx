@@ -118,7 +118,7 @@ export default function CommunitiesPage() {
                 <Input
                   className="communities-search"
                   allowClear
-                  placeholder="Topluluklar ve Gonderileri Ara"
+                  placeholder="Topluluk ara"
                   prefix={<SearchOutlined style={{ color: token.colorTextTertiary }} />}
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}

@@ -298,13 +298,19 @@ export async function createPost(input: CreatePostInput): Promise<FeedPost> {
 
 export async function updatePost(input: UpdatePostInput): Promise<FeedPost> {
   try {
+    const formData = new FormData();
+    formData.append("content", input.content);
+
+    if (input.removeImage) {
+      formData.append("removeImage", "true");
+    } else if (input.imageFile) {
+      formData.append("image", input.imageFile);
+    }
+
     const response = await executeAuthorizedRequest((accessToken) =>
       postsApi.put<ApiPostResponse>(
         `/api/posts/${input.postId}`,
-        {
-          content: input.content,
-          imageUrl: input.imageUrl,
-        },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -446,6 +452,18 @@ export async function deletePost(postId: string) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+      }),
+    );
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function deletePostComment(postId: string, commentId: string) {
+  try {
+    await executeAuthorizedRequest((accessToken) =>
+      postsApi.delete(`/api/posts/${postId}/comments/${commentId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
       }),
     );
   } catch (error) {

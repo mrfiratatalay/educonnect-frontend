@@ -1,4 +1,4 @@
-import { Avatar, Card, Flex, Tag, Typography } from "antd";
+import { Avatar, Button, Card, Flex, Tag, Typography } from "antd";
 import { Store } from "lucide-react";
 import dayjs from "dayjs";
 import type { ProductResponse } from "@/features/products/types";
@@ -7,9 +7,10 @@ import { CONDITION_LABELS, CONDITION_COLORS } from "@/features/products/types";
 interface ProductCardProps {
   product: ProductResponse;
   onClick?: () => void;
+  onSellerClick?: (sellerId: string) => void;
 }
 
-export default function ProductCard({ product, onClick }: ProductCardProps) {
+export default function ProductCard({ product, onClick, onSellerClick }: ProductCardProps) {
   const coverUrl = product.imageUrls[0];
 
   return (
@@ -69,21 +70,36 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           </Typography.Text>
         </Flex>
 
-        <Flex align="center" gap={8}>
+        <Flex align="center" justify="space-between" gap={8}>
           <Avatar size="small" icon={<Store size={14} />} />
-          <div>
-            <Typography.Text strong style={{ fontSize: 13 }}>
-              {product.sellerName}
-            </Typography.Text>
-            {product.city && (
-              <Typography.Text
-                type="secondary"
-                style={{ fontSize: 11, display: "block" }}
-              >
-                {product.city}
+          <Flex align="center" justify="space-between" gap={8} style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ minWidth: 0 }}>
+              <Typography.Text strong ellipsis style={{ fontSize: 13, display: "block" }}>
+                {product.sellerName}
               </Typography.Text>
-            )}
-          </div>
+              {product.city && (
+                <Typography.Text
+                  type="secondary"
+                  style={{ fontSize: 11, display: "block" }}
+                >
+                  {product.city}
+                </Typography.Text>
+              )}
+            </div>
+            {onSellerClick ? (
+              <Button
+                type="link"
+                size="small"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onSellerClick(product.sellerId);
+                }}
+                style={{ paddingInline: 0, flexShrink: 0 }}
+              >
+                Profili gor
+              </Button>
+            ) : null}
+          </Flex>
         </Flex>
       </Flex>
     </Card>

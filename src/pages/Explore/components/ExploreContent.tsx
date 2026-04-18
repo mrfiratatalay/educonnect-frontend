@@ -16,6 +16,7 @@ interface ExploreContentProps {
   errorMessage?: string;
   events: AppEvent[];
   groups: AppGroup[];
+  isDiscountsLoading?: boolean;
   isEventsLoading: boolean;
   isGroupsLoading: boolean;
   timelineEvents: AppEvent[];
@@ -33,6 +34,7 @@ export default function ExploreContent({
   errorMessage,
   events,
   groups,
+  isDiscountsLoading = false,
   isEventsLoading,
   isGroupsLoading,
   timelineEvents,
@@ -74,5 +76,11 @@ export default function ExploreContent({
     );
   }
 
-  return <ExploreDiscountGrid discounts={discounts} />;
+  return (
+    <ExploreDiscountGrid
+      discounts={discounts}
+      errorMessage={errorMessage}
+      isLoading={isDiscountsLoading}
+    />
+  );
 }

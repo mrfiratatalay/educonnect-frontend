@@ -1,5 +1,6 @@
-import { Avatar, Button, Drawer, Flex, FloatButton, Grid, Typography, theme } from "antd";
+import { Avatar, Badge, Button, Drawer, Flex, FloatButton, Grid, Typography, theme } from "antd";
 import { LogOut, Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getSelectedShellKey,
@@ -7,6 +8,9 @@ import {
   shellMobileBottomNavItems,
   shellMobileDrawerNavItems,
 } from "@/components/layout/shellNavigation";
+import { useUnreadMessages } from "@/features/messages/unread";
+import { useNotificationsQuery } from "@/features/notifications/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
 import { useUIStore } from "@/store/uiStore";
 
@@ -41,6 +45,7 @@ export default function MobileNav() {
   const screens = Grid.useBreakpoint();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const queryClient = useQueryClient();
   const isMobileDrawerOpen = useUIStore((state) => state.isMobileDrawerOpen);
   const closeMobileDrawer = useUIStore((state) => state.closeMobileDrawer);
   const openComposeModal = useUIStore((state) => state.openComposeModal);
@@ -48,8 +53,39 @@ export default function MobileNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = theme.useToken();
+  const notificationsQuery = useNotificationsQuery();
+  const { unreadCount: unreadMessageCount } = useUnreadMessages();
   const selectedKey = getSelectedShellKey(location.pathname);
   const userHandle = user?.email?.split("@")[0] ?? "kullanici";
+  const unreadCount = (notificationsQuery.data ?? []).filter((item) => !item.isRead).length;
+  const previousUnreadCountRef = useRef(0);
+  const previousUnreadMessageCountRef = useRef(0);
+  const [shouldPulseNotifications, setShouldPulseNotifications] = useState(false);
+  const [shouldPulseMessages, setShouldPulseMessages] = useState(false);
+
+  useEffect(() => {
+    if (unreadCount > previousUnreadCountRef.current) {
+      setShouldPulseNotifications(true);
+      const timeoutId = window.setTimeout(() => setShouldPulseNotifications(false), 1800);
+      previousUnreadCountRef.current = unreadCount;
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    previousUnreadCountRef.current = unreadCount;
+    return undefined;
+  }, [unreadCount]);
+
+  useEffect(() => {
+    if (unreadMessageCount > previousUnreadMessageCountRef.current) {
+      setShouldPulseMessages(true);
+      const timeoutId = window.setTimeout(() => setShouldPulseMessages(false), 1800);
+      previousUnreadMessageCountRef.current = unreadMessageCount;
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    previousUnreadMessageCountRef.current = unreadMessageCount;
+    return undefined;
+  }, [unreadMessageCount]);
 
   if (screens.lg) {
     return null;
@@ -145,7 +181,33 @@ export default function MobileNav() {
                   }}
                 >
                   <Flex align="center" gap={18}>
-                    <item.icon size={24} fill={isActive ? "currentColor" : "none"} />
+                    {item.key === "/notifications" ? (
+                      <Badge count={unreadCount} overflowCount={99} size="small">
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            transform: shouldPulseNotifications ? "scale(1.12)" : "scale(1)",
+                            transition: "transform 180ms ease",
+                          }}
+                        >
+                          <item.icon size={24} fill={isActive ? "currentColor" : "none"} />
+                        </span>
+                      </Badge>
+                    ) : item.key === "/messages" ? (
+                      <Badge count={unreadMessageCount} overflowCount={99} size="small">
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            transform: shouldPulseMessages ? "scale(1.12)" : "scale(1)",
+                            transition: "transform 180ms ease",
+                          }}
+                        >
+                          <item.icon size={24} fill={isActive ? "currentColor" : "none"} />
+                        </span>
+                      </Badge>
+                    ) : (
+                      <item.icon size={24} fill={isActive ? "currentColor" : "none"} />
+                    )}
                     <span style={{ fontSize: 18, lineHeight: 1.2 }}>{item.label}</span>
                   </Flex>
                 </Button>
@@ -157,7 +219,7 @@ export default function MobileNav() {
               danger
               onClick={() => {
                 closeMobileDrawer();
-                void logout();
+                void logout().then(() => queryClient.clear());
               }}
               style={{
                 justifyContent: "flex-start",
@@ -220,7 +282,33 @@ export default function MobileNav() {
                   padding: 0,
                 }}
               >
-                <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} fill={isActive ? "currentColor" : "none"} />
+                {item.key === "/notifications" ? (
+                  <Badge count={unreadCount} overflowCount={99} size="small">
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        transform: shouldPulseNotifications ? "scale(1.12)" : "scale(1)",
+                        transition: "transform 180ms ease",
+                      }}
+                    >
+                      <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} fill={isActive ? "currentColor" : "none"} />
+                    </span>
+                  </Badge>
+                ) : item.key === "/messages" ? (
+                  <Badge count={unreadMessageCount} overflowCount={99} size="small">
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        transform: shouldPulseMessages ? "scale(1.12)" : "scale(1)",
+                        transition: "transform 180ms ease",
+                      }}
+                    >
+                      <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} fill={isActive ? "currentColor" : "none"} />
+                    </span>
+                  </Badge>
+                ) : (
+                  <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} fill={isActive ? "currentColor" : "none"} />
+                )}
               </Button>
             );
           })}

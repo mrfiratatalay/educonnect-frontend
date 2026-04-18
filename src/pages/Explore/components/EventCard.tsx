@@ -47,8 +47,8 @@ export default function EventCard({
               <Tag color="blue" style={{ marginInlineEnd: 0 }}>
                 {formatEventDayLabel(event.startDate)}
               </Tag>
-              {event.isRegistered && <Tag color="success">Kayıtlı</Tag>}
-              {full && !event.isRegistered && <Tag color="error">Kontenjan dolu</Tag>}
+              {event.isRegistered ? <Tag color="success">Kayitli</Tag> : null}
+              {full && !event.isRegistered ? <Tag color="error">Kontenjan dolu</Tag> : null}
             </Flex>
 
             <Typography.Text
@@ -56,12 +56,12 @@ export default function EventCard({
               style={{ display: "block", fontSize: 16, marginTop: 10 }}
               ellipsis
             >
-                {event.title}
+              {event.title}
             </Typography.Text>
 
             <Flex gap={6} wrap="wrap" style={{ marginTop: 8 }}>
               <Tag color="default">{event.category}</Tag>
-              {event.groupName && <Tag color="processing">{event.groupName}</Tag>}
+              {event.groupName ? <Tag color="processing">{event.groupName}</Tag> : null}
             </Flex>
           </div>
         </Flex>
@@ -85,11 +85,11 @@ export default function EventCard({
           </Typography.Text>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             <TeamOutlined style={{ marginRight: 6 }} />
-            {event.participantCount}/{event.maxParticipants} katılımcı
+            {event.participantCount}/{event.maxParticipants} katilimci
           </Typography.Text>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             <CalendarOutlined style={{ marginRight: 6 }} />
-            Düzenleyen: {event.creatorName}
+            Duzenleyen: {event.creatorName}
           </Typography.Text>
         </Flex>
 
@@ -111,12 +111,12 @@ export default function EventCard({
           }}
         >
           {isActing
-            ? "İşleniyor"
+            ? "Isleniyor"
             : event.isRegistered
-              ? "Kaydı İptal Et"
+              ? "Kaydi Iptal Et"
               : full
                 ? "Kontenjan Dolu"
-                : "Kayıt Ol"}
+                : "Kayit Ol"}
         </Button>
       </Flex>
     </Card>

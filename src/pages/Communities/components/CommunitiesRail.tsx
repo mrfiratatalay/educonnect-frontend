@@ -1,31 +1,51 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { EllipsisOutlined } from "@ant-design/icons";
-import { Button, Card, Flex, Typography, theme } from "antd";
+import { Button, Card, Flex, Skeleton, Typography, theme } from "antd";
+import { useNavigate } from "react-router-dom";
 import FollowSuggestionsCard from "@/components/shared/FollowSuggestionsCard";
-
-const trendItems = [
-  { label: "Gundemdekiler", title: "Hayfa" },
-  { label: "Haberler", title: "SON DAKIKA" },
-  { label: "Turkiye tarihinde gundemde", title: "Narin Guran" },
-  { label: "Gundemdekiler", title: "Sokakta" },
-];
+import { useTrendingHashtagsQuery } from "@/features/posts/hooks";
+import { useFollowUserMutation } from "@/features/users/hooks";
 
 export default function CommunitiesRail() {
+  const navigate = useNavigate();
+  const trendingQuery = useTrendingHashtagsQuery(4);
+
   return (
     <Flex vertical gap={16} style={{ padding: "8px 16px 24px" }}>
       <RailCard
         title="Neler oluyor?"
         footer={
-          <Button type="link" style={{ padding: 0 }}>
+          <Button type="link" style={{ padding: 0 }} onClick={() => navigate("/explore")}>
             Daha fazla goster
           </Button>
         }
       >
-        <Flex vertical gap={16}>
-          {trendItems.map((item) => (
-            <TrendRow key={item.title} label={item.label} title={item.title} />
-          ))}
-        </Flex>
+        {trendingQuery.isLoading ? (
+          <Skeleton active title={false} paragraph={{ rows: 4 }} />
+        ) : trendingQuery.isError ? (
+          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            Gundem simdilik yuklenemedi.
+          </Typography.Text>
+        ) : trendingQuery.data && trendingQuery.data.length > 0 ? (
+          <Flex vertical gap={16}>
+            {trendingQuery.data.map((trend) => (
+              <TrendRow
+                key={trend.hashtag}
+                label={trend.contextLabel}
+                title={trend.hashtag}
+                postCount={trend.postCount}
+                onClick={() =>
+                  navigate(`/explore/tag/${encodeURIComponent(trend.hashtag.replace(/^#/, ""))}`)
+                }
+              />
+            ))}
+          </Flex>
+        ) : (
+          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            Henuz aktif bir gundem yok.
+          </Typography.Text>
+        )}
       </RailCard>
 
       <FollowSuggestionsCard />
@@ -68,20 +88,35 @@ function RailCard({
   );
 }
 
-function TrendRow({ label, title }: { label: string; title: string }) {
+function TrendRow({
+  label,
+  title,
+  postCount,
+  onClick,
+}: {
+  label: string;
+  title: string;
+  postCount: number;
+  onClick: () => void;
+}) {
   const { token } = theme.useToken();
 
   return (
-    <Flex align="flex-start" justify="space-between" gap={12}>
-      <div style={{ minWidth: 0 }}>
-        <Typography.Text type="secondary" style={{ display: "block", fontSize: 13 }}>
-          {label}
-        </Typography.Text>
-        <Typography.Text strong style={{ display: "block", fontSize: 17, lineHeight: 1.25 }}>
-          {title}
-        </Typography.Text>
-      </div>
-      <EllipsisOutlined style={{ color: token.colorTextTertiary, marginTop: 4 }} />
-    </Flex>
+    <div style={{ cursor: "pointer" }} onClick={onClick}>
+      <Flex align="flex-start" justify="space-between" gap={12}>
+        <div style={{ minWidth: 0 }}>
+          <Typography.Text type="secondary" style={{ display: "block", fontSize: 13 }}>
+            {label}
+          </Typography.Text>
+          <Typography.Text strong style={{ display: "block", fontSize: 17, lineHeight: 1.25 }}>
+            {title}
+          </Typography.Text>
+          <Typography.Text type="secondary" style={{ display: "block", fontSize: 13, marginTop: 2 }}>
+            {postCount} gonderi
+          </Typography.Text>
+        </div>
+        <EllipsisOutlined style={{ color: token.colorTextTertiary, marginTop: 4 }} />
+      </Flex>
+    </div>
   );
 }

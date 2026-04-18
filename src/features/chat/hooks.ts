@@ -41,6 +41,7 @@ export function useSendMessageMutation() {
     mutationFn: ({ sessionId, message }: SendMessageInput) =>
       chatApi.sendMessage(sessionId, message),
     onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: CHAT_KEYS.sessions });
       queryClient.invalidateQueries({
         queryKey: CHAT_KEYS.messages(variables.sessionId),
       });

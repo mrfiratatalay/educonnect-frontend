@@ -12,7 +12,7 @@ import {
   useInfinitePostsQuery,
   useUpdatePostMutation,
 } from "@/features/posts/hooks";
-import type { CreatePostInput } from "@/features/posts/types";
+import type { CreatePostInput, UpdatePostInput } from "@/features/posts/types";
 import FeedSidebar from "@/pages/Feed/components/FeedSidebar";
 import PostComposer from "@/pages/Feed/components/PostComposer";
 import PostList from "@/pages/Feed/components/PostList";
@@ -58,8 +58,8 @@ export default function FeedPage() {
     await createPostMutation.mutateAsync(input);
   }
 
-  async function handleUpdatePost(postId: string, content: string) {
-    await updatePostMutation.mutateAsync({ postId, content });
+  async function handleUpdatePost(postId: string, input: Omit<UpdatePostInput, "postId">) {
+    await updatePostMutation.mutateAsync({ postId, ...input });
   }
 
   function handleDeletePost(postId: string) {

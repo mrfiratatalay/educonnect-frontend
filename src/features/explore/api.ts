@@ -30,8 +30,12 @@ interface ApiExploreSuggestionResponse {
   name: string;
   handle: string;
   avatarSeed: string;
+  avatarUrl?: string | null;
   targetPath: string;
   ctaLabel: string;
+  reasonLabel?: string;
+  actionableUserId?: string;
+  isFollowedByCurrentUser?: boolean;
 }
 
 interface ApiExploreDiscoveryResponse {
@@ -86,7 +90,11 @@ function normalizeSuggestion(
     name: item.name,
     handle: item.handle,
     avatarSeed: item.avatarSeed,
+    avatarUrl: item.avatarUrl || undefined,
     targetPath: item.targetPath,
     ctaLabel: item.ctaLabel,
+    reasonLabel: item.reasonLabel || undefined,
+    actionableUserId: item.actionableUserId || undefined,
+    isFollowedByCurrentUser: Boolean(item.isFollowedByCurrentUser),
   };
 }

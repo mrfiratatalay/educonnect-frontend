@@ -97,3 +97,15 @@ export function dedupeGroups(groups: AppGroup[]) {
 export function formatCommunityMemberCount(memberCount: number) {
   return `${memberCountFormatter.format(memberCount)} Uye`;
 }
+
+export function getCommunityRules(group: AppGroup) {
+  if (group.rules.length > 0) {
+    return group.rules;
+  }
+
+  return [
+    `${group.name} icinde saygili ve yapici iletisim kur.`,
+    `${group.category} konusu disina tasan paylasimlari sinirli tut.`,
+    "Tartisma yerine katki, spam yerine fayda uret.",
+  ];
+}

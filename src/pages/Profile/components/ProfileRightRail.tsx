@@ -1,20 +1,18 @@
 import type { ReactNode } from "react";
 import { Ellipsis, Search } from "lucide-react";
-import { Card, Flex, Input, Typography, theme } from "antd";
+import { Card, Flex, Input, Skeleton, Typography, theme } from "antd";
+import { useNavigate } from "react-router-dom";
 import FollowSuggestionsCard from "@/components/shared/FollowSuggestionsCard";
-
-const trendItems = [
-  { id: "trend-1", category: "Kampus gundemi", title: "#FinalHaftasi" },
-  { id: "trend-2", category: "Teknoloji", title: "React 20" },
-  { id: "trend-3", category: "Universite", title: "Kulup basvurulari" },
-];
+import { useTrendingHashtagsQuery } from "@/features/posts/hooks";
 
 const footerLinks = ["Hizmet Sartlari", "Gizlilik Politikasi", "Cerez Politikasi", "Reklam bilgisi"];
 
 export default function ProfileRightRail() {
   const { token } = theme.useToken();
+  const navigate = useNavigate();
   const isDarkMode = token.colorBgBase === "#000000";
   const railSurface = isDarkMode ? "#16181C" : "#F7F9F9";
+  const trendingQuery = useTrendingHashtagsQuery(3);
 
   return (
     <div style={{ width: 350, flexShrink: 0, paddingLeft: 32 }}>
@@ -34,18 +32,43 @@ export default function ProfileRightRail() {
           />
 
           <RailCard title="Neler oluyor?" background={railSurface}>
-            {trendItems.map((item) => (
-              <RailRow key={item.id}>
-                <Flex justify="space-between" align="flex-start" gap={12}>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <Typography.Text type="secondary" style={{ display: "block", fontSize: 13 }}>{item.category}</Typography.Text>
-                    <Typography.Text strong style={{ display: "block", fontSize: 16, lineHeight: 1.35, marginTop: 2 }}>{item.title}</Typography.Text>
-                  </div>
-                  <Ellipsis size={18} color={token.colorTextTertiary} />
-                </Flex>
+            {trendingQuery.isLoading ? (
+              <RailRow><Skeleton active title={false} paragraph={{ rows: 3 }} /></RailRow>
+            ) : trendingQuery.isError ? (
+              <RailRow>
+                <Typography.Text type="secondary" style={{ fontSize: 13 }}>Gundem simdilik yuklenemedi.</Typography.Text>
               </RailRow>
-            ))}
-            <Typography.Link style={{ padding: "0 16px 16px", fontSize: 15 }}>Daha fazla goster</Typography.Link>
+            ) : trendingQuery.data && trendingQuery.data.length > 0 ? (
+              <>
+                {trendingQuery.data.map((trend) => (
+                  <RailRow key={trend.hashtag}>
+                    <div
+                      style={{ cursor: "pointer" }}
+                      onClick={() => navigate(`/explore/tag/${encodeURIComponent(trend.hashtag.replace(/^#/, ""))}`)}
+                    >
+                      <Flex justify="space-between" align="flex-start" gap={12}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <Typography.Text type="secondary" style={{ display: "block", fontSize: 13 }}>{trend.contextLabel}</Typography.Text>
+                          <Typography.Text strong style={{ display: "block", fontSize: 16, lineHeight: 1.35, marginTop: 2 }}>{trend.hashtag}</Typography.Text>
+                          <Typography.Text type="secondary" style={{ display: "block", fontSize: 13, marginTop: 2 }}>{trend.postCount} gonderi</Typography.Text>
+                        </div>
+                        <Ellipsis size={18} color={token.colorTextTertiary} />
+                      </Flex>
+                    </div>
+                  </RailRow>
+                ))}
+              </>
+            ) : (
+              <RailRow>
+                <Typography.Text type="secondary" style={{ fontSize: 13 }}>Henuz aktif bir gundem yok.</Typography.Text>
+              </RailRow>
+            )}
+            <Typography.Link
+              style={{ padding: "0 16px 16px", fontSize: 15 }}
+              onClick={() => navigate("/explore")}
+            >
+              Daha fazla goster
+            </Typography.Link>
           </RailCard>
 
           <Flex wrap gap={8} style={{ paddingInline: 12 }}>

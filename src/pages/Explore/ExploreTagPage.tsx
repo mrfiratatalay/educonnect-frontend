@@ -6,6 +6,7 @@ import {
   useInfiniteTagPostsQuery,
   useUpdatePostMutation,
 } from "@/features/posts/hooks";
+import type { UpdatePostInput } from "@/features/posts/types";
 import FeedSidebar from "@/pages/Feed/components/FeedSidebar";
 import PostList from "@/pages/Feed/components/PostList";
 import { useAuthStore } from "@/store/authStore";
@@ -41,8 +42,8 @@ export default function ExploreTagPage() {
   const updatingPostId =
     updatePostMutation.isPending ? updatePostMutation.variables?.postId : undefined;
 
-  async function handleUpdatePost(postId: string, content: string) {
-    await updatePostMutation.mutateAsync({ postId, content });
+  async function handleUpdatePost(postId: string, input: Omit<UpdatePostInput, "postId">) {
+    await updatePostMutation.mutateAsync({ postId, ...input });
   }
 
   function handleDeletePost(postId: string) {

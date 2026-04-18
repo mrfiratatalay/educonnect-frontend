@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getApiErrorMessage } from "@/features/auth/api";
 import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
-import type { AppEvent, CreateEventInput } from "@/features/events/types";
+import type { AppEvent, CreateEventInput, EventFilters, UpdateEventInput } from "@/features/events/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
 
@@ -27,7 +27,7 @@ interface ApiEventResponse {
   category: string;
 }
 
-export async function getEvents(): Promise<AppEvent[]> {
+export async function getEvents(filters: EventFilters = {}): Promise<AppEvent[]> {
   try {
     const response = await executeAuthorizedRequest((accessToken) =>
       eventsApi.get<ApiEventResponse[]>(
@@ -35,6 +35,9 @@ export async function getEvents(): Promise<AppEvent[]> {
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
+          },
+          params: {
+            groupId: filters.groupId,
           },
         },
       ),
@@ -80,6 +83,49 @@ export async function createEvent(input: CreateEventInput): Promise<AppEvent> {
     );
 
     return normalizeEvent(response.data);
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function updateEvent(input: UpdateEventInput): Promise<AppEvent> {
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      eventsApi.put<ApiEventResponse>(
+        `/api/events/${input.eventId}`,
+        {
+          title: input.title,
+          description: input.description,
+          location: input.location,
+          startDateUtc: input.startDateUtc,
+          endDateUtc: input.endDateUtc,
+          maxParticipants: input.maxParticipants,
+          category: input.category,
+          groupId: input.groupId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
+    );
+
+    return normalizeEvent(response.data);
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function deleteEvent(eventId: string) {
+  try {
+    await executeAuthorizedRequest((accessToken) =>
+      eventsApi.delete(`/api/events/${eventId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }),
+    );
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
   }

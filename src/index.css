@@ -310,3 +310,7 @@ body {
 img {
   image-rendering: auto;
 }
+
+.discount-card-wrapper .ant-ribbon-wrapper {
+  height: 100%;
+}

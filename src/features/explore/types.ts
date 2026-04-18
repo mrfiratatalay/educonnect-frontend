@@ -1,9 +1,6 @@
 export type ExploreTrendTabKey =
   | "for-you"
-  | "campus"
-  | "academic"
-  | "career"
-  | "events";
+  | "campus";
 
 export type ExploreTrendKind =
   | "hashtag"
@@ -14,7 +11,7 @@ export type ExploreTrendKind =
 
 export interface ExploreTrendItem {
   id: string;
-  primaryTab: Exclude<ExploreTrendTabKey, "for-you">;
+  primaryTab: "campus";
   kind: ExploreTrendKind;
   contextLabel: string;
   title: string;
@@ -27,8 +24,12 @@ export interface ExploreSidebarSuggestion {
   name: string;
   handle: string;
   avatarSeed: string;
+  avatarUrl?: string;
   targetPath: string;
   ctaLabel: string;
+  reasonLabel?: string;
+  actionableUserId?: string;
+  isFollowedByCurrentUser?: boolean;
 }
 
 export interface ExploreDiscoveryData {

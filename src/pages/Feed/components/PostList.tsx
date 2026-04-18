@@ -1,5 +1,5 @@
 import { Alert, Button, ConfigProvider, Empty, List, theme } from "antd";
-import type { FeedPost } from "@/features/posts/types";
+import type { FeedPost, UpdatePostInput } from "@/features/posts/types";
 import type { UserRole } from "@/types";
 import PostCard from "@/pages/Feed/components/PostCard";
 
@@ -20,7 +20,7 @@ interface PostListProps {
   showCreateAction?: boolean;
   onCreatePostClick: () => void;
   onDelete: (postId: string) => void;
-  onUpdate: (postId: string, content: string) => Promise<void>;
+  onUpdate: (postId: string, input: Omit<UpdatePostInput, "postId">) => Promise<void>;
 }
 
 export default function PostList({

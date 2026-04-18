@@ -1,4 +1,4 @@
-import { useState, type MouseEvent, type ReactNode } from "react";
+import { useState, useEffect, useRef, type MouseEvent, type ReactNode } from "react";
 import {
   Bookmark,
   ChartColumn,
@@ -24,8 +24,9 @@ import type { MenuProps } from "antd";
 import {
   useTogglePostBookmarkMutation,
   useTogglePostLikeMutation,
+  useTrackPostViewMutation,
 } from "@/features/posts/hooks";
-import type { FeedPost } from "@/features/posts/types";
+import type { FeedPost, UpdatePostInput } from "@/features/posts/types";
 import { formatPostMetric, formatPostTime } from "@/features/posts/utils";
 import PostCommentsPanel from "@/pages/Feed/components/PostCommentsPanel";
 import PostEditForm from "@/pages/Feed/components/PostEditForm";
@@ -39,7 +40,7 @@ interface PostCardProps {
   onDelete?: (postId: string) => void;
   showGroupContext?: boolean;
   showRecommendationReason?: boolean;
-  onUpdate?: (postId: string, content: string) => Promise<void>;
+  onUpdate?: (postId: string, input: Omit<UpdatePostInput, "postId">) => Promise<void>;
 }
 
 interface ActionBtnProps {
@@ -133,8 +134,33 @@ export default function PostCard({
   const [showComments, setShowComments] = useState(false);
   const toggleLikeMutation = useTogglePostLikeMutation();
   const toggleBookmarkMutation = useTogglePostBookmarkMutation();
+  const trackViewMutation = useTrackPostViewMutation();
   const { token } = theme.useToken();
   const isFeedMode = mode === "feed";
+  const cardRef = useRef<HTMLDivElement>(null);
+  const hasTrackedView = useRef(false);
+
+  useEffect(() => {
+    if (!isFeedMode || hasTrackedView.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !hasTrackedView.current) {
+          hasTrackedView.current = true;
+          void trackViewMutation.mutateAsync(post.id);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 },
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post.id, isFeedMode]);
 
   const managementItems: MenuProps["items"] = [
     {
@@ -186,6 +212,7 @@ export default function PostCard({
   }
 
   function handleToggleLike() {
+    if (toggleLikeMutation.isPending) return;
     void toggleLikeMutation.mutateAsync(post.id);
   }
 
@@ -215,8 +242,8 @@ export default function PostCard({
       ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  async function handleUpdate(content: string) {
-    await onUpdate?.(post.id, content);
+  async function handleUpdate(input: Omit<UpdatePostInput, "postId">) {
+    await onUpdate?.(post.id, input);
     setIsEditing(false);
   }
 
@@ -235,6 +262,7 @@ export default function PostCard({
     <>
       {messageContextHolder}
       <List.Item style={{ padding: "12px 16px" }}>
+        <div ref={cardRef} style={{ width: "100%" }}>
         <Flex gap={12} align="flex-start" style={{ width: "100%" }}>
           <Avatar
             src={post.avatarUrl}
@@ -320,7 +348,9 @@ export default function PostCard({
 
                 <div style={{ marginTop: 8 }}>
                   <PostEditForm
+                    postId={post.id}
                     initialContent={post.content}
+                    initialImageUrl={post.imageUrl}
                     isSubmitting={isUpdating}
                     onCancel={() => setIsEditing(false)}
                     onSubmit={handleUpdate}
@@ -389,7 +419,9 @@ export default function PostCard({
                       fontSize: 15,
                     }}
                   >
-                    {post.content}
+                    {renderContentWithHashtags(post.content, (tag) => {
+                      navigate(`/explore/tag/${encodeURIComponent(tag)}`);
+                    })}
                   </Typography.Paragraph>
 
                   {post.imageUrl && (
@@ -471,9 +503,32 @@ export default function PostCard({
             )}
           </Flex>
         </Flex>
+        </div>
       </List.Item>
     </>
   );
+}
+
+function renderContentWithHashtags(content: string, onHashtagClick: (tag: string) => void) {
+  const parts = content.split(/(#[\w\u00C0-\u024F\u0100-\u024F]+)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith("#") && part.length > 1) {
+      const tag = part.slice(1);
+      return (
+        <span
+          key={index}
+          style={{ color: "#1D9BF0", cursor: "pointer", fontWeight: 500 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onHashtagClick(tag);
+          }}
+        >
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
 }
 
 async function copyTextToClipboard(value: string) {

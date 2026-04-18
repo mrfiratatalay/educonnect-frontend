@@ -50,6 +50,11 @@ export default function NotificationsMenu({
     void markAllReadMutation.mutateAsync();
   }
 
+  function handleOpenNotificationsPage() {
+    setOpen(false);
+    navigate("/notifications");
+  }
+
   return (
     <Popover
       trigger="click"
@@ -159,6 +164,13 @@ export default function NotificationsMenu({
                       >
                         {notification.message}
                       </Typography.Text>
+
+                      <Typography.Text
+                        type="secondary"
+                        style={{ display: "block", marginTop: 4, fontSize: 12 }}
+                      >
+                        {formatNotificationTime(notification.createdAt)}
+                      </Typography.Text>
                     </div>
 
                     {!notification.isRead && (
@@ -176,10 +188,25 @@ export default function NotificationsMenu({
               </Button>
             ))}
           </Flex>
+
+          {!notificationsQuery.isLoading && notifications.length > 0 && (
+            <Button
+              type="text"
+              onClick={handleOpenNotificationsPage}
+              style={{
+                marginTop: 8,
+                width: "100%",
+                justifyContent: "center",
+                fontWeight: 600,
+              }}
+            >
+              Tum bildirimleri gor
+            </Button>
+          )}
         </div>
       }
     >
-      <Badge count={unreadCount} size="small">
+      <Badge count={unreadCount} overflowCount={99} size="small">
         <Button
           type="text"
           aria-label="Bildirimler"
@@ -194,4 +221,28 @@ export default function NotificationsMenu({
       </Badge>
     </Popover>
   );
+}
+
+function formatNotificationTime(value: string) {
+  const date = new Date(value);
+  const diffInMinutes = Math.round((Date.now() - date.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 60) {
+    return `${Math.max(diffInMinutes, 1)} dk once`;
+  }
+
+  const diffInHours = Math.round(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} sa once`;
+  }
+
+  const diffInDays = Math.round(diffInHours / 24);
+  if (diffInDays < 7) {
+    return `${diffInDays} g once`;
+  }
+
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "numeric",
+    month: "short",
+  }).format(date);
 }

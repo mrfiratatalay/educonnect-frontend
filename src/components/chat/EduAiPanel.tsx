@@ -14,13 +14,17 @@ import {
 } from "antd";
 import { Maximize2, Send, Sparkles, X } from "lucide-react";
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   useMessagesQuery,
   useSendMessageMutation,
   useStartSessionMutation,
   useSessionsQuery,
 } from "@/features/chat/hooks";
-import type { ChatMessageItem } from "@/features/chat/types";
+import type { ChatMessageItem, ConfidenceBand } from "@/features/chat/types";
+import { normalizeExternalHref } from "@/features/chat/linkUtils";
+
+const EMPTY_MESSAGES: ChatMessageItem[] = [];
 
 const QUICK_PROMPTS = [
   "Vize ne zaman?",
@@ -38,13 +42,16 @@ export default function EduAiPanel({ onClose }: EduAiPanelProps) {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
+  const [pendingUserMessages, setPendingUserMessages] = useState<ChatMessageItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const sessionsQuery = useSessionsQuery();
   const activeSession = sessionsQuery.data?.find((s) => s.isActive) ?? null;
   const sessionId = activeSession?.sessionId ?? null;
 
   const messagesQuery = useMessagesQuery(sessionId);
-  const messages = messagesQuery.data ?? [];
+  const messages = messagesQuery.data ?? EMPTY_MESSAGES;
+  const visibleMessages = [...messages, ...pendingUserMessages];
 
   const startSession = useStartSessionMutation();
   const sendMessage = useSendMessageMutation();
@@ -52,9 +59,24 @@ export default function EduAiPanel({ onClose }: EduAiPanelProps) {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages.length, isLoading]);
+  }, [visibleMessages.length, isLoading]);
 
-  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    if (pendingUserMessages.length === 0) return;
+
+    setPendingUserMessages((current) => {
+      const next = current.filter(
+        (pending) =>
+          !messages.some(
+            (message) =>
+              message.senderType === "user" &&
+              message.content.trim() === pending.content.trim(),
+          ),
+      );
+
+      return next.length === current.length ? current : next;
+    });
+  }, [messages, pendingUserMessages.length]);
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -62,16 +84,29 @@ export default function EduAiPanel({ onClose }: EduAiPanelProps) {
     setError(null);
 
     try {
+      const optimisticMessage: ChatMessageItem = {
+        id: `pending-${Date.now()}`,
+        senderType: "user",
+        content: trimmed,
+        intentDetected: null,
+        confidence: null,
+        timestampUtc: new Date().toISOString(),
+      };
+
+      setPendingUserMessages((current) => [...current, optimisticMessage]);
+      setInput("");
+
       let currentSessionId = sessionId;
       if (!currentSessionId) {
         const session = await startSession.mutateAsync();
         currentSessionId = session.sessionId;
       }
-
-      setInput("");
       await sendMessage.mutateAsync({ sessionId: currentSessionId, message: trimmed });
     } catch {
-      setError("Mesaj gonderilemedi.");
+      setPendingUserMessages((current) =>
+        current.filter((message) => message.content.trim() !== trimmed),
+      );
+      setError("Mesaj gönderilemedi.");
     }
   };
 
@@ -128,11 +163,20 @@ export default function EduAiPanel({ onClose }: EduAiPanelProps) {
           padding: 12,
         }}
       >
-        {messages.length === 0 && !isLoading ? (
+        {messagesQuery.isError && (
+          <Alert
+            type="error"
+            showIcon
+            style={{ marginBottom: 8 }}
+            message="EduAI geçmişi yüklenemedi."
+          />
+        )}
+
+        {visibleMessages.length === 0 && !isLoading ? (
           <Flex vertical align="center" justify="center" gap={12} style={{ height: "100%" }}>
             <Sparkles size={28} strokeWidth={1.5} />
             <Typography.Text type="secondary" style={{ textAlign: "center" }}>
-              Merhaba! Size nasıl yardımcı olabilirim?
+              Merhaba. Size nasıl yardımcı olabilirim?
             </Typography.Text>
             <Flex gap={6} wrap justify="center">
               {QUICK_PROMPTS.map((p) => (
@@ -149,7 +193,7 @@ export default function EduAiPanel({ onClose }: EduAiPanelProps) {
           </Flex>
         ) : (
           <Flex vertical gap={10}>
-            {messages.map((msg) => (
+            {visibleMessages.map((msg) => (
               <PanelBubble key={msg.id} message={msg} />
             ))}
             {isLoading && (
@@ -173,7 +217,6 @@ export default function EduAiPanel({ onClose }: EduAiPanelProps) {
             onKeyDown={handleKeyDown}
             placeholder="Sorunuzu yazın..."
             size="middle"
-            disabled={isLoading}
             style={{ borderRadius: 10 }}
           />
           <Button
@@ -193,6 +236,7 @@ export default function EduAiPanel({ onClose }: EduAiPanelProps) {
 function PanelBubble({ message }: { message: ChatMessageItem }) {
   const { token } = theme.useToken();
   const isUser = message.senderType === "user";
+  const confidenceTag = getConfidenceTag(message.confidenceBand ?? null);
 
   return (
     <Flex justify={isUser ? "flex-end" : "flex-start"}>
@@ -212,18 +256,69 @@ function PanelBubble({ message }: { message: ChatMessageItem }) {
             {message.content}
           </span>
         ) : (
-          <div className="markdown-body" style={{ wordBreak: "break-word", fontSize: 13 }}>
-            <Markdown>{message.content}</Markdown>
-          </div>
-        )}
-        {!isUser && message.intentDetected && (
-          <div style={{ marginTop: 4 }}>
-            <Tag color="blue" style={{ fontSize: 10, lineHeight: "16px" }}>
-              {message.intentDetected}
-            </Tag>
-          </div>
+          <>
+            <div className="markdown-body" style={{ wordBreak: "break-word", fontSize: 13 }}>
+              <Markdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  a: ({ href, children, ...props }) => (
+                    <a
+                      {...props}
+                      href={normalizeExternalHref(href)}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      {children}
+                    </a>
+                  ),
+                }}
+              >
+                {message.content}
+              </Markdown>
+            </div>
+            <Flex gap={4} wrap style={{ marginTop: 6 }}>
+              {message.intentDetected && (
+                <Tag color="blue" style={{ fontSize: 10, lineHeight: "16px" }}>
+                  {message.intentDetected}
+                </Tag>
+              )}
+              {confidenceTag && (
+                <Tag color={confidenceTag.color} style={{ fontSize: 10, lineHeight: "16px" }}>
+                  {confidenceTag.label}
+                </Tag>
+              )}
+              {message.kbHit && (
+                <Tag color="green" style={{ fontSize: 10, lineHeight: "16px" }}>
+                  KB
+                </Tag>
+              )}
+              {message.isFallback && (
+                <Tag color="orange" style={{ fontSize: 10, lineHeight: "16px" }}>
+                  fallback
+                </Tag>
+              )}
+            </Flex>
+            {message.needsReview && (
+              <Typography.Text type="warning" style={{ display: "block", marginTop: 6, fontSize: 11 }}>
+                Bu cevap düşük güven sinyali taşıyor.
+              </Typography.Text>
+            )}
+          </>
         )}
       </div>
     </Flex>
   );
+}
+
+function getConfidenceTag(confidenceBand: ConfidenceBand | null) {
+  switch (confidenceBand) {
+    case "high":
+      return { color: "green", label: "yüksek güven" };
+    case "medium":
+      return { color: "gold", label: "orta güven" };
+    case "low":
+      return { color: "red", label: "düşük güven" };
+    default:
+      return null;
+  }
 }

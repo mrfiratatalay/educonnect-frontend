@@ -30,3 +30,11 @@ export interface ReceiveMessagePayload {
   conversationId: string;
   message: DirectMessageItem;
 }
+
+export interface UserSearchResult {
+  id: string;
+  fullName: string;
+  avatarUrl?: string | null;
+  department?: string | null;
+  universityName?: string | null;
+}

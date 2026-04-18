@@ -9,6 +9,7 @@ import {
   addPostComment,
   createPost,
   deletePost,
+  deletePostComment,
   getBookmarkedPosts,
   getForYouPosts,
   getFollowingPosts,
@@ -243,9 +244,45 @@ export function useCreatePostMutation() {
         queryClient.setQueryData(queryKey, data);
       });
     },
-    onSuccess: async (_data, variables) => {
+    onSuccess: async (newPost, variables) => {
+      // Replace the optimistic placeholder with the real server post so it stays at the top.
+      // Do NOT invalidate the recommendation feed — the algorithm would re-rank and push it down.
+      queryClient.setQueriesData<PostsPage | InfiniteData<PostsPage>>(
+        {
+          predicate: (query) =>
+            query.queryKey[0] === "posts" &&
+            (query.queryKey[1] === "feed" ||
+              query.queryKey[1] === "following" ||
+              (query.queryKey[1] === "list" && query.queryKey[2] === 1)),
+        },
+        (oldData) => {
+          if (!oldData) return oldData;
+          const replaceOptimistic = (p: FeedPost) =>
+            p.id.startsWith("optimistic-") ? newPost : p;
+          if (isInfinitePostsData(oldData)) {
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page, idx) =>
+                idx === 0
+                  ? { ...page, items: page.items.map(replaceOptimistic) }
+                  : page,
+              ),
+            };
+          }
+          return { ...oldData, items: oldData.items.map(replaceOptimistic) };
+        },
+      );
+
+      // Sync profile post list, trending hashtags, and groups feed if needed.
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: postKeys.all }),
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            query.queryKey[0] === "posts" && query.queryKey[1] === "user",
+        }),
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            query.queryKey[0] === "posts" && query.queryKey[1] === "trending",
+        }),
         variables.groupId
           ? queryClient.invalidateQueries({
               predicate: (query) => isGroupsPostQuery(query.queryKey),
@@ -314,7 +351,17 @@ export function useTogglePostLikeMutation() {
       });
     },
     onSettled: async (_, __, postId) => {
-      await invalidateFeedQueries(queryClient, postId);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: postKeys.detail(postId) }),
+        queryClient.invalidateQueries({
+          predicate: (q) =>
+            q.queryKey[0] === "posts" &&
+            (q.queryKey[1] === "userLiked" ||
+              q.queryKey[1] === "feed" ||
+              q.queryKey[1] === "following" ||
+              q.queryKey[1] === "user"),
+        }),
+      ]);
     },
   });
 }
@@ -363,6 +410,18 @@ export function useAddPostCommentMutation() {
   return useMutation({
     mutationFn: (input: CreatePostCommentInput) => addPostComment(input),
     onSuccess: async (_, variables) => {
+      await invalidateFeedQueries(queryClient, variables.postId);
+    },
+  });
+}
+
+export function useDeleteCommentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ postId, commentId }: { postId: string; commentId: string }) =>
+      deletePostComment(postId, commentId),
+    onSuccess: async (_data, variables) => {
       await invalidateFeedQueries(queryClient, variables.postId);
     },
   });
@@ -420,19 +479,26 @@ function updatePostAcrossCaches(
         };
       }
 
-      return {
-        ...oldData,
-        items: updatePostList(oldData.items, postId, updater),
-      };
+      if (typeof oldData === "object" && "items" in oldData) {
+        return {
+          ...oldData,
+          items: updatePostList((oldData as any).items, postId, updater),
+        };
+      }
+
+      return oldData;
     },
   );
 }
 
 function updatePostList(
-  posts: FeedPost[],
+  posts: FeedPost[] | undefined,
   postId: string,
   updater: (post: FeedPost) => FeedPost,
 ) {
+  if (!posts || !Array.isArray(posts)) {
+    return posts ?? [];
+  }
   return posts.map((post) => (post.id === postId ? updater(post) : post));
 }
 

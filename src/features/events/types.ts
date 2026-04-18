@@ -25,3 +25,11 @@ export interface CreateEventInput {
   category: string;
   groupId?: string;
 }
+
+export interface UpdateEventInput extends CreateEventInput {
+  eventId: string;
+}
+
+export interface EventFilters {
+  groupId?: string;
+}

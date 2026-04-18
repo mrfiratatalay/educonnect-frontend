@@ -14,7 +14,9 @@ import {
   theme,
 } from "antd";
 import { Ellipsis, Search, Settings } from "lucide-react";
+import FollowToggleButton from "@/components/shared/FollowToggleButton";
 import { useExploreDiscoveryQuery } from "@/features/explore/hooks";
+import { useToggleFollowUserMutation } from "@/features/users/hooks";
 import type { ExploreTrendItem, ExploreTrendTabKey } from "@/features/explore/types";
 import {
   exploreDiscoveryTabs,
@@ -44,8 +46,27 @@ export default function ExploreDiscoveryPage() {
     tab: activeTab,
     query: deferredQuery.trim() || undefined,
   });
+  const toggleFollowMutation = useToggleFollowUserMutation();
   const trends = discoveryQuery.data?.trends ?? [];
   const suggestions = discoveryQuery.data?.suggestions ?? [];
+
+  function handleSuggestionOpen(targetPath: string) {
+    navigate(targetPath);
+  }
+
+  async function handleSuggestionFollow(
+    actionableUserId: string | undefined,
+    isFollowing: boolean,
+  ) {
+    if (!actionableUserId) {
+      return;
+    }
+
+    await toggleFollowMutation.mutateAsync({
+      userId: actionableUserId,
+      isFollowing,
+    });
+  }
 
   return (
     <div
@@ -102,7 +123,7 @@ export default function ExploreDiscoveryPage() {
                 <Button
                   type="text"
                   shape="circle"
-                  aria-label="Kesfet ayarlari"
+                  aria-label="Kesfeti yenile"
                   style={{
                     width: 36,
                     height: 36,
@@ -111,6 +132,8 @@ export default function ExploreDiscoveryPage() {
                     background: token.colorBgContainer,
                   }}
                   icon={<Settings size={18} />}
+                  loading={discoveryQuery.isFetching && !discoveryQuery.isLoading}
+                  onClick={() => void discoveryQuery.refetch()}
                 />
               </Flex>
 
@@ -186,17 +209,25 @@ export default function ExploreDiscoveryPage() {
                     <Flex align="center" gap={12} style={{ width: "100%" }}>
                       <Avatar
                         size={48}
-                        src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${item.avatarSeed}`}
+                        src={
+                          item.avatarUrl ??
+                          `https://api.dicebear.com/9.x/thumbs/svg?seed=${item.avatarSeed}`
+                        }
                         style={{
                           flexShrink: 0,
                           background: token.colorPrimaryBg,
                           color: token.colorPrimary,
+                          cursor: "pointer",
                         }}
+                        onClick={() => handleSuggestionOpen(item.targetPath)}
                       >
                         {item.name.charAt(0)}
                       </Avatar>
 
-                      <div style={{ minWidth: 0, flex: 1 }}>
+                      <div
+                        style={{ minWidth: 0, flex: 1, cursor: "pointer" }}
+                        onClick={() => handleSuggestionOpen(item.targetPath)}
+                      >
                         <Typography.Text
                           strong
                           ellipsis
@@ -211,29 +242,39 @@ export default function ExploreDiscoveryPage() {
                         >
                           {item.handle}
                         </Typography.Text>
+                        {item.reasonLabel ? (
+                          <Typography.Text
+                            type="secondary"
+                            ellipsis
+                            style={{ display: "block", fontSize: 12, marginTop: 2 }}
+                          >
+                            {item.reasonLabel}
+                          </Typography.Text>
+                        ) : null}
                       </div>
 
-                      <Button
-                        color="default"
-                        variant="solid"
-                        shape="round"
-                        style={{
-                          height: 36,
-                          paddingInline: 16,
-                          border: "none",
-                          background: "#111827",
-                          color: "#FFFFFF",
-                          fontWeight: 800,
-                        }}
-                        onClick={() => navigate(item.targetPath)}
-                      >
-                        {item.ctaLabel}
-                      </Button>
+                      <FollowToggleButton
+                        isFollowing={Boolean(item.isFollowedByCurrentUser)}
+                        isLoading={
+                          toggleFollowMutation.isPending &&
+                          toggleFollowMutation.variables?.userId === item.actionableUserId
+                        }
+                        onClick={() =>
+                          void handleSuggestionFollow(
+                            item.actionableUserId,
+                            Boolean(item.isFollowedByCurrentUser),
+                          )
+                        }
+                        compact
+                      />
                     </Flex>
                   </SidebarRow>
                 ))}
 
-                <Typography.Link style={{ padding: "0 16px 16px", fontSize: 15 }}>
+                <Typography.Link
+                  style={{ padding: "0 16px 16px", fontSize: 15 }}
+                  onClick={() => navigate("/profile")}
+                >
                   Daha fazla goster
                 </Typography.Link>
               </SidebarCard>
@@ -445,16 +486,8 @@ function SidebarRow({ children }: { children: ReactNode }) {
 }
 
 function getSearchPlaceholder(tab: ExploreTrendTabKey) {
-  switch (tab) {
-    case "academic":
-      return "Ders, sinav veya tez ara";
-    case "career":
-      return "Staj, kariyer veya cv ara";
-    case "events":
-      return "Etkinlik veya workshop ara";
-    case "campus":
-      return "Kampuste ne konusuluyor ara";
-    default:
-      return "Ara";
+  if (tab === "campus") {
+    return "Kampuste ne konusuluyor ara";
   }
+  return "Ara";
 }

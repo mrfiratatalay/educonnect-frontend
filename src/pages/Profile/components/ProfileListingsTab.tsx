@@ -40,7 +40,11 @@ export default function ProfileListingsTab({ userId }: ProfileListingsTabProps) 
       <Row gutter={[16, 16]}>
         {products.map((product) => (
           <Col key={product.id} xs={24} sm={12}>
-            <ProductCard product={product} onClick={() => navigate(`/market/${product.id}`)} />
+            <ProductCard
+              product={product}
+              onClick={() => navigate(`/market/${product.id}`)}
+              onSellerClick={(sellerId) => navigate(`/profile/${sellerId}`)}
+            />
           </Col>
         ))}
       </Row>

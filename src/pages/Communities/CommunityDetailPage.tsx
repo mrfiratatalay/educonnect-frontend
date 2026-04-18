@@ -4,7 +4,6 @@ import {
   EditOutlined,
   EllipsisOutlined,
   LinkOutlined,
-  SearchOutlined,
 } from "@ant-design/icons";
 import {
   Alert,
@@ -13,7 +12,8 @@ import {
   Card,
   Flex,
   Grid,
-  Input,
+  Empty,
+  Modal,
   Skeleton,
   Tabs,
   Typography,
@@ -28,38 +28,48 @@ import {
   useDeletePostMutation,
   useUpdatePostMutation,
 } from "@/features/posts/hooks";
-import type { CreatePostInput, FeedPost } from "@/features/posts/types";
+import type { CreatePostInput, FeedPost, UpdatePostInput } from "@/features/posts/types";
 import {
   groupKeys,
+  useDemoteGroupMemberMutation,
+  useDeleteGroupMutation,
   useGroupBySlugQuery,
   useInfiniteGroupPostsQuery,
   useJoinGroupMutation,
   useLeaveGroupMutation,
+  usePromoteGroupMemberMutation,
+  useGroupMembersQuery,
+  useRemoveGroupMemberMutation,
   useUpdateGroupMutation,
 } from "@/features/groups/hooks";
 import type {
   AppGroup,
+  AppGroupMember,
+  AppGroupMemberRole,
   CreateGroupInput,
 } from "@/features/groups/types";
+import {
+  useCancelEventMutation,
+  useEventsQuery,
+  useRegisterEventMutation,
+} from "@/features/events/hooks";
+import type { AppEvent } from "@/features/events/types";
 import FollowSuggestionsCard from "@/components/shared/FollowSuggestionsCard";
 import CreateGroupDialog from "@/pages/Explore/components/CreateGroupDialog";
+import CommunityMembersModal from "@/pages/Communities/components/CommunityMembersModal";
 import PostComposer from "@/pages/Feed/components/PostComposer";
 import PostList from "@/pages/Feed/components/PostList";
+import EventCard from "@/pages/Explore/components/EventCard";
+import EventDetailDialog from "@/pages/Explore/components/EventDetailDialog";
 import { useAuthStore } from "@/store/authStore";
 import {
+  getCommunityRules,
   formatCommunityMemberCount,
   getCommunityInitials,
   getCommunitySummary,
 } from "@/pages/Communities/communitySurface";
 
-type DetailTab = "latest" | "popular" | "media" | "about";
-
-const trendItems = [
-  { label: "Gundemdekiler", title: "Hayfa" },
-  { label: "Haberler", title: "SON DAKIKA" },
-  { label: "Turkiye tarihinde gundemde", title: "Narin Guran" },
-  { label: "Gundemdekiler", title: "Sokakta" },
-];
+type DetailTab = "latest" | "popular" | "media" | "events" | "about";
 
 export default function CommunityDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -70,15 +80,26 @@ export default function CommunityDetailPage() {
   const { token } = theme.useToken();
   const [activeTab, setActiveTab] = useState<DetailTab>("popular");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
+  const [memberActionTargetId, setMemberActionTargetId] = useState<string>();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [showComposer, setShowComposer] = useState(false);
   const [messageApi, messageContextHolder] = message.useMessage();
   const composerRef = useRef<HTMLDivElement | null>(null);
   const groupQuery = useGroupBySlugQuery(slug);
   const group = groupQuery.data;
   const postsQuery = useInfiniteGroupPostsQuery(group?.id, 10, Boolean(group?.id));
-  const joinGroupMutation = useJoinGroupMutation();
-  const leaveGroupMutation = useLeaveGroupMutation();
+  const groupMembersQuery = useGroupMembersQuery(group?.id, isMembersOpen && Boolean(group?.id));
+  const eventsQuery = useEventsQuery({ groupId: group?.id }, Boolean(group?.id));
+  const joinGroupMutation = useJoinGroupMutation(group?.slug);
+  const leaveGroupMutation = useLeaveGroupMutation(group?.slug);
+  const promoteMemberMutation = usePromoteGroupMemberMutation(group?.id, group?.slug);
+  const demoteMemberMutation = useDemoteGroupMemberMutation(group?.id, group?.slug);
+  const removeMemberMutation = useRemoveGroupMemberMutation(group?.id, group?.slug);
   const updateGroupMutation = useUpdateGroupMutation(group?.id, group?.slug);
+  const deleteGroupMutation = useDeleteGroupMutation();
+  const registerEventMutation = useRegisterEventMutation();
+  const cancelEventMutation = useCancelEventMutation();
   const deletePostMutation = useDeletePostMutation();
   const updatePostMutation = useUpdatePostMutation();
   const actingGroupId = joinGroupMutation.isPending
@@ -92,6 +113,11 @@ export default function CommunityDetailPage() {
       : undefined;
   const updatingPostId =
     updatePostMutation.isPending ? updatePostMutation.variables?.postId : undefined;
+  const actingEventId = registerEventMutation.isPending
+    ? registerEventMutation.variables
+    : cancelEventMutation.isPending
+      ? cancelEventMutation.variables
+      : undefined;
 
   const createGroupPostMutation = useMutation({
     mutationFn: async (input: CreatePostInput) => {
@@ -121,7 +147,9 @@ export default function CommunityDetailPage() {
 
   const allPosts = postsQuery.data?.pages.flatMap((page) => page.items) ?? [];
   const visiblePosts = getVisiblePosts(allPosts, activeTab);
+  const groupEvents = eventsQuery.data ?? [];
   const summary = group ? getCommunitySummary(group) : "";
+  const communityRules = group ? getCommunityRules(group) : [];
   const isOwner = user?.id === group?.creatorUserId;
 
   async function handleToggleMembership(targetGroup: AppGroup) {
@@ -131,6 +159,15 @@ export default function CommunityDetailPage() {
     }
 
     await joinGroupMutation.mutateAsync(targetGroup.id);
+  }
+
+  async function handleToggleRegistration(event: AppEvent) {
+    if (event.isRegistered) {
+      await cancelEventMutation.mutateAsync(event.id);
+      return;
+    }
+
+    await registerEventMutation.mutateAsync(event.id);
   }
 
   async function handleCreatePost(input: CreatePostInput) {
@@ -145,6 +182,45 @@ export default function CommunityDetailPage() {
 
   function handleDeletePost(postId: string) {
     void deletePostMutation.mutateAsync(postId);
+  }
+
+  async function handlePromoteMember(member: AppGroupMember) {
+    setMemberActionTargetId(member.userId);
+    try {
+      await promoteMemberMutation.mutateAsync(member.userId);
+      messageApi.success("Kullanici moderator yapildi.");
+    } finally {
+      setMemberActionTargetId(undefined);
+    }
+  }
+
+  async function handleDemoteMember(member: AppGroupMember) {
+    setMemberActionTargetId(member.userId);
+    try {
+      await demoteMemberMutation.mutateAsync(member.userId);
+      messageApi.success("Moderatorluk kaldirildi.");
+    } finally {
+      setMemberActionTargetId(undefined);
+    }
+  }
+
+  function handleRemoveMember(member: AppGroupMember) {
+    Modal.confirm({
+      title: `${member.fullName} topluluktan cikarilsin mi?`,
+      content: "Bu kullanici topluluk uyeliginin disina alinacak.",
+      okText: "Cikar",
+      cancelText: "Vazgec",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        setMemberActionTargetId(member.userId);
+        try {
+          await removeMemberMutation.mutateAsync(member.userId);
+          messageApi.success("Uye topluluktan cikarildi.");
+        } finally {
+          setMemberActionTargetId(undefined);
+        }
+      },
+    });
   }
 
   async function handleCopyLink() {
@@ -172,6 +248,29 @@ export default function CommunityDetailPage() {
         textarea.focus();
       }
     }, 60);
+  }
+
+  function handleHeaderAction() {
+    setIsMembersOpen(true);
+  }
+
+  function handleDeleteGroup() {
+    if (!group) {
+      return;
+    }
+
+    Modal.confirm({
+      title: "Topluluk silinsin mi?",
+      content: "Topluluk listelerden kalkacak ve artik kullanilamayacak.",
+      okText: "Toplulugu sil",
+      cancelText: "Vazgec",
+      okButtonProps: { danger: true, loading: deleteGroupMutation.isPending },
+      onOk: async () => {
+        await deleteGroupMutation.mutateAsync(group.id);
+        messageApi.success("Topluluk silindi.");
+        navigate("/communities", { replace: true });
+      },
+    });
   }
 
   if (groupQuery.isLoading) {
@@ -230,8 +329,10 @@ export default function CommunityDetailPage() {
                 </Flex>
 
                 <Flex align="center" gap={4}>
-                  <Button type="text" shape="circle" icon={<SearchOutlined />} />
-                  <Button type="text" shape="circle" icon={<EllipsisOutlined />} />
+                  <Button type="text" onClick={handleHeaderAction}>
+                    Uyeler
+                  </Button>
+                  <Button type="text" shape="circle" icon={<LinkOutlined />} onClick={() => void handleCopyLink()} />
                 </Flex>
               </Flex>
             </div>
@@ -247,11 +348,17 @@ export default function CommunityDetailPage() {
             />
 
             <div style={{ padding: "16px 16px 0" }}>
-              <Flex align="flex-start" justify="space-between" gap={16} wrap="wrap">
-                <div style={{ minWidth: 0, flex: 1 }}>
+              <Flex vertical align="stretch" gap={16}>
+                <div style={{ minWidth: 0, width: "100%" }}>
                   <Typography.Title
                     level={1}
-                    style={{ margin: 0, fontSize: screens.md ? 32 : 28, lineHeight: 1.1 }}
+                    style={{
+                      margin: 0,
+                      fontSize: screens.md ? 32 : 28,
+                      lineHeight: 1.1,
+                      wordBreak: "break-word",
+                      overflowWrap: "anywhere",
+                    }}
                   >
                     {group.name}
                   </Typography.Title>
@@ -277,10 +384,22 @@ export default function CommunityDetailPage() {
                     <Typography.Text strong style={{ fontSize: 16 }}>
                       {formatCommunityMemberCount(group.memberCount)}
                     </Typography.Text>
+                    <Button type="link" onClick={() => setIsMembersOpen(true)} style={{ paddingInline: 0 }}>
+                      Tum uyeleri gor
+                    </Button>
                   </Flex>
                 </div>
 
-                <Flex align="center" gap={8} wrap="wrap" style={{ marginTop: 4 }}>
+                <Flex
+                  align="center"
+                  gap={8}
+                  wrap="wrap"
+                  style={{
+                    marginTop: 4,
+                    width: "100%",
+                    justifyContent: "flex-start",
+                  }}
+                >
                   {group.canCurrentUserPost ? (
                     <Button
                       shape="circle"
@@ -296,21 +415,32 @@ export default function CommunityDetailPage() {
                     style={{ borderColor: token.colorBorderSecondary, boxShadow: "none" }}
                   />
                   {isOwner ? (
-                    <Button
-                      shape="round"
-                      size="large"
-                      loading={updateGroupMutation.isPending}
-                      onClick={() => setIsEditDialogOpen(true)}
-                      style={{
-                        borderColor: token.colorBorderSecondary,
-                        background: token.colorBgContainer,
+                    <>
+                      <Button
+                        shape="round"
+                        size="large"
+                        loading={updateGroupMutation.isPending}
+                        onClick={() => setIsEditDialogOpen(true)}
+                        style={{
+                          borderColor: token.colorBorderSecondary,
+                          background: token.colorBgContainer,
                         color: token.colorText,
                         boxShadow: "none",
                         paddingInline: 18,
                       }}
-                    >
-                      Toplulugu duzenle
-                    </Button>
+                      >
+                        Toplulugu duzenle
+                      </Button>
+                      <Button
+                        danger
+                        shape="round"
+                        size="large"
+                        loading={deleteGroupMutation.isPending}
+                        onClick={handleDeleteGroup}
+                      >
+                        Toplulugu sil
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       shape="round"
@@ -328,6 +458,22 @@ export default function CommunityDetailPage() {
                       {actingGroupId === group.id ? "Isleniyor" : group.isMember ? "Katildi" : "Katil"}
                     </Button>
                   )}
+                  {group.canManageMembers ? (
+                    <Button
+                      shape="round"
+                      size="large"
+                      onClick={() => setIsMembersOpen(true)}
+                      style={{
+                        borderColor: token.colorBorderSecondary,
+                        background: token.colorBgContainer,
+                        color: token.colorText,
+                        boxShadow: "none",
+                        paddingInline: 18,
+                      }}
+                    >
+                      Uye yonetimi
+                    </Button>
+                  ) : null}
                 </Flex>
               </Flex>
             </div>
@@ -345,6 +491,7 @@ export default function CommunityDetailPage() {
                 { key: "popular", label: "Populer" },
                 { key: "latest", label: "En Son" },
                 { key: "media", label: "Medya" },
+                { key: "events", label: "Etkinlikler" },
                 { key: "about", label: "Hakkinda" },
               ]}
             />
@@ -365,9 +512,14 @@ export default function CommunityDetailPage() {
                   <PlainFact label="Kurucu" value={group.creatorName} />
                   <PlainFact label="Gonderiler" value={`${group.postCount}`} />
                   <PlainFact label="Etkinlikler" value={`${group.eventCount}`} />
+                  <PlainFact label="Rolun" value={formatRoleLabel(group.currentUserRole)} />
                   <PlainFact
                     label="Paylasim yetkisi"
                     value={group.canCurrentUserPost ? "Uyelere acik" : "Uyelik gerekiyor"}
+                  />
+                  <PlainFact
+                    label="Etkinlik yonetimi"
+                    value={group.canCreateEvents ? "Moderator veya kurucu" : "Yetkin yok"}
                   />
 
                   {group.moderatorPreviewMembers.length ? (
@@ -395,6 +547,37 @@ export default function CommunityDetailPage() {
                     </div>
                   ) : null}
                 </Flex>
+              </div>
+            ) : activeTab === "events" ? (
+              <div style={{ padding: "18px 16px 28px" }}>
+                {eventsQuery.isLoading ? (
+                  <Skeleton active paragraph={{ rows: 4 }} />
+                ) : eventsQuery.error instanceof Error ? (
+                  <Alert type="error" showIcon message={eventsQuery.error.message} />
+                ) : groupEvents.length > 0 ? (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: screens.md ? "repeat(2, minmax(0, 1fr))" : "1fr",
+                      gap: 16,
+                    }}
+                  >
+                    {groupEvents.map((event) => (
+                      <EventCard
+                        key={event.id}
+                        event={event}
+                        isActing={actingEventId === event.id}
+                        onOpen={(eventId) => setSelectedEventId(eventId)}
+                        onToggleRegistration={(targetEvent) => void handleToggleRegistration(targetEvent)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <Empty
+                    description="Bu toplulukta henuz etkinlik yok."
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  />
+                )}
               </div>
             ) : (
               <>
@@ -425,8 +608,8 @@ export default function CommunityDetailPage() {
                     showCreateAction={group.canCurrentUserPost}
                     onCreatePostClick={handleCreatePostClick}
                     onDelete={handleDeletePost}
-                    onUpdate={async (postId, content) => {
-                      await updatePostMutation.mutateAsync({ postId, content });
+                    onUpdate={async (postId: string, input: Omit<UpdatePostInput, "postId">) => {
+                      await updatePostMutation.mutateAsync({ postId, ...input });
                     }}
                   />
                 )}
@@ -449,39 +632,27 @@ export default function CommunityDetailPage() {
             <div style={{ width: 350, flexShrink: 0, paddingLeft: 20 }}>
               <div style={{ position: "sticky", top: 12, padding: "0 16px 24px" }}>
                 <Flex vertical gap={16}>
-                  <Input
-                    className="communities-search"
-                    allowClear
-                    placeholder="Ara"
-                    prefix={<SearchOutlined style={{ color: token.colorTextTertiary }} />}
-                    variant="filled"
-                    styles={{
-                      input: {
-                        height: 40,
-                      },
-                    }}
-                  />
-
                   <AsideCard title={`${group.name} Kurallari`}>
                     <Flex vertical gap={16}>
-                      <RuleRow index={1} text="Saygili ol ve iyi niyetli kal." />
-                      <RuleRow index={2} text="Paylasimlarini topluluk konusu icinde tut." />
-                      <RuleRow index={3} text="Uret, sor ve faydali katki ver." />
+                      {communityRules.map((rule, index) => (
+                        <RuleRow key={rule} index={index + 1} text={rule} />
+                      ))}
                     </Flex>
                   </AsideCard>
 
                   <AsideCard
-                    title="Neler oluyor?"
+                    title="Topluluk ozeti"
                     footer={
-                      <Button type="link" style={{ padding: 0 }}>
-                        Daha fazla goster
+                      <Button type="link" style={{ padding: 0 }} onClick={() => setIsMembersOpen(true)}>
+                        Uyeleri ac
                       </Button>
                     }
                   >
                     <Flex vertical gap={16}>
-                      {trendItems.map((item) => (
-                        <TrendRow key={item.title} label={item.label} title={item.title} />
-                      ))}
+                      <TrendRow label="Uyeler" title={formatCommunityMemberCount(group.memberCount)} />
+                      <TrendRow label="Gonderiler" title={`${group.postCount} paylasim`} />
+                      <TrendRow label="Etkinlikler" title={`${group.eventCount} etkinlik`} />
+                      <TrendRow label="Rolun" title={formatRoleLabel(group.currentUserRole)} />
                     </Flex>
                   </AsideCard>
 
@@ -500,6 +671,7 @@ export default function CommunityDetailPage() {
           name: group.name,
           shortDescription: group.shortDescription,
           description: group.description,
+          rules: group.rules,
           category: group.category,
           avatarUrl: group.avatarUrl,
           bannerUrl: group.bannerUrl,
@@ -508,6 +680,24 @@ export default function CommunityDetailPage() {
         onSubmit={handleUpdateGroup}
         submitLabel="Degisiklikleri kaydet"
         title="Toplulugu duzenle"
+      />
+      <CommunityMembersModal
+        open={isMembersOpen}
+        members={groupMembersQuery.data}
+        loading={groupMembersQuery.isLoading}
+        actingUserId={memberActionTargetId}
+        canManageMembers={group.canManageMembers}
+        onClose={() => setIsMembersOpen(false)}
+        onPromote={handlePromoteMember}
+        onDemote={handleDemoteMember}
+        onRemove={handleRemoveMember}
+      />
+      <EventDetailDialog
+        eventId={selectedEventId}
+        event={groupEvents.find((event) => event.id === selectedEventId) ?? null}
+        actingEventId={actingEventId}
+        onClose={() => setSelectedEventId(null)}
+        onToggleRegistration={(event) => void handleToggleRegistration(event)}
       />
     </>
   );
@@ -623,6 +813,19 @@ function getVisiblePosts(posts: FeedPost[], activeTab: DetailTab) {
   }
 
   return posts;
+}
+
+function formatRoleLabel(role?: AppGroupMemberRole) {
+  switch (role) {
+    case "owner":
+      return "Kurucu";
+    case "moderator":
+      return "Moderator";
+    case "member":
+      return "Uye";
+    default:
+      return "Misafir";
+  }
 }
 
 async function copyTextToClipboard(value: string) {

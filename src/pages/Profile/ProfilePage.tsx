@@ -12,12 +12,11 @@ import {
 } from "antd";
 import { useAuthStore } from "@/store/authStore";
 import {
-  useFollowUserMutation,
   useFollowersQuery,
   useMyProfileQuery,
   useFollowingUsersQuery,
   usePublicProfileQuery,
-  useUnfollowUserMutation,
+  useToggleFollowUserMutation,
 } from "@/features/users/hooks";
 import type { PublicUserProfile } from "@/features/users/api";
 import type { User, UserRole } from "@/types";
@@ -29,7 +28,6 @@ import ProfileEditModal from "@/pages/Profile/components/ProfileEditModal";
 import ProfileRightRail from "@/pages/Profile/components/ProfileRightRail";
 import ProfilePostsTab from "@/pages/Profile/components/ProfilePostsTab";
 import ProfileListingsTab from "@/pages/Profile/components/ProfileListingsTab";
-import ProfileMediaTab from "@/pages/Profile/components/ProfileMediaTab";
 import ProfileLikesTab from "@/pages/Profile/components/ProfileLikesTab";
 import ProfileSavedTab from "@/pages/Profile/components/ProfileSavedTab";
 
@@ -68,8 +66,7 @@ export default function ProfilePage() {
   const myProfileQuery = useMyProfileQuery(isOwnProfile);
   const publicProfileQuery = usePublicProfileQuery(targetUserId, !isOwnProfile);
   const profileQuery = isOwnProfile ? myProfileQuery : publicProfileQuery;
-  const followUserMutation = useFollowUserMutation();
-  const unfollowUserMutation = useUnfollowUserMutation();
+  const toggleFollowMutation = useToggleFollowUserMutation();
   const screens = Grid.useBreakpoint();
   const { token } = theme.useToken();
   const [isEditModalOpen, setEditModalOpen] = useState(false);
@@ -107,7 +104,7 @@ export default function ProfilePage() {
   }
 
   const profile = toProfileViewModel(profileQuery.data);
-  const isFollowActionPending = followUserMutation.isPending || unfollowUserMutation.isPending;
+  const isFollowActionPending = toggleFollowMutation.isPending;
   const isFollowing = Boolean(!isOwnProfile && profile.isFollowedByCurrentUser);
   const activeConnectionsQuery = connectionView === "followers" ? followersQuery : followingUsersQuery;
   const activeConnectionsTitle = connectionView === "followers" ? "Takipciler" : "Takip edilenler";
@@ -125,8 +122,10 @@ export default function ProfilePage() {
             onOpenFollowers={() => setConnectionView("followers")}
             onOpenFollowing={() => setConnectionView("following")}
             onFollowToggle={!isOwnProfile && targetUserId ? async () => {
-              if (isFollowing) { await unfollowUserMutation.mutateAsync(targetUserId); return; }
-              await followUserMutation.mutateAsync(targetUserId);
+              await toggleFollowMutation.mutateAsync({
+                userId: targetUserId,
+                isFollowing,
+              });
             } : undefined}
             onSendMessage={!isOwnProfile && targetUserId ? () => navigate(`/messages?with=${targetUserId}`) : undefined}
           />
@@ -146,8 +145,10 @@ export default function ProfilePage() {
         onToggleFollow={async (cp) => {
           setPendingConnectionUserId(cp.id);
           try {
-            if (cp.isFollowedByCurrentUser) { await unfollowUserMutation.mutateAsync(cp.id); return; }
-            await followUserMutation.mutateAsync(cp.id);
+            await toggleFollowMutation.mutateAsync({
+              userId: cp.id,
+              isFollowing: cp.isFollowedByCurrentUser,
+            });
           } finally { setPendingConnectionUserId(null); }
         }}
       />
@@ -168,7 +169,6 @@ function buildTabItems(profile: ProfileViewModel, isOwnProfile: boolean) {
       children: tabPanel(<Flex vertical gap={16}><ProfileDetailsCard profile={profile} isOwnProfile={isOwnProfile} /><ProfileTimeline profile={profile} /></Flex>),
     },
     { key: "listings", label: tabLabel("Ilanlar"), children: tabPanel(<ProfileListingsTab userId={profile.id} />) },
-    { key: "media", label: tabLabel("Medya"), children: tabPanel(<ProfileMediaTab userId={profile.id} />) },
     { key: "likes", label: tabLabel("Begeni"), children: tabPanel(<ProfileLikesTab userId={profile.id} />) },
   ];
 

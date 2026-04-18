@@ -17,6 +17,7 @@ import {
   useInfiniteBookmarkedPostsQuery,
   useUpdatePostMutation,
 } from "@/features/posts/hooks";
+import type { UpdatePostInput } from "@/features/posts/types";
 import PostCard from "@/pages/Feed/components/PostCard";
 import { useAuthStore } from "@/store/authStore";
 
@@ -56,8 +57,8 @@ export default function BookmarksPage() {
   const updatingPostId =
     updatePostMutation.isPending ? updatePostMutation.variables?.postId : undefined;
 
-  async function handleUpdatePost(postId: string, content: string) {
-    await updatePostMutation.mutateAsync({ postId, content });
+  async function handleUpdatePost(postId: string, input: Omit<UpdatePostInput, "postId">) {
+    await updatePostMutation.mutateAsync({ postId, ...input });
   }
 
   function handleDeletePost(postId: string) {

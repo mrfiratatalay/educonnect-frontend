@@ -1,12 +1,12 @@
 import { CalendarOutlined, TeamOutlined } from "@ant-design/icons";
 import { Alert, Button, Descriptions, Drawer, Flex, Grid, Spin, Tag, Typography } from "antd";
 import { useGroupDetailQuery } from "@/features/groups/hooks";
-import type { AppGroup } from "@/features/groups/types";
+import type { AppGroup, AppGroupDetail } from "@/features/groups/types";
 
 interface GroupDetailDialogProps {
   actingGroupId?: string;
   errorMessage?: string | null;
-  group?: AppGroup | null;
+  group?: AppGroup | AppGroupDetail | null;
   groupId: string | null;
   onClose: () => void;
   onToggleMembership: (group: AppGroup) => void;
@@ -21,10 +21,11 @@ export default function GroupDetailDialog({
   onToggleMembership,
 }: GroupDetailDialogProps) {
   const screens = Grid.useBreakpoint();
-  const groupQuery = useGroupDetailQuery(groupId ?? undefined, Boolean(groupId) && !previewGroup);
-  const group = previewGroup ?? groupQuery.data;
-  const queryError = !previewGroup && groupQuery.error instanceof Error ? groupQuery.error : null;
-  const isLoading = !previewGroup && groupQuery.isLoading;
+  const hasDetailPreview = Boolean(previewGroup && "postCount" in previewGroup);
+  const groupQuery = useGroupDetailQuery(groupId ?? undefined, Boolean(groupId) && !hasDetailPreview);
+  const group = (groupQuery.data ?? previewGroup) as AppGroup | AppGroupDetail | undefined;
+  const queryError = groupQuery.error instanceof Error ? groupQuery.error : null;
+  const isLoading = !group && groupQuery.isLoading;
 
   return (
     <Drawer
@@ -74,9 +75,28 @@ export default function GroupDetailDialog({
                 ),
                 children: group.creatorName,
               },
+              {
+                label: "Gonderi",
+                children: "postCount" in group ? `${group.postCount} gonderi` : "-",
+              },
+              {
+                label: "Etkinlik",
+                children: "eventCount" in group ? `${group.eventCount} etkinlik` : "-",
+              },
             ]}
             size="small"
           />
+
+          {"moderatorPreviewMembers" in group && group.moderatorPreviewMembers.length > 0 ? (
+            <Flex vertical gap={8}>
+              <Typography.Text strong>Yoneticiler</Typography.Text>
+              <Flex gap={8} wrap>
+                {group.moderatorPreviewMembers.map((member) => (
+                  <Tag key={member.userId}>{member.fullName}</Tag>
+                ))}
+              </Flex>
+            </Flex>
+          ) : null}
 
           {errorMessage && <Alert type="error" showIcon message={errorMessage} />}
 

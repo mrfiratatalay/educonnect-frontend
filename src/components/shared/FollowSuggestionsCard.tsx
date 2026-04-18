@@ -1,8 +1,9 @@
 import { Avatar, Button, Card, Flex, Skeleton, Typography, theme } from "antd";
 import { useNavigate } from "react-router-dom";
+import FollowToggleButton from "@/components/shared/FollowToggleButton";
 import {
   useFollowSuggestionsQuery,
-  useFollowUserMutation,
+  useToggleFollowUserMutation,
 } from "@/features/users/hooks";
 
 interface FollowSuggestionsCardProps {
@@ -21,7 +22,7 @@ export default function FollowSuggestionsCard({
   const { token } = theme.useToken();
   const navigate = useNavigate();
   const suggestionsQuery = useFollowSuggestionsQuery(limit);
-  const followMutation = useFollowUserMutation();
+  const toggleFollowMutation = useToggleFollowUserMutation();
 
   const cardStyle: React.CSSProperties = {
     overflow: "hidden",
@@ -96,18 +97,20 @@ export default function FollowSuggestionsCard({
                       {suggestion.reasonLabel}
                     </Typography.Text>
                   </div>
-                  <Button
-                    type="primary"
-                    shape="round"
-                    loading={
-                      followMutation.isPending &&
-                      followMutation.variables === suggestion.id
+                  <FollowToggleButton
+                    isFollowing={suggestion.isFollowedByCurrentUser}
+                    isLoading={
+                      toggleFollowMutation.isPending &&
+                      toggleFollowMutation.variables?.userId === suggestion.id
                     }
-                    onClick={() => void followMutation.mutateAsync(suggestion.id)}
-                    style={{ fontWeight: 700, padding: "0 16px" }}
-                  >
-                    Takip et
-                  </Button>
+                    onClick={() =>
+                      void toggleFollowMutation.mutateAsync({
+                        userId: suggestion.id,
+                        isFollowing: suggestion.isFollowedByCurrentUser,
+                      })
+                    }
+                    compact
+                  />
                 </Flex>
               </div>
             ))}

@@ -4,6 +4,8 @@ import { useUIStore } from "@/store/uiStore";
 import { useAuthStore } from "@/store/authStore";
 import { usePostComposerStore } from "@/store/postComposerStore";
 import { useCreatePostMutation } from "@/features/posts/hooks";
+import { useDirectMessagesSignalR } from "@/features/messages/useDirectMessagesSignalR";
+import { useNotificationsSignalR } from "@/features/notifications/useNotificationsSignalR";
 import type { CreatePostInput } from "@/features/posts/types";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
@@ -24,10 +26,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
   
   const { isComposeModalOpen, closeComposeModal } = useUIStore();
   const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const draftContent = usePostComposerStore((state) => state.content);
+  const draftImageFile = usePostComposerStore((state) => state.imageFile);
   const createPostMutation = useCreatePostMutation();
   const shouldShowChatBubble = isDesktop && !location.pathname.startsWith("/edu-ai");
-  const canSubmitDraft = draftContent.trim().length > 0;
+  const canSubmitDraft = draftContent.trim().length > 0 || draftImageFile !== null;
+
+  useNotificationsSignalR(isAuthenticated);
+  useDirectMessagesSignalR(isAuthenticated);
 
   const handleCreatePost = async (input: CreatePostInput) => {
     await createPostMutation.mutateAsync(input);

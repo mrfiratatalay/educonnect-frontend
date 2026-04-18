@@ -116,6 +116,55 @@ export function useUnfollowUserMutation() {
   });
 }
 
+export function useToggleFollowUserMutation() {
+  const queryClient = useQueryClient();
+  const currentUserId = useAuthStore((state) => state.user?.id);
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      isFollowing,
+    }: {
+      userId: string;
+      isFollowing: boolean;
+    }) => {
+      if (isFollowing) {
+        await unfollowUser(userId);
+        return { userId, isFollowing: false };
+      }
+
+      await followUser(userId);
+      return { userId, isFollowing: true };
+    },
+    onMutate: async ({ userId, isFollowing }) => {
+      const previousQueries = queryClient.getQueriesData({ queryKey: userKeys.all });
+      const nextIsFollowing = !isFollowing;
+
+      queryClient.setQueriesData(
+        { queryKey: userKeys.all },
+        (oldData: unknown) => applyFollowStateToUserCaches(oldData, userId, nextIsFollowing, currentUserId),
+      );
+
+      return { previousQueries };
+    },
+    onError: (_error, _variables, context) => {
+      context?.previousQueries.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: userKeys.all }),
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            query.queryKey[0] === postKeys.all[0] &&
+            query.queryKey[1] === "following",
+        }),
+      ]);
+    },
+  });
+}
+
 export function useUploadMyAvatarMutation() {
   const queryClient = useQueryClient();
   const updateUser = useAuthStore((state) => state.updateUser);
@@ -148,4 +197,62 @@ function syncProfileCaches(
   queryClient.setQueryData(userKeys.me(), profile);
   queryClient.setQueryData(userKeys.detail(profile.id), profile);
   updateUser(profile);
+}
+
+function applyFollowStateToUserCaches(
+  oldData: unknown,
+  targetUserId: string,
+  isNowFollowing: boolean,
+  currentUserId?: string,
+) {
+  if (!oldData) {
+    return oldData;
+  }
+
+  if (Array.isArray(oldData)) {
+    return oldData.map((item) => {
+      if (!item || typeof item !== "object") {
+        return item;
+      }
+
+      const record = item as Record<string, unknown>;
+      if (String(record.id ?? "") !== targetUserId) {
+        return item;
+      }
+
+      return {
+        ...record,
+        isFollowedByCurrentUser:
+          "isFollowedByCurrentUser" in record ? isNowFollowing : record.isFollowedByCurrentUser,
+      };
+    });
+  }
+
+  if (typeof oldData === "object") {
+    const record = oldData as Record<string, unknown>;
+
+    if (String(record.id ?? "") === targetUserId) {
+      return {
+        ...record,
+        isFollowedByCurrentUser:
+          "isFollowedByCurrentUser" in record ? isNowFollowing : record.isFollowedByCurrentUser,
+        followersCount:
+          typeof record.followersCount === "number"
+            ? Math.max(0, record.followersCount + (isNowFollowing ? 1 : -1))
+            : record.followersCount,
+      };
+    }
+
+    if (currentUserId && String(record.id ?? "") === currentUserId) {
+      return {
+        ...record,
+        followingCount:
+          typeof record.followingCount === "number"
+            ? Math.max(0, record.followingCount + (isNowFollowing ? 1 : -1))
+            : record.followingCount,
+      };
+    }
+  }
+
+  return oldData;
 }

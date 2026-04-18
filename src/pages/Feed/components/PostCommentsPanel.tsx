@@ -40,7 +40,11 @@ export default function PostCommentsPanel({
         )}
 
         {postDetailQuery.data && (
-          <PostCommentList comments={postDetailQuery.data.comments} />
+          <PostCommentList
+            comments={postDetailQuery.data.comments}
+            postId={postId}
+            postAuthorId={postDetailQuery.data.post.userId}
+          />
         )}
 
         <Divider size="small" style={{ margin: 0 }} />

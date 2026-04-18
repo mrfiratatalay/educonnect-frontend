@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Avatar, Button, Empty, Flex, Modal, Skeleton, Typography, theme } from "antd";
+import FollowToggleButton from "@/components/shared/FollowToggleButton";
 import { getUserInitials } from "@/components/layout/shellNavigation";
 import type { UserConnection } from "@/features/users/api";
 
@@ -52,8 +53,6 @@ export default function ProfileConnectionsModal({
         <Flex vertical>
           {profiles.map((profile, index) => {
             const isCurrentUser = currentUserId === profile.id;
-            const followButtonLabel = profile.isFollowedByCurrentUser ? "Takibi birak" : "Takip et";
-
             return (
               <div
                 key={profile.id}
@@ -100,21 +99,12 @@ export default function ProfileConnectionsModal({
                   </div>
 
                   {!isCurrentUser ? (
-                    <Button
-                      shape="round"
-                      loading={pendingUserId === profile.id}
+                    <FollowToggleButton
+                      isFollowing={profile.isFollowedByCurrentUser}
+                      isLoading={pendingUserId === profile.id}
                       onClick={() => void onToggleFollow(profile)}
-                      color={profile.isFollowedByCurrentUser ? undefined : "default"}
-                      variant={profile.isFollowedByCurrentUser ? "outlined" : "solid"}
-                      style={{
-                        minWidth: 118,
-                        height: 36,
-                        fontWeight: 700,
-                        boxShadow: "none",
-                      }}
-                    >
-                      {followButtonLabel}
-                    </Button>
+                      minWidth={118}
+                    />
                   ) : null}
                 </Flex>
               </div>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Avatar, Button, Flex, Grid, Layout, Popover, Typography, theme } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { Avatar, Badge, Button, Flex, Grid, Layout, Popover, Typography, theme } from "antd";
 import { Feather, GraduationCap, MoreHorizontal } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -9,23 +9,30 @@ import {
   shellMainNavItems,
   shellMoreNavItems,
 } from "@/components/layout/shellNavigation";
+import { useUnreadMessages } from "@/features/messages/unread";
+import { useNotificationsQuery } from "@/features/notifications/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
 import { useUIStore } from "@/store/uiStore";
 
 export default function Sidebar() {
   const screens = Grid.useBreakpoint();
+  const isDesktop = !!screens.lg;
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const queryClient = useQueryClient();
   const { openComposeModal } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = theme.useToken();
+  const notificationsQuery = useNotificationsQuery();
+  const { unreadCount: unreadMessageCount } = useUnreadMessages();
   const [accountPopoverOpen, setAccountPopoverOpen] = useState(false);
   const [morePopoverOpen, setMorePopoverOpen] = useState(false);
-
-  if (!screens.lg) {
-    return null;
-  }
+  const [shouldPulseNotifications, setShouldPulseNotifications] = useState(false);
+  const [shouldPulseMessages, setShouldPulseMessages] = useState(false);
+  const previousUnreadCountRef = useRef(0);
+  const previousUnreadMessageCountRef = useRef(0);
 
   const isMessages = location.pathname === "/messages";
   const selectedKey = getSelectedShellKey(location.pathname);
@@ -34,6 +41,35 @@ export default function Sidebar() {
   const navIconSize = 24;
   const navLabelFontSize = 18;
   const navRowPadding = isMessages ? "10px" : "10px 20px 10px 10px";
+  const unreadCount = (notificationsQuery.data ?? []).filter((item) => !item.isRead).length;
+
+  useEffect(() => {
+    if (unreadCount > previousUnreadCountRef.current) {
+      setShouldPulseNotifications(true);
+      const timeoutId = window.setTimeout(() => setShouldPulseNotifications(false), 1800);
+      previousUnreadCountRef.current = unreadCount;
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    previousUnreadCountRef.current = unreadCount;
+    return undefined;
+  }, [unreadCount]);
+
+  useEffect(() => {
+    if (unreadMessageCount > previousUnreadMessageCountRef.current) {
+      setShouldPulseMessages(true);
+      const timeoutId = window.setTimeout(() => setShouldPulseMessages(false), 1800);
+      previousUnreadMessageCountRef.current = unreadMessageCount;
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    previousUnreadMessageCountRef.current = unreadMessageCount;
+    return undefined;
+  }, [unreadMessageCount]);
+
+  if (!isDesktop) {
+    return null;
+  }
 
   const accountPopoverContent = (
     <div style={{ width: 360, maxWidth: "calc(100vw - 32px)" }}>
@@ -66,13 +102,13 @@ export default function Sidebar() {
         tabIndex={0}
         onClick={() => {
           setAccountPopoverOpen(false);
-          void logout();
+          void logout().then(() => queryClient.clear());
         }}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
             setAccountPopoverOpen(false);
-            void logout();
+            void logout().then(() => queryClient.clear());
           }
         }}
         style={{
@@ -175,11 +211,80 @@ export default function Sidebar() {
                     event.currentTarget.style.background = "transparent";
                   }}
                 >
-                  <item.icon size={navIconSize} fill={selectedKey === item.key ? "currentColor" : "none"} />
+                  {item.key === "/notifications" ? (
+                    <Badge count={unreadCount} overflowCount={99} size="small">
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          transform: shouldPulseNotifications ? "scale(1.12)" : "scale(1)",
+                          transition: "transform 180ms ease",
+                        }}
+                      >
+                        <item.icon size={navIconSize} fill={selectedKey === item.key ? "currentColor" : "none"} />
+                      </span>
+                    </Badge>
+                  ) : item.key === "/messages" ? (
+                    <Badge count={unreadMessageCount} overflowCount={99} size="small">
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          transform: shouldPulseMessages ? "scale(1.12)" : "scale(1)",
+                          transition: "transform 180ms ease",
+                        }}
+                      >
+                        <item.icon size={navIconSize} fill={selectedKey === item.key ? "currentColor" : "none"} />
+                      </span>
+                    </Badge>
+                  ) : (
+                    <item.icon size={navIconSize} fill={selectedKey === item.key ? "currentColor" : "none"} />
+                  )}
                   {!isMessages ? (
-                    <span style={{ fontSize: navLabelFontSize, fontWeight: selectedKey === item.key ? 700 : 400, lineHeight: 1.2 }}>
-                      {item.label}
-                    </span>
+                    <Flex align="center" gap={10}>
+                      <span style={{ fontSize: navLabelFontSize, fontWeight: selectedKey === item.key ? 700 : 400, lineHeight: 1.2 }}>
+                        {item.label}
+                      </span>
+                      {item.key === "/notifications" && unreadCount > 0 ? (
+                        <span
+                          style={{
+                            minWidth: 24,
+                            height: 20,
+                            paddingInline: 6,
+                            borderRadius: 999,
+                            background: token.colorError,
+                            color: token.colorWhite,
+                            fontSize: 12,
+                            fontWeight: 800,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transform: shouldPulseNotifications ? "scale(1.08)" : "scale(1)",
+                            transition: "transform 180ms ease",
+                          }}
+                        >
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      ) : item.key === "/messages" && unreadMessageCount > 0 ? (
+                        <span
+                          style={{
+                            minWidth: 24,
+                            height: 20,
+                            paddingInline: 6,
+                            borderRadius: 999,
+                            background: token.colorPrimary,
+                            color: token.colorWhite,
+                            fontSize: 12,
+                            fontWeight: 800,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transform: shouldPulseMessages ? "scale(1.08)" : "scale(1)",
+                            transition: "transform 180ms ease",
+                          }}
+                        >
+                          {unreadMessageCount > 99 ? "99+" : unreadMessageCount}
+                        </span>
+                      ) : null}
+                    </Flex>
                   ) : null}
                 </Flex>
               </div>

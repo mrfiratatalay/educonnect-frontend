@@ -1,8 +1,9 @@
 import { EllipsisOutlined } from "@ant-design/icons";
 import { Avatar, Button, Card, Flex, Skeleton, Typography, theme } from "antd";
 import { useNavigate } from "react-router-dom";
+import FollowToggleButton from "@/components/shared/FollowToggleButton";
 import { useTrendingHashtagsQuery } from "@/features/posts/hooks";
-import { useFollowSuggestionsQuery, useFollowUserMutation } from "@/features/users/hooks";
+import { useFollowSuggestionsQuery, useToggleFollowUserMutation } from "@/features/users/hooks";
 import type { FeedPost } from "@/features/posts/types";
 import type { User } from "@/types";
 
@@ -21,7 +22,7 @@ export default function FeedSidebar({
   const navigate = useNavigate();
   const trendingQuery = useTrendingHashtagsQuery(4);
   const followSuggestionsQuery = useFollowSuggestionsQuery(3);
-  const followUserMutation = useFollowUserMutation();
+  const toggleFollowMutation = useToggleFollowUserMutation();
   const recentGroups = Array.from(
     posts.reduce(
       (map, post) => {
@@ -72,8 +73,8 @@ export default function FeedSidebar({
               </Typography.Text>
             </div>
           </Flex>
-          <QuickRow label="Toplam gonderi" value={`${totalCount}`} />
-          <QuickRow label="Akistaki grup izi" value={`${recentGroups.length}`} />
+          <QuickRow label="Akistaki gonderi" value={`${totalCount}`} />
+          <QuickRow label="Aktif topluluk" value={`${recentGroups.length}`} />
         </Flex>
       </Card>
 
@@ -145,14 +146,18 @@ export default function FeedSidebar({
                   key={suggestion.id}
                   avatarUrl={suggestion.avatarUrl}
                   isSubmitting={
-                    followUserMutation.isPending &&
-                    followUserMutation.variables === suggestion.id
+                    toggleFollowMutation.isPending &&
+                    toggleFollowMutation.variables?.userId === suggestion.id
                   }
+                  isFollowing={suggestion.isFollowedByCurrentUser}
                   name={suggestion.fullName}
                   onClick={() => navigate(`/profile/${suggestion.id}`)}
-                  onFollow={() => {
-                    void followUserMutation.mutateAsync(suggestion.id);
-                  }}
+                  onFollow={() =>
+                    void toggleFollowMutation.mutateAsync({
+                      userId: suggestion.id,
+                      isFollowing: suggestion.isFollowedByCurrentUser,
+                    })
+                  }
                   reasonLabel={suggestion.reasonLabel}
                 />
               ))}
@@ -217,6 +222,7 @@ function formatTrendMetric(postCount: number) {
 function FollowSuggestionRow({
   avatarUrl,
   isSubmitting,
+  isFollowing,
   name,
   onClick,
   onFollow,
@@ -224,6 +230,7 @@ function FollowSuggestionRow({
 }: {
   avatarUrl?: string;
   isSubmitting: boolean;
+  isFollowing: boolean;
   name: string;
   onClick: () => void;
   onFollow: () => void;
@@ -259,15 +266,12 @@ function FollowSuggestionRow({
           {reasonLabel}
         </Typography.Text>
       </div>
-      <Button
-        type="primary"
-        shape="round"
-        loading={isSubmitting}
+      <FollowToggleButton
+        isFollowing={isFollowing}
+        isLoading={isSubmitting}
         onClick={onFollow}
-        style={{ fontWeight: 700, padding: "0 16px" }}
-      >
-        Takip et
-      </Button>
+        compact
+      />
     </Flex>
   );
 }

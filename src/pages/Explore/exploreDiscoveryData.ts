@@ -6,9 +6,6 @@ export const exploreDiscoveryTabs: Array<{
 }> = [
   { key: "for-you", label: "Sana Ozel" },
   { key: "campus", label: "Gundemdekiler" },
-  { key: "academic", label: "Akademik" },
-  { key: "career", label: "Kariyer" },
-  { key: "events", label: "Etkinlikler" },
 ];
 
 export const exploreFooterLinks = [

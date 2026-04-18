@@ -16,17 +16,15 @@ export function useDirectMessagesSignalR(enabled: boolean) {
       return;
     }
 
-    const token = getAccessToken();
-    if (!token) {
-      return;
-    }
-
     const base = API_BASE_URL.replace(/\/$/, "");
-    const url = `${base}/hubs/direct-messages?access_token=${encodeURIComponent(token)}`;
 
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(url, { transport: signalR.HttpTransportType.WebSockets })
-      .withAutomaticReconnect()
+      .withUrl(`${base}/hubs/direct-messages`, {
+        accessTokenFactory: () => getAccessToken() ?? "",
+        transport: signalR.HttpTransportType.WebSockets,
+        skipNegotiation: true,
+      })
+      .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
       .build();
 
     connection.on("ReceiveMessage", (payload: ReceiveMessagePayload) => {

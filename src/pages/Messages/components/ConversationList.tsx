@@ -21,6 +21,7 @@ export default function ConversationList({
       <Flex vertical gap={8} style={{ padding: 16 }}>
         <Skeleton active avatar title={{ width: "60%" }} paragraph={{ rows: 1 }} />
         <Skeleton active avatar title={{ width: "55%" }} paragraph={{ rows: 1 }} />
+        <Skeleton active avatar title={{ width: "70%" }} paragraph={{ rows: 1 }} />
       </Flex>
     );
   }
@@ -63,11 +64,19 @@ export default function ConversationList({
               {c.otherUserName.charAt(0)}
             </Avatar>
             <div style={{ minWidth: 0, flex: 1 }}>
-              <Typography.Text strong ellipsis style={{ display: "block", fontSize: 15 }}>
-                {c.otherUserName}
-              </Typography.Text>
+              <Flex justify="space-between" align="center" gap={4}>
+                <Typography.Text strong ellipsis style={{ display: "block", fontSize: 15 }}>
+                  {c.otherUserName}
+                </Typography.Text>
+                <Typography.Text
+                  type="secondary"
+                  style={{ fontSize: 12, flexShrink: 0 }}
+                >
+                  {formatRelativeTime(c.lastMessageAtUtc)}
+                </Typography.Text>
+              </Flex>
               {c.lastMessagePreview ? (
-                <Typography.Text type="secondary" ellipsis style={{ fontSize: 13 }}>
+                <Typography.Text type="secondary" ellipsis style={{ fontSize: 13, display: "block" }}>
                   {c.lastMessagePreview}
                 </Typography.Text>
               ) : null}
@@ -77,4 +86,20 @@ export default function ConversationList({
       })}
     </Flex>
   );
+}
+
+function formatRelativeTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffMin < 1) return "az önce";
+  if (diffMin < 60) return `${diffMin}dk`;
+  if (diffHour < 24) return `${diffHour}s`;
+  if (diffDay < 7) return `${diffDay}g`;
+
+  return date.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
 }

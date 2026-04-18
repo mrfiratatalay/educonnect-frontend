@@ -16,13 +16,13 @@ export default function ExploreEventTimelineCard({
 
   return (
     <Card
-      title="Yaklaşan Etkinlikler"
+      title="Yaklasan Etkinlikler"
       style={{ borderColor: token.colorBorderSecondary }}
       styles={{ body: { padding: 20 } }}
     >
       {events.length === 0 ? (
         <Empty
-          description="Yaklaşan etkinlik bulunamadı."
+          description="Yaklasan etkinlik bulunamadi."
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       ) : (
@@ -42,7 +42,7 @@ export default function ExploreEventTimelineCard({
                   {event.location}
                 </Typography.Text>
                 <Button onClick={() => onOpen(event.id)} size="small" type="link">
-                  Detayı Aç
+                  Detayi Ac
                 </Button>
               </Flex>
             ),

@@ -25,9 +25,17 @@ export function getExploreTab(value: string | null): ExploreTab {
 export function getExploreActionConfig(activeTab: ExploreTab) {
   return {
     createButtonLabel:
-      activeTab === "groups" ? "Grup Oluştur" : activeTab === "events" ? "Etkinlik Oluştur" : null,
+      activeTab === "groups"
+        ? "Grup Olustur"
+        : activeTab === "events"
+          ? "Etkinlik Olustur"
+          : null,
     searchPlaceholder:
-      activeTab === "groups" ? "Grup ara" : activeTab === "events" ? "Etkinlik ara" : "İndirim ara",
+      activeTab === "groups"
+        ? "Grup ara"
+        : activeTab === "events"
+          ? "Etkinlik ara"
+          : "Indirim ara",
   };
 }
 
@@ -40,15 +48,15 @@ export function getExplorePreviewMessage({
   eventsUsePreview: boolean;
   groupsUsePreview: boolean;
 }) {
-  if (activeTab === "groups") {
-    return groupsUsePreview ? "Görünümü değerlendirebilmen için örnek grup içerikleri de gösteriliyor." : null;
+  if (activeTab === "groups" && groupsUsePreview) {
+    return "Ornek grup icerikleri gosteriliyor.";
   }
 
-  if (activeTab === "events") {
-    return eventsUsePreview ? "Etkinlik akışını daha net görmek için örnek etkinlikler de gösteriliyor." : null;
+  if (activeTab === "events" && eventsUsePreview) {
+    return "Ornek etkinlik icerikleri gosteriliyor.";
   }
 
-  return "İndirim sekmesi şu an örnek içeriklerle dolduruldu.";
+  return null;
 }
 
 export function getActiveFilterCount({

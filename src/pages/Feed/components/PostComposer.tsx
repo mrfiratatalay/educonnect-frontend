@@ -83,8 +83,8 @@ export default function PostComposer({
     event.preventDefault();
 
     const trimmedContent = content.trim();
-    if (!trimmedContent) {
-      setErrorMessage("Paylasim metni bos olamaz.");
+    if (!trimmedContent && !imageFile) {
+      setErrorMessage("Bir metin yaz veya gorsel ekle.");
       return;
     }
 
@@ -214,7 +214,7 @@ export default function PostComposer({
                     type="primary"
                     htmlType="submit"
                     loading={isSubmitting}
-                    disabled={!content.trim()}
+                    disabled={!content.trim() && !imageFile}
                     shape="round"
                     style={{
                       padding: "0 20px",

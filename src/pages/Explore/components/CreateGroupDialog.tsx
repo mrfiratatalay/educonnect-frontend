@@ -32,6 +32,7 @@ export default function CreateGroupDialog({
   const [name, setName] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
+  const [rules, setRules] = useState<string[]>(["", "", ""]);
   const [category, setCategory] = useState(groupCategories[0]);
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
@@ -46,6 +47,7 @@ export default function CreateGroupDialog({
     setName(initialValues?.name ?? "");
     setShortDescription(initialValues?.shortDescription ?? "");
     setDescription(initialValues?.description ?? "");
+    setRules(initialValues?.rules?.length ? [...initialValues.rules, "", "", ""].slice(0, 10) : ["", "", ""]);
     setCategory(initialValues?.category ?? groupCategories[0]);
     setAvatarUrl(initialValues?.avatarUrl ?? "");
     setBannerUrl(initialValues?.bannerUrl ?? "");
@@ -89,12 +91,18 @@ export default function CreateGroupDialog({
       return;
     }
 
+    const normalizedRules = rules
+      .map((rule) => rule.trim())
+      .filter((rule, index, array) => rule.length > 0 && array.indexOf(rule) === index)
+      .slice(0, 10);
+
     try {
       setErrorMessage(null);
       await onSubmit({
         name: name.trim(),
         shortDescription: normalizeOptionalUrl(shortDescription),
         description: description.trim(),
+        rules: normalizedRules,
         category,
         avatarUrl: normalizedAvatarUrl,
         bannerUrl: normalizedBannerUrl,
@@ -197,6 +205,47 @@ export default function CreateGroupDialog({
               placeholder="Toplulugun amaci, kimler icin oldugu ve ne paylasilacagi."
               showCount
             />
+          </Form.Item>
+
+          <Form.Item
+            label="Topluluk kurallari"
+            extra="Bos satirlar kaydedilmez. En fazla 10 kural tutulur."
+          >
+            <Flex vertical gap={8}>
+              {rules.map((rule, index) => (
+                <Flex key={index} gap={8}>
+                  <Input
+                    value={rule}
+                    maxLength={140}
+                    onChange={(event) =>
+                      setRules((currentRules) =>
+                        currentRules.map((currentRule, currentIndex) =>
+                          currentIndex === index ? event.target.value : currentRule,
+                        ),
+                      )
+                    }
+                    placeholder={`Kural ${index + 1}`}
+                  />
+                  {rules.length > 1 ? (
+                    <Button
+                      onClick={() =>
+                        setRules((currentRules) => currentRules.filter((_, currentIndex) => currentIndex !== index))
+                      }
+                    >
+                      Sil
+                    </Button>
+                  ) : null}
+                </Flex>
+              ))}
+              {rules.length < 10 ? (
+                <Button
+                  type="dashed"
+                  onClick={() => setRules((currentRules) => [...currentRules, ""])}
+                >
+                  Kural ekle
+                </Button>
+              ) : null}
+            </Flex>
           </Form.Item>
 
           <Form.Item label="Kategori">

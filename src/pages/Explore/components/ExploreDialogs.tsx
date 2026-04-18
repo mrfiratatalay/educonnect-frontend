@@ -9,10 +9,12 @@ interface ExploreDialogsProps {
   actingEventId?: string;
   actingGroupId?: string;
   actionErrorMessage: string | null;
+  eventToEdit?: AppEvent | null;
   isCreateEventOpen: boolean;
   isCreateEventSubmitting: boolean;
   isCreateGroupOpen: boolean;
   isCreateGroupSubmitting: boolean;
+  isDeletingEvent?: boolean;
   selectedEvent: AppEvent | null;
   selectedEventId: string | null;
   selectedGroup: AppGroup | null;
@@ -21,6 +23,8 @@ interface ExploreDialogsProps {
   onCloseCreateGroup: () => void;
   onCloseEventDetail: () => void;
   onCloseGroupDetail: () => void;
+  onDeleteEvent?: (event: AppEvent) => void;
+  onEditEvent?: (event: AppEvent) => void;
   onCreateEvent: (input: CreateEventInput) => Promise<void>;
   onCreateGroup: (input: CreateGroupInput) => Promise<void>;
   onToggleMembership: (group: AppGroup) => void;
@@ -31,10 +35,12 @@ export default function ExploreDialogs({
   actingEventId,
   actingGroupId,
   actionErrorMessage,
+  eventToEdit,
   isCreateEventOpen,
   isCreateEventSubmitting,
   isCreateGroupOpen,
   isCreateGroupSubmitting,
+  isDeletingEvent = false,
   selectedEvent,
   selectedEventId,
   selectedGroup,
@@ -43,6 +49,8 @@ export default function ExploreDialogs({
   onCloseCreateGroup,
   onCloseEventDetail,
   onCloseGroupDetail,
+  onDeleteEvent,
+  onEditEvent,
   onCreateEvent,
   onCreateGroup,
   onToggleMembership,
@@ -57,6 +65,7 @@ export default function ExploreDialogs({
         onSubmit={onCreateGroup}
       />
       <CreateEventDialog
+        event={eventToEdit}
         isOpen={isCreateEventOpen}
         isSubmitting={isCreateEventSubmitting}
         onClose={onCloseCreateEvent}
@@ -75,7 +84,10 @@ export default function ExploreDialogs({
         errorMessage={actionErrorMessage}
         event={selectedEvent}
         eventId={selectedEventId}
+        isDeleting={isDeletingEvent}
         onClose={onCloseEventDetail}
+        onDelete={onDeleteEvent}
+        onEdit={onEditEvent}
         onToggleRegistration={onToggleRegistration}
       />
     </>

@@ -2,22 +2,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   cancelEvent,
   createEvent,
+  deleteEvent,
   getEvent,
   getEvents,
   registerEvent,
+  updateEvent,
 } from "@/features/events/api";
-import type { AppEvent, CreateEventInput } from "@/features/events/types";
+import type { AppEvent, CreateEventInput, EventFilters, UpdateEventInput } from "@/features/events/types";
 
 export const eventKeys = {
   all: ["events"] as const,
-  list: () => [...eventKeys.all, "list"] as const,
+  list: (groupId?: string) => [...eventKeys.all, "list", groupId ?? "all"] as const,
   detail: (eventId: string) => [...eventKeys.all, "detail", eventId] as const,
 };
 
-export function useEventsQuery(enabled = true) {
+export function useEventsQuery(filters: EventFilters = {}, enabled = true) {
   return useQuery({
-    queryKey: eventKeys.list(),
-    queryFn: (): Promise<AppEvent[]> => getEvents(),
+    queryKey: eventKeys.list(filters.groupId),
+    queryFn: (): Promise<AppEvent[]> => getEvents(filters),
     enabled,
   });
 }
@@ -37,6 +39,34 @@ export function useCreateEventMutation() {
     mutationFn: (input: CreateEventInput) => createEvent(input),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: eventKeys.all });
+    },
+  });
+}
+
+export function useUpdateEventMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateEventInput) => updateEvent(input),
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: eventKeys.all }),
+        queryClient.invalidateQueries({ queryKey: eventKeys.detail(variables.eventId) }),
+      ]);
+    },
+  });
+}
+
+export function useDeleteEventMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (eventId: string) => deleteEvent(eventId),
+    onSuccess: async (_, eventId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: eventKeys.all }),
+        queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) }),
+      ]);
     },
   });
 }

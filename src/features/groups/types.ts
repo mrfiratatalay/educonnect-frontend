@@ -14,6 +14,7 @@ export interface AppGroup {
   slug?: string;
   shortDescription?: string;
   description: string;
+  rules: string[];
   avatarUrl?: string;
   bannerUrl?: string;
   category: string;
@@ -29,13 +30,31 @@ export interface AppGroupDetail extends AppGroup {
   postCount: number;
   eventCount: number;
   canCurrentUserPost: boolean;
+  currentUserRole?: AppGroupMemberRole;
+  canManageMembers: boolean;
+  canManageSettings: boolean;
+  canCreateEvents: boolean;
   moderatorPreviewMembers: AppGroupMemberPreview[];
+}
+
+export interface AppGroupMember {
+  userId: string;
+  fullName: string;
+  avatarUrl?: string;
+  department?: string;
+  role: AppGroupMemberRole;
+  joinedAt: string;
+  isCurrentUser: boolean;
+  canBePromoted: boolean;
+  canBeDemoted: boolean;
+  canBeRemoved: boolean;
 }
 
 export interface CreateGroupInput {
   name: string;
   shortDescription?: string;
   description: string;
+  rules: string[];
   avatarUrl?: string;
   bannerUrl?: string;
   category: string;

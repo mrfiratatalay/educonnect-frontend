@@ -2,13 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import type { Dayjs } from "dayjs";
 import { useSearchParams } from "react-router-dom";
 import { Alert, Flex, Grid, Typography } from "antd";
+import { useDiscountsQuery } from "@/features/discounts/hooks";
 import {
   useCancelEventMutation,
   useCreateEventMutation,
+  useDeleteEventMutation,
   useEventsQuery,
   useRegisterEventMutation,
+  useUpdateEventMutation,
 } from "@/features/events/hooks";
-import type { AppEvent, CreateEventInput } from "@/features/events/types";
+import type { AppEvent, CreateEventInput, UpdateEventInput } from "@/features/events/types";
 import {
   useCreateGroupMutation,
   useGroupsQuery,
@@ -16,20 +19,20 @@ import {
   useLeaveGroupMutation,
 } from "@/features/groups/hooks";
 import type { AppGroup, CreateGroupInput } from "@/features/groups/types";
+import { useAuthStore } from "@/store/authStore";
 import ExploreContent from "@/pages/Explore/components/ExploreContent";
 import ExploreDialogs from "@/pages/Explore/components/ExploreDialogs";
 import ExploreFilterBar from "@/pages/Explore/components/ExploreFilterBar";
 import ExplorePageActions from "@/pages/Explore/components/ExplorePageActions";
 import ExploreTabs, { type ExploreTab } from "@/pages/Explore/components/ExploreTabs";
 import {
-  applyEventFilters, applyGroupFilters, getEventCategories, getGroupCategories, getUpcomingTimelineEvents,
+  applyDiscountFilters, applyEventFilters, applyGroupFilters, getEventCategories, getGroupCategories, getUpcomingTimelineEvents,
   type EventRegistrationFilter,
   type ExploreEventSort,
   type ExploreGroupSort,
   type GroupMembershipFilter,
 } from "@/pages/Explore/exploreFilters";
 import { getActiveFilterCount, getExploreActionConfig, getExplorePreviewMessage, getExploreTab } from "@/pages/Explore/explorePageUtils";
-import { useExplorePreviewState } from "@/pages/Explore/useExplorePreviewState";
 
 interface ExploreWorkspacePageProps {
   forcedTab?: ExploreTab;
@@ -52,6 +55,7 @@ export function ExploreWorkspacePage({
   const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<AppEvent | null>(null);
   const [actionErrorMessage, setActionErrorMessage] = useState<string | null>(null);
   const [groupCategory, setGroupCategory] = useState<string | null>(null);
   const [eventCategory, setEventCategory] = useState<string | null>(null);
@@ -61,21 +65,28 @@ export function ExploreWorkspacePage({
   const [eventSort, setEventSort] = useState<ExploreEventSort>("soonest");
   const [selectedEventDate, setSelectedEventDate] = useState<Dayjs | null>(null);
   const groupsQuery = useGroupsQuery(activeTab === "groups");
-  const eventsQuery = useEventsQuery(activeTab === "events");
+  const eventsQuery = useEventsQuery({}, activeTab === "events");
+  const discountsQuery = useDiscountsQuery(activeTab === "discounts");
   const createGroupMutation = useCreateGroupMutation();
   const createEventMutation = useCreateEventMutation();
+  const updateEventMutation = useUpdateEventMutation();
+  const deleteEventMutation = useDeleteEventMutation();
   const joinGroupMutation = useJoinGroupMutation();
   const leaveGroupMutation = useLeaveGroupMutation();
   const registerEventMutation = useRegisterEventMutation();
   const cancelEventMutation = useCancelEventMutation();
   const screens = Grid.useBreakpoint();
-  const previewState = useExplorePreviewState({ liveEvents: eventsQuery.data ?? [], liveGroups: groupsQuery.data ?? [], eventsError: eventsQuery.error, groupsError: groupsQuery.error });
-  const groups = previewState.groups;
-  const events = previewState.events;
-  const discounts = previewState.discounts;
+  const currentUser = useAuthStore((state) => state.user);
+  const groups = groupsQuery.data ?? [];
+  const events = eventsQuery.data ?? [];
+  const discounts = discountsQuery.data ?? [];
   const pagePadding = screens.xs ? 16 : screens.lg ? 32 : 24;
   const groupCategories = useMemo(() => getGroupCategories(groups), [groups]);
   const eventCategories = useMemo(() => getEventCategories(events), [events]);
+  const filteredDiscounts = useMemo(
+    () => applyDiscountFilters({ discounts, searchQuery }),
+    [discounts, searchQuery],
+  );
   const filteredGroups = useMemo(
     () =>
       applyGroupFilters({
@@ -100,14 +111,24 @@ export function ExploreWorkspacePage({
     [eventCategory, eventRegistrationFilter, eventSort, events, searchQuery, selectedEventDate],
   );
   const timelineEvents = useMemo(() => getUpcomingTimelineEvents(filteredEvents.length > 0 ? filteredEvents : events), [events, filteredEvents]);
-  const selectedPreviewGroup = previewState.getPreviewGroup(selectedGroupId);
-  const selectedPreviewEvent = previewState.getPreviewEvent(selectedEventId);
+  const selectedEvent = useMemo(
+    () => events.find((item) => item.id === selectedEventId) ?? null,
+    [events, selectedEventId],
+  );
+  const selectedGroup = useMemo(
+    () => groups.find((item) => item.id === selectedGroupId) ?? null,
+    [groups, selectedGroupId],
+  );
   const actingGroupId = joinGroupMutation.isPending ? joinGroupMutation.variables : leaveGroupMutation.isPending ? leaveGroupMutation.variables : undefined;
   const actingEventId = registerEventMutation.isPending ? registerEventMutation.variables : cancelEventMutation.isPending ? cancelEventMutation.variables : undefined;
   const errorMessage = activeTab === "groups"
-    ? !previewState.groupsUsePreview && groupsQuery.error instanceof Error ? groupsQuery.error.message : undefined
-    : !previewState.eventsUsePreview && eventsQuery.error instanceof Error ? eventsQuery.error.message : undefined;
-  const previewMessage = getExplorePreviewMessage({ activeTab, eventsUsePreview: previewState.eventsUsePreview, groupsUsePreview: previewState.groupsUsePreview });
+    ? groupsQuery.error instanceof Error ? groupsQuery.error.message : undefined
+    : activeTab === "events"
+      ? eventsQuery.error instanceof Error ? eventsQuery.error.message : undefined
+      : discountsQuery.error instanceof Error
+        ? discountsQuery.error.message
+        : undefined;
+  const previewMessage = getExplorePreviewMessage({ activeTab, eventsUsePreview: false, groupsUsePreview: false });
   const activeFilterCount = getActiveFilterCount({
     activeTab,
     eventCategory,
@@ -124,34 +145,28 @@ export function ExploreWorkspacePage({
     setIsFilterBarOpen(false);
     setSelectedGroupId(null);
     setSelectedEventId(null);
+    setEditingEvent(null);
   }, [activeTab]);
   async function handleCreateGroup(input: CreateGroupInput) {
     setActionErrorMessage(null);
-    if (previewState.createGroupsLocally) {
-      previewState.createPreviewGroup(input);
-      setIsCreateGroupOpen(false);
-      return;
-    }
     await createGroupMutation.mutateAsync(input);
     setIsCreateGroupOpen(false);
   }
   async function handleCreateEvent(input: CreateEventInput) {
     setActionErrorMessage(null);
-    if (previewState.createEventsLocally) {
-      previewState.createPreviewEvent(input);
-      setIsCreateEventOpen(false);
-      return;
+    if (editingEvent) {
+      await updateEventMutation.mutateAsync({
+        eventId: editingEvent.id,
+        ...input,
+      } satisfies UpdateEventInput);
+    } else {
+      await createEventMutation.mutateAsync(input);
     }
-    await createEventMutation.mutateAsync(input);
     setIsCreateEventOpen(false);
+    setEditingEvent(null);
   }
 
   async function handleToggleMembership(group: AppGroup) {
-    if (previewState.isPreviewGroupId(group.id)) {
-      setActionErrorMessage(null);
-      previewState.togglePreviewMembership(group.id);
-      return;
-    }
     try {
       setActionErrorMessage(null);
       if (group.isMember) {
@@ -166,11 +181,6 @@ export function ExploreWorkspacePage({
     }
   }
   async function handleToggleRegistration(event: AppEvent) {
-    if (previewState.isPreviewEventId(event.id)) {
-      setActionErrorMessage(null);
-      previewState.togglePreviewRegistration(event.id);
-      return;
-    }
     try {
       setActionErrorMessage(null);
       if (event.isRegistered) {
@@ -181,6 +191,18 @@ export function ExploreWorkspacePage({
     } catch (error) {
       setActionErrorMessage(
         error instanceof Error ? error.message : "Etkinlik işlemi tamamlanamadı.",
+      );
+    }
+  }
+
+  async function handleDeleteEvent(event: AppEvent) {
+    try {
+      setActionErrorMessage(null);
+      await deleteEventMutation.mutateAsync(event.id);
+      setSelectedEventId(null);
+    } catch (error) {
+      setActionErrorMessage(
+        error instanceof Error ? error.message : "Etkinlik silinemedi.",
       );
     }
   }
@@ -218,8 +240,26 @@ export function ExploreWorkspacePage({
       return;
     }
     if (activeTab === "events") {
+      setEditingEvent(null);
       setIsCreateEventOpen(true);
     }
+  }
+
+  function handleEditEvent(event: AppEvent) {
+    const canManage = Boolean(
+      currentUser &&
+        (event.creatorUserId === currentUser.id ||
+          currentUser.role === "admin" ||
+          currentUser.role === "moderator"),
+    );
+
+    if (!canManage) {
+      return;
+    }
+
+    setSelectedEventId(null);
+    setEditingEvent(event);
+    setIsCreateEventOpen(true);
   }
 
   const { createButtonLabel, searchPlaceholder } = getExploreActionConfig(activeTab);
@@ -252,7 +292,7 @@ export function ExploreWorkspacePage({
           <>
             <ExploreTabs
               activeTab={activeTab}
-              counts={{ groups: groups.length, events: events.length, discounts: previewState.discounts.length }}
+              counts={{ groups: groups.length, events: events.length, discounts: discounts.length }}
               extraContent={screens.md ? actionBar : undefined}
               onChange={handleTabChange}
             />
@@ -286,12 +326,13 @@ export function ExploreWorkspacePage({
           activeTab={activeTab}
           actingEventId={actingEventId}
           actingGroupId={actingGroupId}
-          discounts={discounts}
+          discounts={filteredDiscounts}
           errorMessage={errorMessage}
           events={filteredEvents}
           groups={filteredGroups}
-          isEventsLoading={eventsQuery.isLoading && !previewState.eventsUsePreview}
-          isGroupsLoading={groupsQuery.isLoading && !previewState.groupsUsePreview}
+          isDiscountsLoading={discountsQuery.isLoading}
+          isEventsLoading={eventsQuery.isLoading}
+          isGroupsLoading={groupsQuery.isLoading}
           onOpenEvent={setSelectedEventId}
           onOpenGroup={setSelectedGroupId}
           onToggleMembership={handleToggleMembership}
@@ -304,18 +345,25 @@ export function ExploreWorkspacePage({
         actingEventId={actingEventId}
         actingGroupId={actingGroupId}
         actionErrorMessage={actionErrorMessage}
+        eventToEdit={editingEvent}
         isCreateEventOpen={isCreateEventOpen}
-        isCreateEventSubmitting={!previewState.createEventsLocally && createEventMutation.isPending}
+        isCreateEventSubmitting={createEventMutation.isPending || updateEventMutation.isPending}
         isCreateGroupOpen={isCreateGroupOpen}
-        isCreateGroupSubmitting={!previewState.createGroupsLocally && createGroupMutation.isPending}
-        selectedEvent={selectedPreviewEvent}
+        isCreateGroupSubmitting={createGroupMutation.isPending}
+        isDeletingEvent={deleteEventMutation.isPending}
+        selectedEvent={selectedEvent}
         selectedEventId={selectedEventId}
-        selectedGroup={selectedPreviewGroup}
+        selectedGroup={selectedGroup}
         selectedGroupId={selectedGroupId}
-        onCloseCreateEvent={() => setIsCreateEventOpen(false)}
+        onCloseCreateEvent={() => {
+          setIsCreateEventOpen(false);
+          setEditingEvent(null);
+        }}
         onCloseCreateGroup={() => setIsCreateGroupOpen(false)}
         onCloseEventDetail={() => setSelectedEventId(null)}
         onCloseGroupDetail={() => setSelectedGroupId(null)}
+        onDeleteEvent={handleDeleteEvent}
+        onEditEvent={handleEditEvent}
         onCreateEvent={handleCreateEvent}
         onCreateGroup={handleCreateGroup}
         onToggleMembership={handleToggleMembership}

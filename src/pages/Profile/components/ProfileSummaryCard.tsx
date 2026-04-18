@@ -20,6 +20,7 @@ import {
   theme,
 } from "antd";
 import type { UploadProps } from "antd";
+import FollowToggleButton from "@/components/shared/FollowToggleButton";
 import { getApiErrorMessage } from "@/features/auth/api";
 import { useUploadMyAvatarMutation } from "@/features/users/hooks";
 import type { UserRole } from "@/types";
@@ -81,8 +82,6 @@ export default function ProfileSummaryCard({
   const secondaryLabel = profile.email
     ? `@${profile.email.split("@")[0].toLowerCase()}`
     : roleLabels[profile.role];
-  const followButtonLabel = isFollowing ? "Takibi birak" : "Takip et";
-
   const uploadProps: UploadProps = {
     name: "file",
     showUploadList: false,
@@ -298,27 +297,13 @@ export default function ProfileSummaryCard({
           {!isOwnProfile && (onFollowToggle || onSendMessage) ? (
             <Flex gap={8} align="center" style={{ position: "relative", zIndex: 1 }}>
               {onFollowToggle ? (
-                <Button
-                  shape="round"
-                  loading={followActionPending}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
+                <FollowToggleButton
+                  isFollowing={isFollowing}
+                  isLoading={followActionPending}
+                  onClick={() => {
                     void onFollowToggle();
                   }}
-                  color={isFollowing ? undefined : "default"}
-                  variant={isFollowing ? "outlined" : "solid"}
-                  style={{
-                    height: 38,
-                    paddingInline: 18,
-                    fontWeight: 700,
-                    background: isFollowing ? token.colorBgContainer : undefined,
-                    borderColor: isFollowing ? token.colorBorder : undefined,
-                    boxShadow: "none",
-                  }}
-                >
-                  {followButtonLabel}
-                </Button>
+                />
               ) : null}
               {onSendMessage ? (
                 <Button

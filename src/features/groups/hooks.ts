@@ -1,20 +1,26 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createGroup,
+  demoteGroupMember,
+  deleteGroup,
   getDiscoverGroups,
   getGroup,
   getGroupBySlug,
+  getGroupMembers,
   getGroupPosts,
   getGroups,
   getJoinedGroups,
   getJoinedGroupsFeed,
   joinGroup,
   leaveGroup,
+  promoteGroupMember,
+  removeGroupMember,
   updateGroup,
 } from "@/features/groups/api";
 import type {
   AppGroup,
   AppGroupDetail,
+  AppGroupMember,
   CreateGroupInput,
   DiscoverGroupsInput,
   UpdateGroupInput,
@@ -28,6 +34,7 @@ export const groupKeys = {
   discover: (query: string, limit: number) => [...groupKeys.all, "discover", query, limit] as const,
   detail: (groupId: string) => [...groupKeys.all, "detail", groupId] as const,
   detailBySlug: (slug: string) => [...groupKeys.all, "detail-by-slug", slug] as const,
+  members: (groupId: string) => [...groupKeys.all, "members", groupId] as const,
   posts: (groupId: string, pageSize: number) => [...groupKeys.all, "posts", groupId, pageSize] as const,
   feed: (pageSize: number) => [...groupKeys.all, "feed", pageSize] as const,
 };
@@ -62,7 +69,7 @@ export function useDiscoverGroupsQuery(input: DiscoverGroupsInput = {}, enabled 
 export function useGroupDetailQuery(groupId?: string, enabled = true) {
   return useQuery({
     queryKey: groupId ? groupKeys.detail(groupId) : [...groupKeys.all, "detail"],
-    queryFn: (): Promise<AppGroup> => getGroup(groupId!),
+    queryFn: (): Promise<AppGroupDetail> => getGroup(groupId!),
     enabled: enabled && Boolean(groupId),
   });
 }
@@ -72,6 +79,14 @@ export function useGroupBySlugQuery(slug?: string, enabled = true) {
     queryKey: slug ? groupKeys.detailBySlug(slug) : [...groupKeys.all, "detail-by-slug"],
     queryFn: (): Promise<AppGroupDetail> => getGroupBySlug(slug!),
     enabled: enabled && Boolean(slug),
+  });
+}
+
+export function useGroupMembersQuery(groupId?: string, enabled = true) {
+  return useQuery({
+    queryKey: groupId ? groupKeys.members(groupId) : [...groupKeys.all, "members"],
+    queryFn: (): Promise<AppGroupMember[]> => getGroupMembers(groupId!),
+    enabled: enabled && Boolean(groupId),
   });
 }
 
@@ -127,7 +142,15 @@ export function useUpdateGroupMutation(groupId?: string, slug?: string) {
 
   return useMutation({
     mutationFn: (input: UpdateGroupInput) => updateGroup(groupId!, input),
-    onSuccess: async () => {
+    onSuccess: async (updatedGroup) => {
+      if (groupId) {
+        queryClient.setQueryData(groupKeys.detail(groupId), updatedGroup);
+      }
+
+      if (slug) {
+        queryClient.setQueryData(groupKeys.detailBySlug(slug), updatedGroup);
+      }
+
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: groupKeys.all }),
         groupId
@@ -141,7 +164,7 @@ export function useUpdateGroupMutation(groupId?: string, slug?: string) {
   });
 }
 
-export function useJoinGroupMutation() {
+export function useJoinGroupMutation(slug?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -150,16 +173,82 @@ export function useJoinGroupMutation() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: groupKeys.all }),
         queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) }),
+        slug ? queryClient.invalidateQueries({ queryKey: groupKeys.detailBySlug(slug) }) : Promise.resolve(),
+        queryClient.invalidateQueries({ queryKey: groupKeys.members(groupId) }),
       ]);
     },
   });
 }
 
-export function useLeaveGroupMutation() {
+export function useLeaveGroupMutation(slug?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (groupId: string) => leaveGroup(groupId),
+    onSuccess: async (_, groupId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+        queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) }),
+        slug ? queryClient.invalidateQueries({ queryKey: groupKeys.detailBySlug(slug) }) : Promise.resolve(),
+        queryClient.invalidateQueries({ queryKey: groupKeys.members(groupId) }),
+      ]);
+    },
+  });
+}
+
+export function usePromoteGroupMemberMutation(groupId?: string, slug?: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) => promoteGroupMember(groupId!, userId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+        groupId ? queryClient.invalidateQueries({ queryKey: groupKeys.members(groupId) }) : Promise.resolve(),
+        groupId ? queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) }) : Promise.resolve(),
+        slug ? queryClient.invalidateQueries({ queryKey: groupKeys.detailBySlug(slug) }) : Promise.resolve(),
+      ]);
+    },
+  });
+}
+
+export function useDemoteGroupMemberMutation(groupId?: string, slug?: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) => demoteGroupMember(groupId!, userId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+        groupId ? queryClient.invalidateQueries({ queryKey: groupKeys.members(groupId) }) : Promise.resolve(),
+        groupId ? queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) }) : Promise.resolve(),
+        slug ? queryClient.invalidateQueries({ queryKey: groupKeys.detailBySlug(slug) }) : Promise.resolve(),
+      ]);
+    },
+  });
+}
+
+export function useRemoveGroupMemberMutation(groupId?: string, slug?: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) => removeGroupMember(groupId!, userId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+        groupId ? queryClient.invalidateQueries({ queryKey: groupKeys.members(groupId) }) : Promise.resolve(),
+        groupId ? queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) }) : Promise.resolve(),
+        slug ? queryClient.invalidateQueries({ queryKey: groupKeys.detailBySlug(slug) }) : Promise.resolve(),
+      ]);
+    },
+  });
+}
+
+export function useDeleteGroupMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (groupId: string) => deleteGroup(groupId),
     onSuccess: async (_, groupId) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: groupKeys.all }),

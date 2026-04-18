@@ -6,6 +6,7 @@ import type {
   DirectMessageItem,
   PagedMessages,
   StartConversationResult,
+  UserSearchResult,
 } from "@/features/messages/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
@@ -74,6 +75,20 @@ export async function startConversation(otherUserId: string): Promise<StartConve
         { otherUserId },
         { headers: { Authorization: `Bearer ${accessToken}` } },
       ),
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function searchUsers(q: string): Promise<UserSearchResult[]> {
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      conversationsApi.get<UserSearchResult[]>("/api/users/search", {
+        params: { q, limit: 10 },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
     );
     return response.data;
   } catch (error) {

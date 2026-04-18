@@ -16,6 +16,7 @@ import {
 } from "antd";
 import {
   EllipsisOutlined,
+  ReloadOutlined,
   SearchOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
@@ -48,7 +49,7 @@ const footerLinks = [
   "Daha fazla",
 ];
 
-type NotificationTabKey = "all" | "mentions";
+type NotificationTabKey = "all" | "unread" | "mentions";
 
 export default function NotificationsPage() {
   const { token } = theme.useToken();
@@ -60,6 +61,7 @@ export default function NotificationsPage() {
   const markAllReadMutation = useMarkAllNotificationsReadMutation();
   const trendingQuery = useTrendingHashtagsQuery(3);
   const [activeTab, setActiveTab] = useState<NotificationTabKey>("all");
+  const [searchValue, setSearchValue] = useState("");
 
   const isDesktop = !!screens.xl;
   const isDarkMode = token.colorBgBase === "#000000";
@@ -76,8 +78,23 @@ export default function NotificationsPage() {
     () => notifications.filter((notification) => isMentionNotification(notification, user)),
     [notifications, user],
   );
-  const visibleNotifications =
-    activeTab === "mentions" ? mentionNotifications : notifications;
+  const visibleNotifications = useMemo(() => {
+    const scopedNotifications =
+      activeTab === "mentions"
+        ? mentionNotifications
+        : activeTab === "unread"
+          ? notifications.filter((notification) => !notification.isRead)
+          : notifications;
+
+    const term = searchValue.trim().toLowerCase();
+    if (!term) {
+      return scopedNotifications;
+    }
+
+    return scopedNotifications.filter((notification) =>
+      `${notification.title} ${notification.message}`.toLowerCase().includes(term),
+    );
+  }, [activeTab, mentionNotifications, notifications, searchValue]);
 
   async function handleNotificationClick(notification: AppNotification) {
     if (!notification.isRead) {
@@ -93,6 +110,10 @@ export default function NotificationsPage() {
     }
 
     await markAllReadMutation.mutateAsync();
+  }
+
+  async function handleRefresh() {
+    await notificationsQuery.refetch();
   }
 
   return (
@@ -133,21 +154,38 @@ export default function NotificationsPage() {
                     Bildirimler
                   </Typography.Title>
 
-                  <Tooltip title="Tumunu okundu yap">
-                    <Button
-                      type="text"
-                      shape="circle"
-                      icon={<SettingOutlined style={{ fontSize: 18 }} />}
-                      onClick={() => void handleMarkAllRead()}
-                      loading={markAllReadMutation.isPending}
-                      disabled={unreadCount === 0}
-                      style={{
-                        width: 36,
-                        height: 36,
-                        color: token.colorText,
-                      }}
-                    />
-                  </Tooltip>
+                  <Flex align="center" gap={4}>
+                    <Tooltip title="Listeyi yenile">
+                      <Button
+                        type="text"
+                        shape="circle"
+                        icon={<ReloadOutlined style={{ fontSize: 18 }} />}
+                        onClick={() => void handleRefresh()}
+                        loading={notificationsQuery.isFetching && !notificationsQuery.isLoading}
+                        style={{
+                          width: 36,
+                          height: 36,
+                          color: token.colorText,
+                        }}
+                      />
+                    </Tooltip>
+
+                    <Tooltip title="Tumunu okundu yap">
+                      <Button
+                        type="text"
+                        shape="circle"
+                        icon={<SettingOutlined style={{ fontSize: 18 }} />}
+                        onClick={() => void handleMarkAllRead()}
+                        loading={markAllReadMutation.isPending}
+                        disabled={unreadCount === 0}
+                        style={{
+                          width: 36,
+                          height: 36,
+                          color: token.colorText,
+                        }}
+                      />
+                    </Tooltip>
+                  </Flex>
                 </Flex>
 
                 <Tabs
@@ -163,6 +201,22 @@ export default function NotificationsPage() {
                       label: (
                         <span style={{ fontWeight: activeTab === "all" ? 700 : 600 }}>
                           Tumu
+                        </span>
+                      ),
+                    },
+                    {
+                      key: "unread",
+                      label: (
+                        <span
+                          style={{
+                            fontWeight: activeTab === "unread" ? 700 : 600,
+                            color:
+                              activeTab === "unread"
+                                ? token.colorText
+                                : token.colorTextSecondary,
+                          }}
+                        >
+                          Okunmayanlar
                         </span>
                       ),
                     },
@@ -184,6 +238,30 @@ export default function NotificationsPage() {
                     },
                   ]}
                 />
+
+                <div style={{ padding: "12px 16px 14px", borderTop: `1px solid ${shellBorderColor}` }}>
+                  <Flex vertical gap={10}>
+                    <Input
+                      allowClear
+                      value={searchValue}
+                      onChange={(event) => setSearchValue(event.target.value)}
+                      placeholder="Bildirimlerde ara"
+                      prefix={<SearchOutlined style={{ color: token.colorTextTertiary }} />}
+                      size="large"
+                    />
+
+                    <Flex align="center" justify="space-between" gap={12} wrap>
+                      <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                        {unreadCount} okunmayan • {notifications.length} toplam bildirim
+                      </Typography.Text>
+                      <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                        {notificationsQuery.isFetching && !notificationsQuery.isLoading
+                          ? "Guncelleniyor..."
+                          : "Bildirim akisi hazir"}
+                      </Typography.Text>
+                    </Flex>
+                  </Flex>
+                </div>
               </div>
             </Affix>
 
@@ -197,6 +275,7 @@ export default function NotificationsPage() {
             ) : visibleNotifications.length === 0 ? (
               <NotificationEmptyState
                 activeTab={activeTab}
+                hasSearch={searchValue.trim().length > 0}
                 borderColor={shellBorderColor}
               />
             ) : (
@@ -373,18 +452,64 @@ function NotificationErrorState({
 
 function NotificationEmptyState({
   activeTab,
+  hasSearch,
   borderColor,
 }: {
   activeTab: NotificationTabKey;
+  hasSearch: boolean;
   borderColor: string;
 }) {
+  if (hasSearch) {
+    return (
+      <Flex
+        vertical
+        justify="center"
+        style={{
+          minHeight: "calc(100vh - 126px)",
+          padding: "56px 32px",
+          borderTop: `1px solid ${borderColor}`,
+        }}
+      >
+        <div style={{ maxWidth: 360, marginInline: "auto" }}>
+          <Typography.Title
+            level={1}
+            style={{
+              margin: 0,
+              fontSize: 40,
+              lineHeight: 1,
+              letterSpacing: "-0.04em",
+              fontWeight: 900,
+            }}
+          >
+            Aramana uygun bildirim yok
+          </Typography.Title>
+          <Typography.Paragraph
+            type="secondary"
+            style={{
+              marginTop: 14,
+              marginBottom: 0,
+              fontSize: 17,
+              lineHeight: 1.45,
+            }}
+          >
+            Baska bir kelime dene ya da filtreyi degistir.
+          </Typography.Paragraph>
+        </div>
+      </Flex>
+    );
+  }
+
   const title =
     activeTab === "mentions"
       ? "Burada gorecek bir bahsetme yok. Henuz..."
+      : activeTab === "unread"
+        ? "Okunmayan bildirim kalmadi."
       : "Burada gorecek bir sey yok. Henuz...";
   const description =
     activeTab === "mentions"
       ? "Sana yonelik etkilesimler burada gorunur."
+      : activeTab === "unread"
+        ? "Yeni bir etkilesim geldiginde bu sekmede hemen gorunur."
       : "Begeniler, yeniden gonderiler ve cok daha fazlasi burada gerceklesir.";
 
   return (
@@ -628,7 +753,7 @@ function getNotificationAccent(
 
 function formatNotificationTime(value: string) {
   const date = new Date(value);
-  const diffInMinutes = Math.round((date.getTime() - Date.now()) / (1000 * 60));
+  const diffInMinutes = Math.round((Date.now() - date.getTime()) / (1000 * 60));
   const absoluteMinutes = Math.abs(diffInMinutes);
 
   if (absoluteMinutes < 60) {

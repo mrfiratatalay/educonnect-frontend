@@ -4,6 +4,7 @@ import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
 import type {
   AppGroup,
   AppGroupDetail,
+  AppGroupMember,
   AppGroupMemberPreview,
   CreateGroupInput,
   DiscoverGroupsInput,
@@ -24,6 +25,7 @@ interface ApiGroupResponse {
   slug: string;
   shortDescription: string;
   description: string;
+  rules: string[];
   avatarUrl?: string | null;
   bannerUrl?: string | null;
   category: string;
@@ -47,7 +49,24 @@ interface ApiGroupDetailResponse extends ApiGroupResponse {
   postCount: number;
   eventCount: number;
   canCurrentUserPost: boolean;
+  currentUserRole?: "member" | "moderator" | "owner" | null;
+  canManageMembers: boolean;
+  canManageSettings: boolean;
+  canCreateEvents: boolean;
   moderatorPreviewMembers: ApiGroupMemberPreviewResponse[];
+}
+
+interface ApiGroupMemberResponse {
+  userId: string;
+  fullName: string;
+  avatarUrl?: string | null;
+  department?: string | null;
+  role: "member" | "moderator" | "owner";
+  joinedAtUtc: string;
+  isCurrentUser: boolean;
+  canBePromoted: boolean;
+  canBeDemoted: boolean;
+  canBeRemoved: boolean;
 }
 
 interface ApiPostResponse {
@@ -95,7 +114,7 @@ export async function getGroups(): Promise<AppGroup[]> {
   }
 }
 
-export async function getGroup(groupId: string): Promise<AppGroup> {
+export async function getGroup(groupId: string): Promise<AppGroupDetail> {
   try {
     const response = await executeAuthorizedRequest((accessToken) =>
       groupsApi.get<ApiGroupDetailResponse>(
@@ -108,7 +127,7 @@ export async function getGroup(groupId: string): Promise<AppGroup> {
       ),
     );
 
-    return normalizeGroup(response.data);
+    return normalizeGroupDetail(response.data);
   } catch (error) {
     throw new Error(getApiErrorMessage(error));
   }
@@ -251,6 +270,89 @@ export async function leaveGroup(groupId: string) {
   }
 }
 
+export async function deleteGroup(groupId: string) {
+  try {
+    await executeAuthorizedRequest((accessToken) =>
+      groupsApi.delete(`/api/groups/${groupId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }),
+    );
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function getGroupMembers(groupId: string): Promise<AppGroupMember[]> {
+  try {
+    const response = await executeAuthorizedRequest((accessToken) =>
+      groupsApi.get<ApiGroupMemberResponse[]>(
+        `/api/groups/${groupId}/members`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
+    );
+
+    return response.data.map(normalizeMember);
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function promoteGroupMember(groupId: string, userId: string) {
+  try {
+    await executeAuthorizedRequest((accessToken) =>
+      groupsApi.post(
+        `/api/groups/${groupId}/members/${userId}/promote`,
+        undefined,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
+    );
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function demoteGroupMember(groupId: string, userId: string) {
+  try {
+    await executeAuthorizedRequest((accessToken) =>
+      groupsApi.post(
+        `/api/groups/${groupId}/members/${userId}/demote`,
+        undefined,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      ),
+    );
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
+export async function removeGroupMember(groupId: string, userId: string) {
+  try {
+    await executeAuthorizedRequest((accessToken) =>
+      groupsApi.delete(`/api/groups/${groupId}/members/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }),
+    );
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error));
+  }
+}
+
 export async function getGroupPosts(
   groupId: string,
   input: GetPostsInput = {},
@@ -307,6 +409,7 @@ function normalizeGroup(group: ApiGroupResponse): AppGroup {
     slug: group.slug,
     shortDescription: group.shortDescription,
     description: group.description,
+    rules: group.rules ?? [],
     avatarUrl: group.avatarUrl || undefined,
     bannerUrl: group.bannerUrl || undefined,
     category: group.category,
@@ -325,6 +428,10 @@ function normalizeGroupDetail(group: ApiGroupDetailResponse): AppGroupDetail {
     postCount: group.postCount,
     eventCount: group.eventCount,
     canCurrentUserPost: group.canCurrentUserPost,
+    currentUserRole: group.currentUserRole || undefined,
+    canManageMembers: group.canManageMembers,
+    canManageSettings: group.canManageSettings,
+    canCreateEvents: group.canCreateEvents,
     moderatorPreviewMembers: group.moderatorPreviewMembers.map(normalizePreviewMember),
   };
 }
@@ -336,6 +443,21 @@ function normalizePreviewMember(member: ApiGroupMemberPreviewResponse): AppGroup
     avatarUrl: member.avatarUrl || undefined,
     department: member.department || undefined,
     role: member.role,
+  };
+}
+
+function normalizeMember(member: ApiGroupMemberResponse): AppGroupMember {
+  return {
+    userId: member.userId,
+    fullName: member.fullName,
+    avatarUrl: member.avatarUrl || undefined,
+    department: member.department || undefined,
+    role: member.role,
+    joinedAt: member.joinedAtUtc,
+    isCurrentUser: member.isCurrentUser,
+    canBePromoted: member.canBePromoted,
+    canBeDemoted: member.canBeDemoted,
+    canBeRemoved: member.canBeRemoved,
   };
 }
 

@@ -9,6 +9,7 @@ import {
   useTrackPostViewMutation,
   useUpdatePostMutation,
 } from "@/features/posts/hooks";
+import type { UpdatePostInput } from "@/features/posts/types";
 import PostCard from "@/pages/Feed/components/PostCard";
 import PostCommentComposer from "@/pages/Feed/components/PostCommentComposer";
 import PostCommentList from "@/pages/Feed/components/PostCommentList";
@@ -44,8 +45,8 @@ export default function PostDetailPage() {
     }
   }
 
-  async function handleUpdatePost(postId: string, content: string) {
-    await updatePostMutation.mutateAsync({ postId, content });
+  async function handleUpdatePost(postId: string, input: Omit<UpdatePostInput, "postId">) {
+    await updatePostMutation.mutateAsync({ postId, ...input });
   }
 
   async function handleDeletePost(postId: string) {
@@ -133,7 +134,11 @@ export default function PostDetailPage() {
 
           <Divider style={{ margin: 0, borderColor: token.colorBorderSecondary }} />
 
-          <PostCommentList comments={postDetailQuery.data.comments || []} />
+          <PostCommentList
+            comments={postDetailQuery.data.comments || []}
+            postId={postDetailQuery.data.post.id}
+            postAuthorId={postDetailQuery.data.post.userId}
+          />
         </div>
       ) : (
         <div style={{ padding: 16 }}>Gonderi bulunamadi.</div>

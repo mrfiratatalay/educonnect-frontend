@@ -1,17 +1,41 @@
 import { CalendarOutlined, PercentageOutlined, TagOutlined } from "@ant-design/icons";
-import { Badge, Card, Col, Empty, Flex, Row, Tag, Typography, theme } from "antd";
+import { Alert, Badge, Card, Col, Empty, Flex, Row, Skeleton, Tag, Typography, theme } from "antd";
 import dayjs from "dayjs";
 import type { Discount } from "@/types";
 
 interface ExploreDiscountGridProps {
   discounts: Discount[];
+  errorMessage?: string;
+  isLoading?: boolean;
 }
 
-export default function ExploreDiscountGrid({ discounts }: ExploreDiscountGridProps) {
+export default function ExploreDiscountGrid({
+  discounts,
+  errorMessage,
+  isLoading = false,
+}: ExploreDiscountGridProps) {
   const { token } = theme.useToken();
 
+  if (isLoading) {
+    return (
+      <Row gutter={[16, 16]}>
+        {Array.from({ length: 6 }, (_, index) => (
+          <Col key={`discount-skeleton-${index}`} xs={24} sm={12} xl={8}>
+            <Card style={{ borderColor: token.colorBorderSecondary }}>
+              <Skeleton active paragraph={{ rows: 4 }} />
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    );
+  }
+
+  if (errorMessage) {
+    return <Alert type="error" showIcon message={errorMessage} />;
+  }
+
   if (discounts.length === 0) {
-    return <Empty description="Aramana uygun indirim bulunamadı." />;
+    return <Empty description="Aramana uygun indirim bulunamadi." />;
   }
 
   return (
@@ -46,11 +70,11 @@ export default function ExploreDiscountGrid({ discounts }: ExploreDiscountGridPr
                   <Tag icon={<PercentageOutlined />} color="gold">
                     %{discount.discountRate} indirim
                   </Tag>
-                  {discount.code && (
+                  {discount.code ? (
                     <Tag icon={<TagOutlined />} color="blue">
                       {discount.code}
                     </Tag>
-                  )}
+                  ) : null}
                 </Flex>
 
                 <Typography.Text type="secondary" style={{ fontSize: 12, marginTop: "auto" }}>

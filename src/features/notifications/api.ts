@@ -4,6 +4,7 @@ import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
 import type {
   AppNotification,
   NotificationKind,
+  NotificationTypeValue,
 } from "@/features/notifications/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
@@ -18,7 +19,7 @@ interface ApiNotificationResponse {
   title: string;
   message: string;
   isRead: boolean;
-  type: NotificationKind;
+  type: NotificationTypeValue;
   createdAtUtc: string;
   targetPath?: string | null;
 }
@@ -78,7 +79,7 @@ export async function markAllNotificationsRead() {
   }
 }
 
-function normalizeNotification(
+export function normalizeNotification(
   notification: ApiNotificationResponse,
 ): AppNotification {
   return {
@@ -86,10 +87,45 @@ function normalizeNotification(
     title: notification.title,
     message: notification.message,
     isRead: notification.isRead,
-    type: notification.type,
+    type: normalizeNotificationKind(notification.type),
     createdAt: notification.createdAtUtc,
-    link: notification.targetPath || getNotificationLink(notification.type),
+    link:
+      notification.targetPath ||
+      getNotificationLink(normalizeNotificationKind(notification.type)),
   };
+}
+
+function normalizeNotificationKind(value: NotificationTypeValue): NotificationKind {
+  if (typeof value === "number") {
+    switch (value) {
+      case 2:
+        return "social";
+      case 3:
+        return "event";
+      case 4:
+        return "marketplace";
+      case 5:
+        return "system";
+      default:
+        return "general";
+    }
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    switch (normalized) {
+      case "social":
+      case "event":
+      case "marketplace":
+      case "system":
+      case "general":
+        return normalized;
+      default:
+        return "general";
+    }
+  }
+
+  return "general";
 }
 
 function getNotificationLink(type: NotificationKind) {

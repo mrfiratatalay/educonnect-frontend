@@ -16,6 +16,8 @@ export function useNotificationsQuery(enabled = true) {
     queryKey: notificationKeys.list(),
     queryFn: (): Promise<AppNotification[]> => getNotifications(),
     enabled,
+    refetchInterval: 20_000,
+    refetchOnWindowFocus: true,
   });
 }
 

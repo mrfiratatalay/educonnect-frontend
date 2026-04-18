@@ -1,4 +1,4 @@
-import { Alert, Card, Col, Empty, Flex, Row, Skeleton } from "antd";
+import { Alert, Card, Col, Empty, Row, Skeleton } from "antd";
 import type { AppEvent } from "@/features/events/types";
 import EventCard from "@/pages/Explore/components/EventCard";
 
@@ -38,7 +38,7 @@ export default function EventGrid({
   }
 
   if (events.length === 0) {
-    return <Empty description="Aramana uygun etkinlik bulunamadı." />;
+    return <Empty description="Aramana uygun etkinlik bulunamadi." />;
   }
 
   return (
