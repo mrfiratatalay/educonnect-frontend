@@ -402,9 +402,9 @@ export default function Sidebar() {
               padding: isMessages ? "0" : "12px",
               justifyContent: isMessages ? "center" : "flex-start",
               margin: isMessages ? "0" : "8px 0 4px",
-              borderRadius: 9999,
+              borderRadius: 8,
               cursor: "pointer",
-              transition: "background 0.2s",
+              transition: "background 0.18s",
               background: accountPopoverOpen ? token.colorFillTertiary : "transparent",
             }}
             onMouseEnter={(event) => {

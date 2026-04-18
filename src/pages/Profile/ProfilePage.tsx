@@ -202,7 +202,7 @@ function ProfileTopBar({ title, subtitle, onBack }: { title: string; subtitle: s
     <div style={{ position: "sticky", top: 0, zIndex: 20, background: token.colorBgContainer, borderBottom: `1px solid ${token.colorBorderSecondary}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
       <Flex align="center" gap={12} style={{ minHeight: 56, padding: "8px 16px" }}>
         <Button type="text" aria-label="Geri don" onClick={onBack}
-          style={{ width: 36, height: 36, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flex: "0 0 auto" }}>
+          style={{ width: 36, height: 36, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flex: "0 0 auto" }}>
           <ArrowLeft size={20} />
         </Button>
         <div style={{ minWidth: 0 }}>

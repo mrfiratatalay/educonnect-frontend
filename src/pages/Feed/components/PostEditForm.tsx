@@ -144,7 +144,7 @@ export default function PostEditForm({
                 shape="circle"
                 icon={<FileImageOutlined />}
                 disabled={isSubmitting}
-                style={{ color: "#1D9BF0", fontSize: 18, width: 36, height: 36 }}
+                style={{ color: "#0D9488", fontSize: 18, width: 36, height: 36 }}
                 title="Görsel ekle / değiştir"
               />
             </Upload>

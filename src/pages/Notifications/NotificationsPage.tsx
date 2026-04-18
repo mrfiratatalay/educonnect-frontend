@@ -64,13 +64,10 @@ export default function NotificationsPage() {
   const [searchValue, setSearchValue] = useState("");
 
   const isDesktop = !!screens.xl;
-  const isDarkMode = token.colorBgBase === "#000000";
   const shellBorderColor = token.colorBorderSecondary;
   const shellBackground = token.colorBgContainer;
-  const elevatedBackground = isDarkMode ? "#16181C" : "#F7F9F9";
-  const stickyBackground = isDarkMode
-    ? "rgba(0, 0, 0, 0.82)"
-    : "rgba(255, 255, 255, 0.82)";
+  const elevatedBackground = token.colorBgElevated;
+  const stickyBackground = token.colorBgContainer + "D4";
 
   const notifications = notificationsQuery.data ?? [];
   const unreadCount = notifications.filter((notification) => !notification.isRead).length;
@@ -311,7 +308,7 @@ export default function NotificationsPage() {
                   }
                   variant="filled"
                   style={{
-                    borderRadius: 9999,
+                    borderRadius: 8,
                     background: elevatedBackground,
                   }}
                 />

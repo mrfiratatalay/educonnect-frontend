@@ -186,7 +186,7 @@ export default function PostComposer({
                     shape="circle"
                     icon={<FileImageOutlined />}
                     disabled={isSubmitting}
-                    style={{ color: "#1D9BF0", fontSize: 18, width: 36, height: 36 }}
+                    style={{ color: "#0D9488", fontSize: 18, width: 36, height: 36 }}
                   />
                 </Upload>
 
@@ -220,7 +220,7 @@ export default function PostComposer({
                       padding: "0 20px",
                       fontWeight: 700,
                       height: 36,
-                      backgroundColor: "#1D9BF0",
+                      backgroundColor: "#0D9488",
                       color: "#FFFFFF",
                       opacity: !content.trim() ? 0.5 : 1,
                       borderColor: "transparent",

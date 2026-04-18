@@ -702,7 +702,7 @@ function RuleRow({ index, text }: { index: number; text: string }) {
         style={{
           width: 32,
           height: 32,
-          borderRadius: 999,
+          borderRadius: 8,
           background: token.colorFillTertiary,
           display: "flex",
           alignItems: "center",

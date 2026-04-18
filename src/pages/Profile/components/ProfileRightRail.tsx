@@ -10,8 +10,7 @@ const footerLinks = ["Hizmet Sartlari", "Gizlilik Politikasi", "Cerez Politikasi
 export default function ProfileRightRail() {
   const { token } = theme.useToken();
   const navigate = useNavigate();
-  const isDarkMode = token.colorBgBase === "#000000";
-  const railSurface = isDarkMode ? "#16181C" : "#F7F9F9";
+  const railSurface = token.colorBgElevated;
   const trendingQuery = useTrendingHashtagsQuery(3);
 
   return (
@@ -22,7 +21,7 @@ export default function ProfileRightRail() {
             size="large" placeholder="Ara"
             prefix={<Search size={18} style={{ color: token.colorTextTertiary }} />}
             variant="filled"
-            style={{ borderRadius: 999, background: railSurface }}
+            style={{ borderRadius: 8, background: railSurface }}
           />
 
           <FollowSuggestionsCard

@@ -51,7 +51,7 @@ export default function Header() {
         style={{
           width: 34,
           height: 34,
-          borderRadius: 999,
+          borderRadius: 8,
           padding: 0,
           display: "flex",
           alignItems: "center",
@@ -87,9 +87,9 @@ export default function Header() {
             style={{
               width: 34,
               height: 34,
-              borderRadius: 999,
+              borderRadius: 8,
               padding: 0,
-              color: token.colorText,
+              color: token.colorPrimary,
             }}
           >
             <GraduationCap size={24} strokeWidth={2.1} />

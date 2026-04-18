@@ -22,8 +22,8 @@ function ThemedApp() {
 
   useLayoutEffect(() => {
     const themeName = isDark ? "dark" : "light";
-    const backgroundColor = isDark ? "#000000" : "#FFFFFF";
-    const textColor = isDark ? "#F3F4F6" : "#111827";
+    const backgroundColor = isDark ? "#0F172A" : "#F1F5F9";
+    const textColor = isDark ? "#F1F5F9" : "#0F172A";
     const root = document.getElementById("root");
 
     document.documentElement.dataset.theme = themeName;

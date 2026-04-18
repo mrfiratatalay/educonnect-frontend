@@ -110,7 +110,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 style={{
                   fontSize: 16,
                   fontWeight: 700,
-                  color: "#1D9BF0",
+                  color: "#0D9488",
                 }}
               >
                 Taslaklar
@@ -174,7 +174,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 style={{
                   fontSize: 15,
                   fontWeight: 700,
-                  color: "#1D9BF0",
+                  color: "#0D9488",
                 }}
               >
                 Taslaklar

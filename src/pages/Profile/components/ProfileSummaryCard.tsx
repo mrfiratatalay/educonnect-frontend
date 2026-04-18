@@ -140,7 +140,7 @@ export default function ProfileSummaryCard({
             style={{ marginTop: -48 }}
           >
             <Skeleton.Avatar active size={avatarSize} shape="circle" />
-            <Skeleton.Button active style={{ width: 140, height: 38, borderRadius: 999 }} />
+            <Skeleton.Button active style={{ width: 140, height: 38, borderRadius: 8 }} />
           </Flex>
 
           <div style={{ marginTop: 16 }}>

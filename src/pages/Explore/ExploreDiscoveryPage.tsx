@@ -33,12 +33,9 @@ export default function ExploreDiscoveryPage() {
 
   const isDesktop = !!screens.xl;
   const isTablet = !!screens.md;
-  const isDarkMode = token.colorBgBase === "#000000";
   const shellBorderColor = token.colorBorderSecondary;
-  const stickyBackground = isDarkMode
-    ? "rgba(0, 0, 0, 0.84)"
-    : "rgba(255, 255, 255, 0.84)";
-  const sidebarSurface = isDarkMode ? "#16181C" : "#FFFFFF";
+  const stickyBackground = token.colorBgContainer + "D6";
+  const sidebarSurface = token.colorBgElevated;
   const pageHorizontalPadding = isTablet ? 16 : 0;
   const activeTabLabel =
     exploreDiscoveryTabs.find((tab) => tab.key === activeTab)?.label ?? "Kesfet";
@@ -116,7 +113,7 @@ export default function ExploreDiscoveryPage() {
                   variant="outlined"
                   style={{
                     flex: 1,
-                    borderRadius: 999,
+                    borderRadius: 8,
                   }}
                 />
 
@@ -316,9 +313,8 @@ function TrendRow({
 }) {
   const { token } = theme.useToken();
   const [isHovered, setIsHovered] = useState(false);
-  const isDarkMode = token.colorBgBase === "#000000";
-  const hoverBackground = isDarkMode ? "#080B0F" : "#F7F9F9";
-  const controlHoverBackground = isDarkMode ? "rgba(231, 233, 234, 0.1)" : "#EFF3F4";
+  const hoverBackground = token.colorFillQuaternary;
+  const controlHoverBackground = token.colorFillSecondary;
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Enter" || event.key === " ") {
@@ -384,7 +380,7 @@ function TrendRow({
             justifyContent: "center",
             width: 30,
             height: 30,
-            borderRadius: 999,
+            borderRadius: 8,
             background: isHovered ? controlHoverBackground : "transparent",
             color: token.colorTextTertiary,
             flexShrink: 0,

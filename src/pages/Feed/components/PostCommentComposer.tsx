@@ -101,7 +101,7 @@ export default function PostCommentComposer({
                 padding: "0 16px",
                 fontWeight: 700,
                 fontSize: 15,
-                backgroundColor: "#1D9BF0",
+                backgroundColor: "#0D9488",
                 opacity: !content.trim() ? 0.5 : 1,
                 border: "none",
                 color: "#FFFFFF",

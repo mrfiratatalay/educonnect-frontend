@@ -452,8 +452,8 @@ export default function PostCard({
                       icon={<MessageCircle size={18} />}
                       count={post.commentsCount}
                       color={token.colorTextTertiary}
-                      hoverColor="#1D9BF0"
-                      hoverBgColor="rgba(29, 155, 240, 0.1)"
+                      hoverColor="#0D9488"
+                      hoverBgColor="rgba(13, 148, 136, 0.1)"
                       onClick={handleCommentClick}
                     />
                     <ActionBtn
@@ -481,8 +481,8 @@ export default function PostCard({
                     <ActionBtn
                       icon={<Share2 size={18} />}
                       color={token.colorTextTertiary}
-                      hoverColor="#1D9BF0"
-                      hoverBgColor="rgba(29, 155, 240, 0.1)"
+                      hoverColor="#0D9488"
+                      hoverBgColor="rgba(13, 148, 136, 0.1)"
                       onClick={() => {
                         void handleShare();
                       }}
@@ -517,7 +517,7 @@ function renderContentWithHashtags(content: string, onHashtagClick: (tag: string
       return (
         <span
           key={index}
-          style={{ color: "#1D9BF0", cursor: "pointer", fontWeight: 500 }}
+          style={{ color: "#0D9488", cursor: "pointer", fontWeight: 500 }}
           onClick={(e) => {
             e.stopPropagation();
             onHashtagClick(tag);

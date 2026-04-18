@@ -115,7 +115,7 @@ export default function BookmarksPage() {
                 placeholder="Kayitlarda ara"
                 prefix={<Search size={18} style={{ color: token.colorTextTertiary }} />}
                 variant="outlined"
-                style={{ borderRadius: 999 }}
+                style={{ borderRadius: 8 }}
               />
             </div>
           </div>

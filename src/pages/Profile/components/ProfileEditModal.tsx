@@ -183,8 +183,7 @@ export default function ProfileEditModal({
     },
   };
 
-  const coverPlaceholderColor =
-    token.colorBgBase === "#000000" ? "#2F3336" : "#CFD9DE";
+  const coverPlaceholderColor = token.colorBorderSecondary;
 
   return (
     <Modal
