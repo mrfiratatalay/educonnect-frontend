@@ -218,9 +218,10 @@ export default function Sidebar() {
                           display: "inline-flex",
                           transform: shouldPulseNotifications ? "scale(1.12)" : "scale(1)",
                           transition: "transform 180ms ease",
+                          color: "inherit",
                         }}
                       >
-                        <item.icon size={navIconSize} fill={selectedKey === item.key ? "currentColor" : "none"} />
+                        <item.icon size={navIconSize} strokeWidth={selectedKey === item.key ? 2.5 : 2.1} />
                       </span>
                     </Badge>
                   ) : item.key === "/messages" ? (
@@ -230,13 +231,14 @@ export default function Sidebar() {
                           display: "inline-flex",
                           transform: shouldPulseMessages ? "scale(1.12)" : "scale(1)",
                           transition: "transform 180ms ease",
+                          color: "inherit",
                         }}
                       >
-                        <item.icon size={navIconSize} fill={selectedKey === item.key ? "currentColor" : "none"} />
+                        <item.icon size={navIconSize} strokeWidth={selectedKey === item.key ? 2.5 : 2.1} />
                       </span>
                     </Badge>
                   ) : (
-                    <item.icon size={navIconSize} fill={selectedKey === item.key ? "currentColor" : "none"} />
+                    <item.icon size={navIconSize} strokeWidth={selectedKey === item.key ? 2.5 : 2.1} />
                   )}
                   {!isMessages ? (
                     <Flex align="center" gap={10}>

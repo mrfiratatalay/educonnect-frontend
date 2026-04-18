@@ -512,13 +512,13 @@ export default function CommunityDetailPage() {
                     value={group.canCreateEvents ? "Moderatör veya kurucu" : "Yetkin yok"}
                   />
 
-                  {group.moderatörPreviewMembers.length ? (
+                  {group.moderatörPreviewMembers?.length ? (
                     <div>
                       <Typography.Title level={5} style={{ margin: 0 }}>
                         Moderatör ve yöneticiler
                       </Typography.Title>
                       <Flex vertical gap={12} style={{ marginTop: 12 }}>
-                        {group.moderatörPreviewMembers.map((member) => (
+                        {(group.moderatörPreviewMembers ?? []).map((member) => (
                           <Flex key={member.userId} align="center" gap={10}>
                             <Avatar src={member.avatarUrl}>
                               {!member.avatarUrl ? getCommunityInitials(member.fullName) : null}

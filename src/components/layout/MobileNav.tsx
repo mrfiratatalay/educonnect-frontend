@@ -315,9 +315,10 @@ export default function MobileNav() {
                         display: "inline-flex",
                         transform: shouldPulseNotifications ? "scale(1.12)" : "scale(1)",
                         transition: "transform 180ms ease",
+                        color: "inherit",
                       }}
                     >
-                      <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} fill={isActive ? "currentColor" : "none"} />
+                      <item.icon size={26} strokeWidth={isActive ? 2.5 : 2.1} />
                     </span>
                   </Badge>
                 ) : item.key === "/messages" ? (
@@ -327,13 +328,14 @@ export default function MobileNav() {
                         display: "inline-flex",
                         transform: shouldPulseMessages ? "scale(1.12)" : "scale(1)",
                         transition: "transform 180ms ease",
+                        color: "inherit",
                       }}
                     >
-                      <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} fill={isActive ? "currentColor" : "none"} />
+                      <item.icon size={26} strokeWidth={isActive ? 2.5 : 2.1} />
                     </span>
                   </Badge>
                 ) : (
-                  <item.icon size={26} strokeWidth={isActive ? 2.4 : 2.1} fill={isActive ? "currentColor" : "none"} />
+                  <item.icon size={26} strokeWidth={isActive ? 2.5 : 2.1} />
                 )}
               </Button>
             );
