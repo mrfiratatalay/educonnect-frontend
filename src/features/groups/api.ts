@@ -452,7 +452,7 @@ function normalizeGroup(group: ApiGroupResponse): AppGroup {
     creatorUserId: group.creatorUserId,
     creatorName: group.creatorName,
     memberCount: group.memberCount,
-    previewMembers: group.previewMembers.map(normalizePreviewMember),
+    previewMembers: (group.previewMembers ?? []).map(normalizePreviewMember),
     isMember: group.joinedByCurrentUser,
     createdAt: group.createdAtUtc,
   };
@@ -468,7 +468,7 @@ function normalizeGroupDetail(group: ApiGroupDetailResponse): AppGroupDetail {
     canManageMembers: group.canManageMembers,
     canManageSettings: group.canManageSettings,
     canCreateEvents: group.canCreateEvents,
-    moderatörPreviewMembers: group.moderatörPreviewMembers.map(normalizePreviewMember),
+    moderatörPreviewMembers: (group.moderatörPreviewMembers ?? []).map(normalizePreviewMember),
   };
 }
 

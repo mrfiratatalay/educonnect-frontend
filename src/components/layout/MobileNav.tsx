@@ -315,7 +315,7 @@ export default function MobileNav() {
                         display: "inline-flex",
                         transform: shouldPulseNotifications ? "scale(1.12)" : "scale(1)",
                         transition: "transform 180ms ease",
-                        color: "inherit",
+                        color: isActive ? token.colorPrimary : token.colorTextSecondary,
                       }}
                     >
                       <item.icon size={26} strokeWidth={isActive ? 2.5 : 2.1} />
@@ -328,7 +328,7 @@ export default function MobileNav() {
                         display: "inline-flex",
                         transform: shouldPulseMessages ? "scale(1.12)" : "scale(1)",
                         transition: "transform 180ms ease",
-                        color: "inherit",
+                        color: isActive ? token.colorPrimary : token.colorTextSecondary,
                       }}
                     >
                       <item.icon size={26} strokeWidth={isActive ? 2.5 : 2.1} />
