@@ -76,7 +76,7 @@ export default function ExploreTagPage() {
                 <Button
                   type="text"
                   shape="circle"
-                  aria-label="Kesfete don"
+                  aria-label="Keşfete don"
                   style={{ width: 36, height: 36, color: token.colorText }}
                   icon={<ArrowLeft size={18} />}
                   onClick={() => navigate("/explore")}
@@ -105,8 +105,8 @@ export default function ExploreTagPage() {
                   </Flex>
                   <Typography.Text type="secondary" style={{ fontSize: 14 }}>
                     {totalCount > 0
-                      ? `${totalCount} gonderi bu trend altinda listeleniyor.`
-                      : "Bu trenddeki guncel paylasimlar burada akacak."}
+                      ? `${totalCount} gönderi bu trend altinda listeleniyor.`
+                      : "Bu trenddeki guncel paylaşımlar burada akaçak."}
                   </Typography.Text>
                 </div>
               </Flex>
@@ -121,10 +121,10 @@ export default function ExploreTagPage() {
               errorMessage={errorMessage}
               emptyDescription={
                 normalizedTag
-                  ? `${displayTag} etiketiyle eslesen guncel bir paylasim yok.`
-                  : "Hashtag baglantisi gecersiz oldugu icin bu trend acilamadi."
+                  ? `${displayTag} etiketiyle eslesen guncel bir paylaşım yok.`
+                  : "Hashtag baglantisi gecersiz oldugu için bu trend acilamadi."
               }
-              emptyActionLabel="Kesfete don"
+              emptyActionLabel="Keşfete don"
               isLoading={Boolean(normalizedTag) && postsQuery.isLoading}
               onCreatePostClick={() => undefined}
               onDelete={handleDeletePost}
@@ -140,7 +140,7 @@ export default function ExploreTagPage() {
                   onClick={() => void postsQuery.fetchNextPage()}
                   loading={postsQuery.isFetchingNextPage}
                 >
-                  Daha Fazla Yukle
+                  Daha Fazla Yükle
                 </Button>
               </Flex>
             )}
@@ -150,7 +150,7 @@ export default function ExploreTagPage() {
                 type="secondary"
                 style={{ textAlign: "center", padding: "8px 0 24px", display: "block" }}
               >
-                Bu trenddeki gonderilerin sonuna geldin.
+                Bu trenddeki gönderilerin sonuna geldin.
               </Typography.Text>
             )}
           </div>

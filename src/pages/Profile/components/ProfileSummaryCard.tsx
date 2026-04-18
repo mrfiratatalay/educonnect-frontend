@@ -26,9 +26,9 @@ import { useUploadMyAvatarMutation } from "@/features/users/hooks";
 import type { UserRole } from "@/types";
 
 const roleLabels: Record<UserRole, string> = {
-  student: "Ogrenci",
-  admin: "Yonetici",
-  moderator: "Moderator",
+  student: "Öğrenci",
+  admin: "Yönetici",
+  moderatör: "Moderatör",
 };
 
 interface ProfileSummaryCardProps {
@@ -90,12 +90,12 @@ export default function ProfileSummaryCard({
       const allowedTypes = ["image/png", "image/jpeg", "image/gif"];
 
       if (!allowedTypes.includes(file.type)) {
-        message.error("Sadece JPG, PNG veya GIF dosyalari yukleyebilirsiniz.");
+        message.error("Sadece JPG, PNG veya GIF dosyalari yükleyebilirsiniz.");
         return Upload.LIST_IGNORE;
       }
 
       if (file.size / 1024 / 1024 >= 5) {
-        message.error("Resim 5MB'dan kucuk olmalidir.");
+        message.error("Resim 5MB'dan küçük olmalidir.");
         return Upload.LIST_IGNORE;
       }
 
@@ -105,7 +105,7 @@ export default function ProfileSummaryCard({
       try {
         await uploadAvatarMutation.mutateAsync(file as File);
         onSuccess?.("ok");
-        message.success("Profil fotografi guncellendi.");
+        message.success("Profil fotoğrafı güncellendi.");
       } catch (error) {
         onError?.(error as Error);
         message.error(getApiErrorMessage(error));
@@ -224,7 +224,7 @@ export default function ProfileSummaryCard({
     if (isOwnProfile) {
       return (
         <Upload {...uploadProps} disabled={uploadAvatarMutation.isPending}>
-          <Tooltip title="Profil fotografini degistir" placement="bottom">
+          <Tooltip title="Profil fotoğrafıni degistir" placement="bottom">
             {wrappedAvatar}
           </Tooltip>
         </Upload>
@@ -233,7 +233,7 @@ export default function ProfileSummaryCard({
 
     if (profile.avatarUrl) {
       return (
-        <Tooltip title="Fotografi buyut" placement="bottom">
+        <Tooltip title="Fotoğrafı buyut" placement="bottom">
           {wrappedAvatar}
         </Tooltip>
       );
@@ -290,7 +290,7 @@ export default function ProfileSummaryCard({
                 zIndex: 1,
               }}
             >
-              Profili duzenle
+              Profili düzenle
             </Button>
           ) : null}
 
@@ -316,7 +316,7 @@ export default function ProfileSummaryCard({
                   }}
                   style={{ height: 38, paddingInline: 18, fontWeight: 700 }}
                 >
-                  Mesaj gonder
+                  Mesaj gönder
                 </Button>
               ) : null}
             </Flex>
@@ -356,7 +356,7 @@ export default function ProfileSummaryCard({
             onClick={onOpenFollowing}
           />
           <ProfileMetric
-            label="Takipci"
+            label="Takipçi"
             value={profile.followersCount}
             onClick={onOpenFollowers}
           />
@@ -443,10 +443,10 @@ function formatJoinDate(value: string) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "Katilma tarihi belirtilmedi";
+    return "Katılma tarihi belirtilmedi";
   }
 
-  return `Katilma ${new Intl.DateTimeFormat("tr-TR", {
+  return `Katılma ${new Intl.DateTimeFormat("tr-TR", {
     month: "long",
     year: "numeric",
   }).format(date)}`;

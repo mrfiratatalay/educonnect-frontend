@@ -16,8 +16,8 @@ interface CommunityMembersModalProps {
 
 const roleLabels: Record<AppGroupMember["role"], string> = {
   owner: "Kurucu",
-  moderator: "Moderator",
-  member: "Uye",
+  moderatör: "Moderatör",
+  member: "Üye",
 };
 
 export default function CommunityMembersModal({
@@ -37,7 +37,7 @@ export default function CommunityMembersModal({
     <Modal
       open={open}
       onCancel={onClose}
-      title="Uyeler"
+      title="Üyeler"
       footer={null}
       width={720}
       destroyOnHidden
@@ -49,7 +49,7 @@ export default function CommunityMembersModal({
           <Skeleton active avatar paragraph={{ rows: 1 }} />
         </Flex>
       ) : members.length === 0 ? (
-        <Empty description="Uye bulunamadi." />
+        <Empty description="Üye bulunamadi." />
       ) : (
         <Flex vertical>
           {members.map((member, index) => {
@@ -92,7 +92,7 @@ export default function CommunityMembersModal({
                   <Flex gap={8} wrap justify="flex-end">
                     {member.canBePromoted ? (
                       <Button size="small" loading={isActing} onClick={() => void onPromote(member)}>
-                        Moderator yap
+                        Moderatör yap
                       </Button>
                     ) : null}
                     {member.canBeDemoted ? (
@@ -120,7 +120,7 @@ function getRoleColor(role: AppGroupMember["role"]) {
   switch (role) {
     case "owner":
       return "gold";
-    case "moderator":
+    case "moderatör":
       return "blue";
     default:
       return "default";
@@ -128,7 +128,7 @@ function getRoleColor(role: AppGroupMember["role"]) {
 }
 
 function formatJoinDate(value: string) {
-  return `Katilim: ${new Intl.DateTimeFormat("tr-TR", {
+  return `Katılım: ${new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "short",
     year: "numeric",

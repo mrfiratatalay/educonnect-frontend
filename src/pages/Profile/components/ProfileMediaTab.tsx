@@ -18,14 +18,14 @@ export default function ProfileMediaTab({ userId }: ProfileMediaTabProps) {
   }
 
   if (mediaQuery.isError) {
-    return <Alert type="error" showIcon message="Medya icerikleri yuklenirken bir hata olustu." />;
+    return <Alert type="error" showIcon message="Medya içerikleri yüklenirken bir hata olustu." />;
   }
 
   if (posts.length === 0) {
     return (
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
-        description={<Typography.Text type="secondary">Fotograf veya video iceren gonderi bulunmuyor.</Typography.Text>}
+        description={<Typography.Text type="secondary">Fotoğraf veya video iceren gönderi bulunmuyor.</Typography.Text>}
       />
     );
   }
@@ -46,7 +46,7 @@ export default function ProfileMediaTab({ userId }: ProfileMediaTabProps) {
       </Row>
       {totalPages > 1 && (
         <Flex justify="center" gap={8}>
-          <Button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Onceki</Button>
+          <Button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Önceki</Button>
           <Tag style={{ lineHeight: "32px" }}>{page} / {totalPages}</Tag>
           <Button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Sonraki</Button>
         </Flex>

@@ -38,7 +38,7 @@ export default function PostCommentComposer({
       setContent("");
       if (textareaRef.current) textareaRef.current.style.height = "auto";
     } catch {
-      message.error("Yorum gonderilemedi. Lutfen tekrar deneyin.");
+      message.error("Yorum gönderilemedi. Lütfen tekrar deneyin.");
     }
   }
 

@@ -30,7 +30,7 @@ import ProductFormModal from "@/pages/Market/components/ProductFormModal";
 import type { VisualSearchResult } from "@/pages/Market/components/VisualSearchPanel";
 
 const conditionOptions: { label: string; value: ProductCondition | "all" }[] = [
-  { label: "Tum durumlar", value: "all" },
+  { label: "Tüm durumlar", value: "all" },
   { label: "Sifir", value: "new" },
   { label: "Yeni gibi", value: "likeNew" },
   { label: "Iyi", value: "good" },
@@ -46,7 +46,7 @@ type DiscountCategory =
   | "Teknoloji"
   | "Ulasim"
   | "Giyim"
-  | "Diger";
+  | "Diğer";
 
 export default function MarketPage() {
   const screens = Grid.useBreakpoint();
@@ -151,12 +151,12 @@ export default function MarketPage() {
           <div>
             <Typography.Title level={screens.lg ? 2 : 3} style={{ margin: 0 }}>Pazar</Typography.Title>
             <Typography.Text type="secondary">
-              Ogrenciden ogrenciye ikinci el ilanlar ve ogrenciye ozel indirimler
+              Öğrenciden öğrenciye ikinci el ilanlar ve öğrenciye ozel indirimler
             </Typography.Text>
           </div>
           {activeTab === "products" ? (
             <Button type="primary" icon={<Plus size={14} />} onClick={() => setIsCreateOpen(true)}>
-              Ilan Olustur
+              Ilan Oluştur
             </Button>
           ) : null}
         </Flex>
@@ -189,7 +189,7 @@ export default function MarketPage() {
                 type={showVsPanel ? "primary" : "default"}
                 onClick={() => setShowVsPanel((v) => !v)}
               >
-                {screens.sm ? "Gorsel Ara" : undefined}
+                {screens.sm ? "Görsel Ara" : undefined}
               </Button>
               <Button
                 icon={showFilters ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -241,13 +241,13 @@ export default function MarketPage() {
                 value={selectedDiscountCategory}
                 onChange={(value) => setSelectedDiscountCategory(value)}
                 options={[
-                  { label: "Tum kategoriler", value: "all" },
+                  { label: "Tüm kategoriler", value: "all" },
                   { label: "Yeme Icme", value: "Yeme Icme" },
                   { label: "Kirtasiye", value: "Kirtasiye" },
                   { label: "Teknoloji", value: "Teknoloji" },
                   { label: "Ulasim", value: "Ulasim" },
                   { label: "Giyim", value: "Giyim" },
-                  { label: "Diger", value: "Diger" },
+                  { label: "Diğer", value: "Diğer" },
                 ]}
                 style={{ minWidth: 180 }}
               />
@@ -294,7 +294,7 @@ export default function MarketPage() {
             </Row>
             {totalCount > PAGE_SIZE && (
               <Flex justify="center" gap={8} style={{ marginTop: 8 }}>
-                <Button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Onceki</Button>
+                <Button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Önceki</Button>
                 <Tag style={{ lineHeight: "32px" }}>{page} / {Math.ceil(totalCount / PAGE_SIZE)}</Tag>
                 <Button disabled={page >= Math.ceil(totalCount / PAGE_SIZE)} onClick={() => setPage((p) => p + 1)}>Sonraki</Button>
               </Flex>
@@ -315,10 +315,10 @@ export default function MarketPage() {
         )}
 
         {activeTab === "products" && productsQuery.isError && !showingVs && (
-          <Card><Empty description="Urunler yuklenirken hata olustu." /></Card>
+          <Card><Empty description="Urunler yüklenirken hata olustu." /></Card>
         )}
         {activeTab === "discounts" && discountsQuery.isError ? (
-          <Card><Empty description="Indirimler yuklenirken hata olustu." /></Card>
+          <Card><Empty description="Indirimler yüklenirken hata olustu." /></Card>
         ) : null}
       </Flex>
 
@@ -332,7 +332,7 @@ function VsResultsGrid({ results, onNavigate }: { results: VisualSearchResult[];
   return (
     <>
       <Typography.Text strong style={{ fontSize: 15 }}>
-        Gorsel Arama Sonuclari ({results.length})
+        Görsel Arama Sonuclari ({results.length})
       </Typography.Text>
       <Row gutter={[16, 16]}>
         {results.map((r) => (
@@ -380,7 +380,7 @@ function inferDiscountCategory(discount: AppDiscount): DiscountCategory {
     return "Giyim";
   }
 
-  return "Diger";
+  return "Diğer";
 }
 
 function containsAny(source: string, terms: string[]) {

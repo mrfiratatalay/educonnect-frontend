@@ -29,7 +29,7 @@ import CommunityListItem, {
 } from "@/pages/Communities/components/CommunityListItem";
 import { dedupeGroups, filterGroups } from "@/pages/Communities/communitySurface";
 
-const ALL_CATEGORIES = "Tum";
+const ALL_CATEGORIES = "Tüm";
 
 export default function CommunitiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -144,14 +144,14 @@ export default function CommunitiesPage() {
                     flexShrink: 0,
                   }}
                 >
-                  {screens.md ? "Topluluk olustur" : null}
+                  {screens.md ? "Topluluk oluştur" : null}
                 </Button>
               </Flex>
             </div>
 
             <div style={{ padding: "18px 16px 14px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
               <Typography.Title level={3} style={{ margin: 0, lineHeight: 1.15, fontSize: 32 }}>
-                Topluluklari Kesfet
+                Topluluklari Keşfet
               </Typography.Title>
 
               <Flex gap={8} wrap="wrap" style={{ marginTop: 14 }}>
@@ -247,7 +247,7 @@ function JoinedGroupsSection({
     <div style={{ padding: "16px 16px 10px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
       <Flex align="center" justify="space-between" gap={12} style={{ marginBottom: 8 }}>
         <Typography.Title level={3} style={{ margin: 0, lineHeight: 1.15 }}>
-          Katildigin topluluklar
+          Katıldigin topluluklar
         </Typography.Title>
         <Button type="text" shape="circle" icon={<EllipsisOutlined />} />
       </Flex>
@@ -273,8 +273,8 @@ function CommunityEmptyState({
     ? "Aramana uygun topluluk bulunamadi."
     : "Yeni topluluklar burada listelenecek.";
   const description = hasSearchQuery
-    ? "Arama ifadesini sadelestir veya diger sekmeye goz at."
-    : "Kendi toplulugunu kurarak ilk vitrini burada acabilirsin.";
+    ? "Arama ifadesini sadelestir veya diğer sekmeye goz at."
+    : "Kendi topluluğunu kurarak ilk vitrini burada acabilirsin.";
 
   return (
     <Flex vertical align="center" gap={16} style={{ padding: "48px 24px 56px" }}>
@@ -287,7 +287,7 @@ function CommunityEmptyState({
       </Typography.Paragraph>
       <Flex align="center" gap={12} wrap="wrap" justify="center">
         <Button icon={<PlusOutlined />} onClick={onCreateGroup} shape="round" type="primary">
-          Topluluk olustur
+          Topluluk oluştur
         </Button>
       </Flex>
     </Flex>

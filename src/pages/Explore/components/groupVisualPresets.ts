@@ -35,7 +35,7 @@ export const coverPresets: GroupVisualPreset[] = [
   },
   {
     id: "cover-campus",
-    label: "Kampus",
+    label: "Kampüs",
     path: "/community-presets/covers/cover-campus.svg",
   },
   {

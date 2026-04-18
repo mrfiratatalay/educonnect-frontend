@@ -12,14 +12,14 @@ export default function ProfileSavedTab() {
   }
 
   if (bookmarksQuery.isError) {
-    return <Alert type="error" showIcon message="Kaydedilenler yuklenirken bir hata olustu." />;
+    return <Alert type="error" showIcon message="Kaydedilenler yüklenirken bir hata olustu." />;
   }
 
   if (posts.length === 0) {
     return (
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
-        description={<Typography.Text type="secondary">Kaydedilmis icerik bulunmuyor.</Typography.Text>}
+        description={<Typography.Text type="secondary">Kaydedilmis içerik bulunmuyor.</Typography.Text>}
       />
     );
   }
@@ -30,7 +30,7 @@ export default function ProfileSavedTab() {
       {bookmarksQuery.hasNextPage && (
         <Flex justify="center">
           <Button onClick={() => bookmarksQuery.fetchNextPage()} loading={bookmarksQuery.isFetchingNextPage}>
-            Daha fazla yukle
+            Daha fazla yükle
           </Button>
         </Flex>
       )}

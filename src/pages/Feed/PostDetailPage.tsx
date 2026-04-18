@@ -94,7 +94,7 @@ export default function PostDetailPage() {
           onClick={() => navigate(-1)}
         />
         <Typography.Title level={2} style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
-          Gonderi
+          Gönderi
         </Typography.Title>
       </Flex>
 
@@ -113,7 +113,7 @@ export default function PostDetailPage() {
             canManage={
               postDetailQuery.data.post.userId === user?.id ||
               user?.role === "admin" ||
-              user?.role === "moderator"
+              user?.role === "moderatör"
             }
             isDeleting={deletingPostId === postDetailQuery.data.post.id}
             isUpdating={updatingPostId === postDetailQuery.data.post.id}
@@ -141,7 +141,7 @@ export default function PostDetailPage() {
           />
         </div>
       ) : (
-        <div style={{ padding: 16 }}>Gonderi bulunamadi.</div>
+        <div style={{ padding: 16 }}>Gönderi bulunamadi.</div>
       )}
     </div>
   );

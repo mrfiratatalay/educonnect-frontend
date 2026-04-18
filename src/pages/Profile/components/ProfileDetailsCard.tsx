@@ -2,9 +2,9 @@ import { Card, Grid, Typography, theme } from "antd";
 import type { UserRole } from "@/types";
 
 const roleLabels: Record<UserRole, string> = {
-  student: "Ogrenci",
-  admin: "Yonetici",
-  moderator: "Moderator",
+  student: "Öğrenci",
+  admin: "Yönetici",
+  moderatör: "Moderatör",
 };
 
 interface ProfileDetailsCardProps {
@@ -27,8 +27,8 @@ export default function ProfileDetailsCard({
 
   const items = [
     { label: "Rol", value: roleLabels[profile.role] },
-    { label: "Universite", value: profile.universityName || "Belirtilmedi" },
-    { label: "Bolum", value: profile.department || "Belirtilmedi" },
+    { label: "Üniversite", value: profile.universityName || "Belirtilmedi" },
+    { label: "Bölüm", value: profile.department || "Belirtilmedi" },
     {
       label: "Sinif",
       value: profile.year ? `${profile.year}. sinif` : "Belirtilmedi",

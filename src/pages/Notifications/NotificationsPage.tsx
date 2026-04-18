@@ -42,8 +42,8 @@ import type {
 import { useAuthStore } from "@/store/authStore";
 
 const footerLinks = [
-  "Hizmet Sartlari",
-  "Gizlilik Politikasi",
+  "Hizmet Şartları",
+  "Gizlilik Politikası",
   "Cerez Politikasi",
   "Reklam bilgisi",
   "Daha fazla",
@@ -167,7 +167,7 @@ export default function NotificationsPage() {
                       />
                     </Tooltip>
 
-                    <Tooltip title="Tumunu okundu yap">
+                    <Tooltip title="Tümunu okundu yap">
                       <Button
                         type="text"
                         shape="circle"
@@ -197,7 +197,7 @@ export default function NotificationsPage() {
                       key: "all",
                       label: (
                         <span style={{ fontWeight: activeTab === "all" ? 700 : 600 }}>
-                          Tumu
+                          Tümu
                         </span>
                       ),
                     },
@@ -253,8 +253,8 @@ export default function NotificationsPage() {
                       </Typography.Text>
                       <Typography.Text type="secondary" style={{ fontSize: 13 }}>
                         {notificationsQuery.isFetching && !notificationsQuery.isLoading
-                          ? "Guncelleniyor..."
-                          : "Bildirim akisi hazir"}
+                          ? "Güncelleniyor..."
+                          : "Bildirim akişi hazır"}
                       </Typography.Text>
                     </Flex>
                   </Flex>
@@ -347,7 +347,7 @@ export default function NotificationsPage() {
                               type="secondary"
                               style={{ display: "block", fontSize: 13, marginTop: 2 }}
                             >
-                              {trend.postCount} gonderi
+                              {trend.postCount} gönderi
                             </Typography.Text>
                           </div>
                         </SidebarActionRow>
@@ -356,7 +356,7 @@ export default function NotificationsPage() {
                         style={{ fontSize: 15, padding: "0 16px 8px", display: "block" }}
                         onClick={() => navigate("/explore")}
                       >
-                        Daha fazla goster
+                        Daha fazla göster
                       </Typography.Link>
                     </>
                   ) : (
@@ -364,7 +364,7 @@ export default function NotificationsPage() {
                       type="secondary"
                       style={{ fontSize: 13, padding: "0 16px 8px", display: "block" }}
                     >
-                      Henuz aktif bir hashtag gundemi yok.
+                      Henuz aktif bir hashtag gündemi yok.
                     </Typography.Text>
                   )}
                 </SidebarCard>
@@ -438,7 +438,7 @@ function NotificationErrorState({
       }}
     >
       <Typography.Title level={3} style={{ margin: 0 }}>
-        Bildirimler yuklenemedi
+        Bildirimler yüklenemedi
       </Typography.Title>
       <Typography.Paragraph type="secondary" style={{ margin: 0, maxWidth: 420 }}>
         {message}
@@ -507,7 +507,7 @@ function NotificationEmptyState({
       ? "Sana yonelik etkilesimler burada gorunur."
       : activeTab === "unread"
         ? "Yeni bir etkilesim geldiginde bu sekmede hemen gorunur."
-      : "Begeniler, yeniden gonderiler ve cok daha fazlasi burada gerceklesir.";
+      : "Beğeniler, yeniden gönderiler ve çok daha fazlasi burada gerceklesir.";
 
   return (
     <Flex

@@ -127,7 +127,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   fontWeight: 700,
                 }}
               >
-                Gonderi yayinla
+                Gönderi yayınla
               </Button>
             </Flex>
           }
@@ -191,7 +191,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   fontWeight: 700,
                 }}
               >
-                Gonderi yayinla
+                Gönderi yayınla
               </Button>
             </Flex>
           }

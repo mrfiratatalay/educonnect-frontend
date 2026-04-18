@@ -95,7 +95,7 @@ export function dedupeGroups(groups: AppGroup[]) {
 }
 
 export function formatCommunityMemberCount(memberCount: number) {
-  return `${memberCountFormatter.format(memberCount)} Uye`;
+  return `${memberCountFormatter.format(memberCount)} Üye`;
 }
 
 export function getCommunityRules(group: AppGroup) {
@@ -104,8 +104,8 @@ export function getCommunityRules(group: AppGroup) {
   }
 
   return [
-    `${group.name} icinde saygili ve yapici iletisim kur.`,
-    `${group.category} konusu disina tasan paylasimlari sinirli tut.`,
+    `${group.name} içinde saygili ve yapici iletisim kur.`,
+    `${group.category} konusu disina tasan paylaşımlari sinirli tut.`,
     "Tartisma yerine katki, spam yerine fayda uret.",
   ];
 }

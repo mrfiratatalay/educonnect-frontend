@@ -135,7 +135,7 @@ export default function FeedPage() {
             {!isMobile && !screens.xl && (
               <Flex justify="flex-end" style={{ padding: "12px 16px 0" }}>
                 <Button icon={<CompassOutlined />} onClick={() => setDrawerVisible(true)}>
-                  Gundem & Kesfet
+                  Gündem & Keşfet
                 </Button>
               </Flex>
             )}
@@ -158,12 +158,12 @@ export default function FeedPage() {
               errorMessage={errorMessage}
               emptyDescription={
                 isGroupsTab
-                  ? "Katildigin topluluklardaki paylasimlar burada akacak."
+                  ? "Katıldigin topluluklardaki paylaşımlar burada akaçak."
                   : isFollowingTab
-                    ? "Takip ettigin kullanicilarin kisisel paylasimlari burada akacak."
+                    ? "Takip ettigin kullanıcıların kişisel paylaşımlari burada akaçak."
                   : undefined
               }
-              emptyActionLabel={isGroupsTab ? "Topluluklari kesfet" : undefined}
+              emptyActionLabel={isGroupsTab ? "Topluluklari keşfet" : undefined}
               isLoading={activeFeedQuery.isLoading}
               onCreatePostClick={handleCreatePostClick}
               onDelete={handleDeletePost}
@@ -180,7 +180,7 @@ export default function FeedPage() {
                   onClick={() => void activeFeedQuery.fetchNextPage()}
                   loading={activeFeedQuery.isFetchingNextPage}
                 >
-                  Daha Fazla Yukle
+                  Daha Fazla Yükle
                 </Button>
               </Flex>
             )}
@@ -190,7 +190,7 @@ export default function FeedPage() {
                 type="secondary"
                 style={{ textAlign: "center", padding: "24px 0", display: "block" }}
               >
-                Gosterilen gonderiler tamamlandi.
+                Gösterilen gönderiler tamamlandi.
               </Typography.Text>
             )}
           </div>
@@ -207,7 +207,7 @@ export default function FeedPage() {
 
       {!isMobile && !screens.xl && (
         <Drawer
-          title="Gundem & Kesfet"
+          title="Gündem & Keşfet"
           placement="right"
           onClose={() => setDrawerVisible(false)}
           open={drawerVisible}

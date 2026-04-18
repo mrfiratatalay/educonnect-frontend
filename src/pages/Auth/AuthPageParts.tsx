@@ -192,13 +192,13 @@ export function AuthLegalText() {
         maxWidth: 320,
       }}
     >
-      Kayit olarak{" "}
+      Kayıt olarak{" "}
       <Typography.Text style={{ color: authPalette.primary, fontSize: 12 }}>
-        Hizmet Sartlari
+        Hizmet Şartları
       </Typography.Text>{" "}
       ve{" "}
       <Typography.Text style={{ color: authPalette.primary, fontSize: 12 }}>
-        Gizlilik Politikasi
+        Gizlilik Politikası
       </Typography.Text>
       'ni kabul etmis olursun.
     </Typography.Paragraph>
@@ -215,7 +215,7 @@ interface FieldWrapperProps {
  *
  * Ant Design v6's Form.Item uses cloneElement to inject its own form control
  * props (value, onChange) from rc-field-form into child components. Even without
- * a `name` prop, it still overrides children's value with `undefined`, which
+ * a `name` prop, it still overrides children's value with `undefined`, whiçh
  * breaks Zod 4 validation ("expected string, received undefined").
  *
  * This wrapper provides the same visual spacing and error display without

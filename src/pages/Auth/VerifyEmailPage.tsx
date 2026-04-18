@@ -16,11 +16,11 @@ import {
 } from "./AuthPageParts";
 
 const schema = z.object({
-  email: z.string().email("Gecerli bir universite e-posta adresi girin"),
+  email: z.string().email("Gecerli bir üniversite e-posta adresi girin"),
   code: z
     .string()
     .trim()
-    .regex(/^\d{6}$/, "Dogrulama kodu 6 haneli olmali"),
+    .regex(/^\d{6}$/, "Doğrulama kodu 6 haneli olmali"),
 });
 
 type VerifyEmailForm = z.infer<typeof schema>;
@@ -99,8 +99,8 @@ export default function VerifyEmailPage() {
       <Flex vertical style={{ width: "100%", maxWidth: 380 }}>
         <Result
           status="success"
-          title="Kurumsal e-posta dogrulandi"
-          subTitle="Hesabin artik aktif. Universite e-posta adresinle giris yapabilirsin."
+          title="Kurumsal e-posta doğrulandi"
+          subTitle="Hesabin artik aktif. Üniversite e-posta adresinle giriş yapabilirsin."
           extra={
             <Button
               type="primary"
@@ -108,7 +108,7 @@ export default function VerifyEmailPage() {
               onClick={() => navigate("/login", { replace: true })}
               style={authPrimaryButtonStyle}
             >
-              Giris sayfasina git
+              Giriş sayfasına git
             </Button>
           }
         />
@@ -120,8 +120,8 @@ export default function VerifyEmailPage() {
     <Flex vertical style={{ width: "100%", maxWidth: 380 }}>
       <AuthPageIntro
         eyebrow="Kurumsal e-posta kontrolu"
-        title="E-postani dogrula"
-        description="Universite e-posta adresine gonderilen 6 haneli kodu gir. Kod gelmediyse ayni ekrandan yeni kod isteyebilirsin."
+        title="E-postani doğrula"
+        description="Üniversite e-posta adresine gönderilen 6 haneli kodu gir. Kod gelmediyse ayni ekrandan yeni kod isteyebilirsin."
       />
 
       <form
@@ -144,7 +144,7 @@ export default function VerifyEmailPage() {
                 type="email"
                 inputMode="email"
                 autoComplete="email"
-                placeholder="Universite e-posta adresi"
+                placeholder="Üniversite e-posta adresi"
                 size="large"
                 status={errors.email ? "error" : undefined}
                 style={authInputStyle}
@@ -166,7 +166,7 @@ export default function VerifyEmailPage() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 maxLength={6}
-                placeholder="6 haneli dogrulama kodu"
+                placeholder="6 haneli doğrulama kodu"
                 size="large"
                 status={errors.code ? "error" : undefined}
                 style={authInputStyle}
@@ -211,7 +211,7 @@ export default function VerifyEmailPage() {
             loading={isSubmitting}
             style={authPrimaryButtonStyle}
           >
-            {isSubmitting ? "Dogrulaniyor..." : "E-postayi dogrula"}
+            {isSubmitting ? "Doğrulaniyor..." : "E-postayi doğrula"}
           </Button>
 
           <Button
@@ -223,14 +223,14 @@ export default function VerifyEmailPage() {
             }}
             style={authSecondaryButtonStyle}
           >
-            {isResending ? "Yeni kod gonderiliyor..." : "Yeni kod iste"}
+            {isResending ? "Yeni kod gönderiliyor..." : "Yeni kod iste"}
           </Button>
         </Flex>
       </form>
 
       <AuthPageFooter
-        prompt="Giris ekranina donmek ister misin?"
-        linkText="Giris yap"
+        prompt="Giriş ekranina donmek ister misin?"
+        linkText="Giriş yap"
         onClick={() => navigate("/login")}
       />
     </Flex>

@@ -23,7 +23,7 @@ export default function ProfileListingsTab({ userId }: ProfileListingsTabProps) 
   }
 
   if (productsQuery.isError) {
-    return <Alert type="error" showIcon message="Ilanlar yuklenirken bir hata olustu." />;
+    return <Alert type="error" showIcon message="Ilanlar yüklenirken bir hata olustu." />;
   }
 
   if (products.length === 0) {
@@ -50,7 +50,7 @@ export default function ProfileListingsTab({ userId }: ProfileListingsTabProps) 
       </Row>
       {totalPages > 1 && (
         <Flex justify="center" gap={8}>
-          <Button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Onceki</Button>
+          <Button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Önceki</Button>
           <Tag style={{ lineHeight: "32px" }}>{page} / {totalPages}</Tag>
           <Button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Sonraki</Button>
         </Flex>

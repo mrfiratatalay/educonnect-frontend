@@ -90,7 +90,7 @@ export default function SessionHistory({
                   }}
                   onCancel={(e) => e?.stopPropagation()}
                   okText="Sil"
-                  cancelText="Vazgec"
+                  cancelText="Vazgeç"
                 >
                   <Button
                     type="text"

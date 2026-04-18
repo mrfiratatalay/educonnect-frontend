@@ -116,7 +116,7 @@ export default function ProfileConnectionsModal({
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
             <Typography.Text type="secondary">
-              Burada gosterilecek hesap bulunmuyor.
+              Burada gösterilecek hesap bulunmuyor.
             </Typography.Text>
           }
         />

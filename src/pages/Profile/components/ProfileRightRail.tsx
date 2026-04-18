@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import FollowSuggestionsCard from "@/components/shared/FollowSuggestionsCard";
 import { useTrendingHashtagsQuery } from "@/features/posts/hooks";
 
-const footerLinks = ["Hizmet Sartlari", "Gizlilik Politikasi", "Cerez Politikasi", "Reklam bilgisi"];
+const footerLinks = ["Hizmet Şartları", "Gizlilik Politikası", "Cerez Politikasi", "Reklam bilgisi"];
 
 export default function ProfileRightRail() {
   const { token } = theme.useToken();
@@ -35,7 +35,7 @@ export default function ProfileRightRail() {
               <RailRow><Skeleton active title={false} paragraph={{ rows: 3 }} /></RailRow>
             ) : trendingQuery.isError ? (
               <RailRow>
-                <Typography.Text type="secondary" style={{ fontSize: 13 }}>Gundem simdilik yuklenemedi.</Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: 13 }}>Gündem şimdilik yüklenemedi.</Typography.Text>
               </RailRow>
             ) : trendingQuery.data && trendingQuery.data.length > 0 ? (
               <>
@@ -49,7 +49,7 @@ export default function ProfileRightRail() {
                         <div style={{ minWidth: 0, flex: 1 }}>
                           <Typography.Text type="secondary" style={{ display: "block", fontSize: 13 }}>{trend.contextLabel}</Typography.Text>
                           <Typography.Text strong style={{ display: "block", fontSize: 16, lineHeight: 1.35, marginTop: 2 }}>{trend.hashtag}</Typography.Text>
-                          <Typography.Text type="secondary" style={{ display: "block", fontSize: 13, marginTop: 2 }}>{trend.postCount} gonderi</Typography.Text>
+                          <Typography.Text type="secondary" style={{ display: "block", fontSize: 13, marginTop: 2 }}>{trend.postCount} gönderi</Typography.Text>
                         </div>
                         <Ellipsis size={18} color={token.colorTextTertiary} />
                       </Flex>
@@ -59,14 +59,14 @@ export default function ProfileRightRail() {
               </>
             ) : (
               <RailRow>
-                <Typography.Text type="secondary" style={{ fontSize: 13 }}>Henuz aktif bir gundem yok.</Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: 13 }}>Henuz aktif bir gündem yok.</Typography.Text>
               </RailRow>
             )}
             <Typography.Link
               style={{ padding: "0 16px 16px", fontSize: 15 }}
               onClick={() => navigate("/explore")}
             >
-              Daha fazla goster
+              Daha fazla göster
             </Typography.Link>
           </RailCard>
 

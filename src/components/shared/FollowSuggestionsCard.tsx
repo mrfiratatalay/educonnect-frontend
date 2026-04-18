@@ -60,7 +60,7 @@ export default function FollowSuggestionsCard({
             type="secondary"
             style={{ fontSize: 13, padding: "0 16px 16px" }}
           >
-            Kullanici onerileri simdilik yuklenemedi.
+            Kullanıcı onerileri şimdilik yüklenemedi.
           </Typography.Text>
         ) : suggestionsQuery.data && suggestionsQuery.data.length > 0 ? (
           <>
@@ -120,7 +120,7 @@ export default function FollowSuggestionsCard({
             type="secondary"
             style={{ fontSize: 13, padding: "0 16px 16px" }}
           >
-            Su an yeni bir takip onerisi yok.
+            Şu an yeni bir takip onerisi yok.
           </Typography.Text>
         )}
       </Flex>

@@ -59,12 +59,12 @@ export default function PostComposer({
         const allowedTypes = ["image/png", "image/jpeg", "image/gif"];
 
         if (!allowedTypes.includes(file.type)) {
-          setErrorMessage("Sadece JPG, PNG veya GIF gorseller yukleyebilirsiniz.");
+          setErrorMessage("Sadece JPG, PNG veya GIF görseller yükleyebilirsiniz.");
           return Upload.LIST_IGNORE;
         }
 
         if (file.size / 1024 / 1024 >= 5) {
-          setErrorMessage("Gorsel en fazla 5MB olabilir.");
+          setErrorMessage("Görsel en fazla 5MB olabilir.");
           return Upload.LIST_IGNORE;
         }
 
@@ -84,7 +84,7 @@ export default function PostComposer({
 
     const trimmedContent = content.trim();
     if (!trimmedContent && !imageFile) {
-      setErrorMessage("Bir metin yaz veya gorsel ekle.");
+      setErrorMessage("Bir metin yaz veya görsel ekle.");
       return;
     }
 
@@ -97,7 +97,7 @@ export default function PostComposer({
       });
       clearDraft();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Paylasim gonderilemedi.");
+      setErrorMessage(error instanceof Error ? error.message : "Paylaşım gönderilemedi.");
     }
   }
 
@@ -127,7 +127,7 @@ export default function PostComposer({
             <Input.TextArea
               value={content}
               onChange={(event) => setContent(event.target.value)}
-              placeholder="Kampusunde neler oluyor?"
+              placeholder="Kampüsunde neler oluyor?"
               bordered={false}
               style={{
                 fontSize: 20,
@@ -152,7 +152,7 @@ export default function PostComposer({
               >
                 <Image
                   src={imagePreviewUrl}
-                  alt="Secilen gorsel"
+                  alt="Secilen görsel"
                   preview
                   style={{
                     width: "100%",
@@ -166,7 +166,7 @@ export default function PostComposer({
 
             <Flex align="center" justify="space-between" style={{ marginTop: 8, marginBottom: 12 }}>
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                En fazla 1500 karakter. Istersen tek bir gorsel ekleyebilirsin.
+                En fazla 1500 karakter. Istersen tek bir görsel ekleyebilirsin.
               </Typography.Text>
               <Typography.Text
                 type={remainingCharacterCount < 100 ? "warning" : "secondary"}
@@ -226,7 +226,7 @@ export default function PostComposer({
                       borderColor: "transparent",
                     }}
                   >
-                    Gonderi yayinla
+                    Gönderi yayınla
                   </Button>
                 ) : null}
               </Flex>

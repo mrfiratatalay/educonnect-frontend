@@ -37,7 +37,7 @@ export default function Sidebar() {
   const isMessages = location.pathname === "/messages";
   const selectedKey = getSelectedShellKey(location.pathname);
   const isMoreSelected = isMoreNavPath(location.pathname);
-  const userHandle = user?.email?.split("@")[0] ?? "kullanici";
+  const userHandle = user?.email?.split("@")[0] ?? "kullanıcı";
   const navIconSize = 24;
   const navLabelFontSize = 18;
   const navRowPadding = isMessages ? "10px" : "10px 20px 10px 10px";
@@ -119,10 +119,10 @@ export default function Sidebar() {
         }}
       >
         <div style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.18, color: token.colorText }}>
-          @{userHandle} hesabindan
+          @{userHandle} hesabından
         </div>
         <div style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.18, color: token.colorText, marginTop: 2 }}>
-          cikis yap
+          çıkış yap
         </div>
       </div>
     </div>
@@ -371,7 +371,7 @@ export default function Sidebar() {
                 }}
                 onClick={openComposeModal}
               >
-                Gonderi yayinla
+                Gönderi yayınla
               </Button>
             </div>
           )}
@@ -433,7 +433,7 @@ export default function Sidebar() {
               <>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <Typography.Text strong ellipsis style={{ display: "block", fontSize: 14 }}>
-                    {user?.fullName ?? "Kullanici"}
+                    {user?.fullName ?? "Kullanıcı"}
                   </Typography.Text>
                   <Typography.Text
                     type="secondary"

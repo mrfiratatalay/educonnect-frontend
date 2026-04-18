@@ -33,7 +33,7 @@ export function useVisualSearch() {
 
   const handleIncomingFile = async (file: File, source: QuerySource) => {
     if (!file.type.startsWith("image/")) {
-      setError("Sadece gorsel dosyasi sec.");
+      setError("Sadece görsel dosyasi sec.");
       return;
     }
 
@@ -87,7 +87,7 @@ export function useVisualSearch() {
     } catch {
       setSession(null);
       setActiveResultId(null);
-      setError("Arama basarisiz.");
+      setError("Arama başarısız.");
     } finally {
       setSearching(false);
     }

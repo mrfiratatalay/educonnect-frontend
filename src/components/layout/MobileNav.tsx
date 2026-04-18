@@ -56,7 +56,7 @@ export default function MobileNav() {
   const notificationsQuery = useNotificationsQuery();
   const { unreadCount: unreadMessageCount } = useUnreadMessages();
   const selectedKey = getSelectedShellKey(location.pathname);
-  const userHandle = user?.email?.split("@")[0] ?? "kullanici";
+  const userHandle = user?.email?.split("@")[0] ?? "kullanıcı";
   const unreadCount = (notificationsQuery.data ?? []).filter((item) => !item.isRead).length;
   const previousUnreadCountRef = useRef(0);
   const previousUnreadMessageCountRef = useRef(0);
@@ -123,7 +123,7 @@ export default function MobileNav() {
 
               <div style={{ marginTop: 14 }}>
                 <Typography.Text strong style={{ display: "block", fontSize: 20, lineHeight: 1.15 }}>
-                  {user?.fullName ?? "Kullanici"}
+                  {user?.fullName ?? "Kullanıcı"}
                 </Typography.Text>
                 <Typography.Text type="secondary" style={{ display: "block", marginTop: 4, fontSize: 16 }}>
                   @{userHandle}

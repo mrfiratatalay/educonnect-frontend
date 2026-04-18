@@ -37,11 +37,11 @@ const registerSchema = z
     ),
     universityId: z.preprocess(
       normalizeStringInput,
-      z.string().min(1, "Universite secin"),
+      z.string().min(1, "Üniversite secin"),
     ),
     department: z.preprocess(
       normalizeStringInput,
-      z.string().trim().min(2, "Bolum en az 2 karakter olmali"),
+      z.string().trim().min(2, "Bölüm en az 2 karakter olmali"),
     ),
     year: z.preprocess(
       normalizeStringInput,
@@ -49,12 +49,12 @@ const registerSchema = z
     ),
     password: z.preprocess(
       normalizeStringInput,
-      z.string().min(8, "Sifre en az 8 karakter olmali"),
+      z.string().min(8, "Şifre en az 8 karakter olmali"),
     ),
     confirmPassword: z.preprocess(normalizeStringInput, z.string()),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Sifreler eslesmiyor",
+    message: "Şifreler eslesmiyor",
     path: ["confirmPassword"],
   });
 
@@ -157,7 +157,7 @@ export default function RegisterPage() {
       }, 0);
     }
 
-    setSubmitError("Devam etmeden once tum zorunlu alanlari doldurun.");
+    setSubmitError("Devam etmeden once tüm zorunlu alanlari doldurun.");
   };
 
   const submitRegistration = handleSubmit(onSubmit, handleInvalidSubmit);
@@ -179,15 +179,15 @@ export default function RegisterPage() {
       <AuthStepLabel
         current={currentStep + 1}
         total={2}
-        label={currentStep === 0 ? "Temel bilgiler" : "Profil ve sifre"}
+        label={currentStep === 0 ? "Temel bilgiler" : "Profil ve şifre"}
       />
 
       <AuthPageIntro
-        title="Hesap olustur"
+        title="Hesap oluştur"
         description={
           currentStep === 0
-            ? "Adini ve universiteye ait kurumsal e-posta adresini gir. Sonraki adimda profilini ve sifreni tamamlayacaksin."
-            : "Universiteni ekle, profilini tamamla ve hesabin icin sifre belirle. Kayit sonrasi dogrulama kodu e-posta adresine gonderilecek."
+            ? "Adini ve üniversiteye ait kurumsal e-posta adresini gir. Sonraki adimda profilini ve şifreni tamamlayacaksin."
+            : "Üniversiteni ekle, profilini tamamla ve hesabın için şifre belirle. Kayıt sonrasi doğrulama kodu e-posta adresine gönderilecek."
         }
       />
 
@@ -264,9 +264,9 @@ export default function RegisterPage() {
                   {...field}
                   allowClear
                   loading={isUniversitiesLoading}
-                  notFoundContent={isUniversitiesLoading ? "Yukleniyor..." : "Sonuc bulunamadi"}
+                  notFoundContent={isUniversitiesLoading ? "Yükleniyor..." : "Sonuc bulunamadi"}
                   options={universityOptions}
-                  placeholder="Universite sec"
+                  placeholder="Üniversite sec"
                   showSearch={{ optionFilterProp: "label" }}
                   size="large"
                   status={errors.universityId ? "error" : undefined}
@@ -291,7 +291,7 @@ export default function RegisterPage() {
                   onChange={(e) => field.onChange(e.target?.value ?? "")}
                   allowClear
                   autoComplete="organization-title"
-                  placeholder="Bolum"
+                  placeholder="Bölüm"
                   size="large"
                   status={errors.department ? "error" : undefined}
                   style={authInputStyle}
@@ -304,7 +304,7 @@ export default function RegisterPage() {
             <Alert
               type="warning"
               showIcon
-              title="Universiteler yuklenemedi."
+              title="Üniversiteler yüklenemedi."
               description="Sayfayi yenileyip yeniden deneyin."
               style={{ ...authWarningAlertStyle, marginBottom: 18 }}
             />
@@ -342,7 +342,7 @@ export default function RegisterPage() {
                   value={normalizeStringInput(field.value)}
                   onChange={(e) => field.onChange(e.target?.value ?? "")}
                   autoComplete="new-password"
-                  placeholder="Sifre"
+                  placeholder="Şifre"
                   size="large"
                   status={errors.password ? "error" : undefined}
                   style={authInputStyle}
@@ -362,7 +362,7 @@ export default function RegisterPage() {
                   value={normalizeStringInput(field.value)}
                   onChange={(e) => field.onChange(e.target?.value ?? "")}
                   autoComplete="new-password"
-                  placeholder="Sifreyi tekrar gir"
+                  placeholder="Şifreyi tekrar gir"
                   size="large"
                   status={errors.confirmPassword ? "error" : undefined}
                   style={authInputStyle}
@@ -402,7 +402,7 @@ export default function RegisterPage() {
               loading={isSubmitting}
               style={authPrimaryButtonStyle}
             >
-              {isSubmitting ? "Hesap olusturuluyor..." : "Hesabi olustur"}
+              {isSubmitting ? "Hesap oluşturuluyor..." : "Hesabi oluştur"}
             </Button>
 
             <Button
@@ -418,8 +418,8 @@ export default function RegisterPage() {
       </form>
 
       <AuthPageFooter
-        prompt="Zaten bir hesabin var mi?"
-        linkText="Giris yap"
+        prompt="Zaten bir hesabın var mi?"
+        linkText="Giriş yap"
         onClick={() => navigate("/login")}
       />
     </Flex>

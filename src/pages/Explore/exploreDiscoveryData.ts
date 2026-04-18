@@ -4,13 +4,13 @@ export const exploreDiscoveryTabs: Array<{
   key: ExploreTrendTabKey;
   label: string;
 }> = [
-  { key: "for-you", label: "Sana Ozel" },
-  { key: "campus", label: "Gundemdekiler" },
+  { key: "for-you", label: "Sana Özel" },
+  { key: "campus", label: "Gündemdekiler" },
 ];
 
 export const exploreFooterLinks = [
-  "Hizmet Sartlari",
-  "Gizlilik Politikasi",
+  "Hizmet Şartları",
+  "Gizlilik Politikası",
   "Cerez Politikasi",
   "Imprint",
   "Erisilebilirlik",

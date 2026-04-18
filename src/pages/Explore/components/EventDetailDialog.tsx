@@ -47,7 +47,7 @@ export default function EventDetailDialog({
       currentUser &&
       (event.creatorUserId === currentUser.id ||
         currentUser.role === "admin" ||
-        currentUser.role === "moderator"),
+        currentUser.role === "moderatör"),
   );
 
   return (
@@ -71,7 +71,7 @@ export default function EventDetailDialog({
           <Flex gap={8} wrap="wrap">
             <Tag color="blue">{event.category}</Tag>
             {event.groupName ? <Tag>{event.groupName}</Tag> : null}
-            {event.isRegistered ? <Tag color="success">Kayitli</Tag> : null}
+            {event.isRegistered ? <Tag color="success">Kayıtlı</Tag> : null}
           </Flex>
 
           <Typography.Paragraph type="secondary" style={{ lineHeight: 1.7, marginBottom: 0 }}>
@@ -103,13 +103,13 @@ export default function EventDetailDialog({
                 label: (
                   <>
                     <TeamOutlined style={{ marginRight: 6 }} />
-                    Katilimci
+                    Katılımcı
                   </>
                 ),
                 children: `${event.participantCount}/${event.maxParticipants}`,
               },
               {
-                label: "Duzenleyen",
+                label: "Düzenleyen",
                 children: event.creatorName,
               },
             ]}
@@ -130,19 +130,19 @@ export default function EventDetailDialog({
                 ? "Kaydi Iptal Et"
                 : full
                   ? "Kontenjan Dolu"
-                  : "Etkinlige Kayit Ol"}
+                  : "Etkinlige Kayıt Ol"}
           </Button>
 
           {canManage ? (
             <Flex gap={12}>
               <Button icon={<EditOutlined />} onClick={() => onEdit?.(event)} style={{ flex: 1 }}>
-                Duzenle
+                Düzenle
               </Button>
               <Popconfirm
                 title="Etkinlik silinsin mi?"
                 description="Bu islem geri alinamaz."
                 okText="Sil"
-                cancelText="Vazgec"
+                cancelText="Vazgeç"
                 onConfirm={() => onDelete?.(event)}
               >
                 <Button danger icon={<DeleteOutlined />} loading={isDeleting} style={{ flex: 1 }}>

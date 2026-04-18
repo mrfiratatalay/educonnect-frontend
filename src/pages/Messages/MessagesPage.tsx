@@ -132,7 +132,7 @@ export default function MessagesPage() {
   if (!isAuthenticated) {
     return (
       <Flex justify="center" style={{ padding: 48 }}>
-        <Alert type="info" showIcon message="Mesajlar icin giris yapmalisiniz." />
+        <Alert type="info" showIcon message="Mesajlar için giriş yapmalisiniz." />
       </Flex>
     );
   }
@@ -208,7 +208,7 @@ export default function MessagesPage() {
                 </Avatar>
                 <div style={{ minWidth: 0 }}>
                   <Typography.Text strong style={{ fontSize: 16 }}>
-                    {selected?.otherUserName ?? "Kullanici"}
+                    {selected?.otherUserName ?? "Kullanıcı"}
                   </Typography.Text>
                 </div>
               </Flex>
@@ -217,7 +217,7 @@ export default function MessagesPage() {
                 <Alert
                   type="error"
                   showIcon
-                  message="Mesajlar yuklenemedi."
+                  message="Mesajlar yüklenemedi."
                   style={{ margin: 16 }}
                 />
               ) : (
@@ -229,7 +229,7 @@ export default function MessagesPage() {
                           Ilan baglami
                         </Typography.Text>
                         <Typography.Text type="secondary">
-                          Bu konusma su ilan icin acildi: {productTitle}
+                          Bu konusma su ilan için acildi: {productTitle}
                         </Typography.Text>
                       </Card>
                     </div>
@@ -304,7 +304,7 @@ function NewConversationModal({
       <Flex vertical gap={12}>
         <Input
           autoFocus
-          placeholder="Kullanici ara..."
+          placeholder="Kullanıcı ara..."
           value={searchQ}
           onChange={(e) => onSearchChange(e.target.value)}
           allowClear
@@ -368,7 +368,7 @@ function NewConversationModal({
         ) : (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={<Typography.Text type="secondary">Kullanici bulunamadi</Typography.Text>}
+            description={<Typography.Text type="secondary">Kullanıcı bulunamadi</Typography.Text>}
           />
         )}
       </Flex>

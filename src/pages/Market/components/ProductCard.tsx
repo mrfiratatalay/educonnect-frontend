@@ -42,7 +42,7 @@ export default function ProductCard({ product, onClick, onSellerClick }: Product
     >
       <Flex vertical gap={12}>
         <Flex align="center" justify="space-between" gap={8}>
-          <Tag color="processing">{product.categoryName ?? "Diger"}</Tag>
+          <Tag color="processing">{product.categoryName ?? "Diğer"}</Tag>
           <Tag color={CONDITION_COLORS[product.condition]}>
             {CONDITION_LABELS[product.condition]}
           </Tag>

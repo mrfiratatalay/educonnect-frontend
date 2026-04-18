@@ -102,7 +102,7 @@ export default function BookmarksPage() {
                   Yer Isaretleri
                 </Typography.Title>
                 <Typography.Text type="secondary">
-                  Kaydettigin gonderiler burada gorunur.
+                  Kaydettigin gönderiler burada gorunur.
                 </Typography.Text>
               </div>
             </Flex>
@@ -112,7 +112,7 @@ export default function BookmarksPage() {
                 size="large"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Kayitlarda ara"
+                placeholder="Kayıtlarda ara"
                 prefix={<Search size={18} style={{ color: token.colorTextTertiary }} />}
                 variant="outlined"
                 style={{ borderRadius: 8 }}
@@ -140,7 +140,7 @@ export default function BookmarksPage() {
           >
             <Bookmark size={48} color={token.colorTextTertiary} />
             <Typography.Title level={3} style={{ margin: 0, textAlign: "center" }}>
-              {query.trim() ? "Aramana uygun bir kayit yok." : "Henuz kayitli gonderi yok."}
+              {query.trim() ? "Aramana uygun bir kayıt yok." : "Henuz kayıtlı gönderi yok."}
             </Typography.Title>
             <Typography.Paragraph
               type="secondary"
@@ -148,7 +148,7 @@ export default function BookmarksPage() {
             >
               {query.trim()
                 ? "Farkli bir kelime ile tekrar dene."
-                : "Feed'de bookmark ikonuna basarak gonderileri buraya kaydedebilirsin."}
+                : "Feed'de bookmark ikonuna basarak gönderileri buraya kaydedebilirsin."}
             </Typography.Paragraph>
           </Flex>
         ) : (
@@ -163,7 +163,7 @@ export default function BookmarksPage() {
                   canManage={
                     post.userId === user?.id ||
                     user?.role === "admin" ||
-                    user?.role === "moderator"
+                    user?.role === "moderatör"
                   }
                   isDeleting={deletingPostId === post.id}
                   isUpdating={updatingPostId === post.id}
@@ -179,7 +179,7 @@ export default function BookmarksPage() {
                   onClick={() => void bookmarkedPostsQuery.fetchNextPage()}
                   loading={bookmarkedPostsQuery.isFetchingNextPage}
                 >
-                  Daha Fazla Yukle
+                  Daha Fazla Yükle
                 </Button>
               </Flex>
             )}

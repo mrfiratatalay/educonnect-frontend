@@ -47,7 +47,7 @@ export default function EventCard({
               <Tag color="blue" style={{ marginInlineEnd: 0 }}>
                 {formatEventDayLabel(event.startDate)}
               </Tag>
-              {event.isRegistered ? <Tag color="success">Kayitli</Tag> : null}
+              {event.isRegistered ? <Tag color="success">Kayıtlı</Tag> : null}
               {full && !event.isRegistered ? <Tag color="error">Kontenjan dolu</Tag> : null}
             </Flex>
 
@@ -85,11 +85,11 @@ export default function EventCard({
           </Typography.Text>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             <TeamOutlined style={{ marginRight: 6 }} />
-            {event.participantCount}/{event.maxParticipants} katilimci
+            {event.participantCount}/{event.maxParticipants} katılımcı
           </Typography.Text>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             <CalendarOutlined style={{ marginRight: 6 }} />
-            Duzenleyen: {event.creatorName}
+            Düzenleyen: {event.creatorName}
           </Typography.Text>
         </Flex>
 
@@ -116,7 +116,7 @@ export default function EventCard({
               ? "Kaydi Iptal Et"
               : full
                 ? "Kontenjan Dolu"
-                : "Kayit Ol"}
+                : "Kayıt Ol"}
         </Button>
       </Flex>
     </Card>

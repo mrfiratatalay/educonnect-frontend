@@ -19,14 +19,14 @@ export default function ProfileLikesTab({ userId }: ProfileLikesTabProps) {
   }
 
   if (likesQuery.isError) {
-    return <Alert type="error" showIcon message="Begeniler yuklenirken bir hata olustu." />;
+    return <Alert type="error" showIcon message="Beğeniler yüklenirken bir hata olustu." />;
   }
 
   if (posts.length === 0) {
     return (
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
-        description={<Typography.Text type="secondary">Begeni gecmisi bulunmuyor.</Typography.Text>}
+        description={<Typography.Text type="secondary">Beğeni gecmisi bulunmuyor.</Typography.Text>}
       />
     );
   }
@@ -36,7 +36,7 @@ export default function ProfileLikesTab({ userId }: ProfileLikesTabProps) {
       {posts.map((post) => <PostCard key={post.id} post={post} />)}
       {totalPages > 1 && (
         <Flex justify="center" gap={8}>
-          <Button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Onceki</Button>
+          <Button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Önceki</Button>
           <Tag style={{ lineHeight: "32px" }}>{page} / {totalPages}</Tag>
           <Button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Sonraki</Button>
         </Flex>

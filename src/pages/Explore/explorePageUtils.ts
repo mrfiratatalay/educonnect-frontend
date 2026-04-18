@@ -26,9 +26,9 @@ export function getExploreActionConfig(activeTab: ExploreTab) {
   return {
     createButtonLabel:
       activeTab === "groups"
-        ? "Grup Olustur"
+        ? "Grup Oluştur"
         : activeTab === "events"
-          ? "Etkinlik Olustur"
+          ? "Etkinlik Oluştur"
           : null,
     searchPlaceholder:
       activeTab === "groups"
@@ -49,11 +49,11 @@ export function getExplorePreviewMessage({
   groupsUsePreview: boolean;
 }) {
   if (activeTab === "groups" && groupsUsePreview) {
-    return "Ornek grup icerikleri gosteriliyor.";
+    return "Ornek grup içerikleri gösteriliyor.";
   }
 
   if (activeTab === "events" && eventsUsePreview) {
-    return "Ornek etkinlik icerikleri gosteriliyor.";
+    return "Ornek etkinlik içerikleri gösteriliyor.";
   }
 
   return null;

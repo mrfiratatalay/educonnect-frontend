@@ -34,9 +34,9 @@ import type { UploadProps } from "antd";
 
 const settingsSchema = z.object({
   fullName: z.string().min(3, "Ad soyad en az 3 karakter olmali"),
-  universityId: z.string().min(1, "Universite seciniz"),
-  department: z.string().min(2, "Bolum en az 2 karakter olmali"),
-  year: z.string().min(1, "Sinif seciniz"),
+  universityId: z.string().min(1, "Üniversite seçiniz"),
+  department: z.string().min(2, "Bölüm en az 2 karakter olmali"),
+  year: z.string().min(1, "Sinif seçiniz"),
   bio: z.string().max(500, "Biyografi en fazla 500 karakter olabilir").optional(),
 });
 
@@ -113,12 +113,12 @@ export default function SettingsPage() {
       const allowedTypes = ["image/png", "image/jpeg", "image/gif"];
 
       if (!allowedTypes.includes(file.type)) {
-        setSubmitError("Sadece JPG, PNG veya GIF dosyalari yukleyebilirsiniz.");
+        setSubmitError("Sadece JPG, PNG veya GIF dosyalari yükleyebilirsiniz.");
         return Upload.LIST_IGNORE;
       }
 
       if (file.size / 1024 / 1024 >= 5) {
-        setSubmitError("Profil fotografi en fazla 5MB olabilir.");
+        setSubmitError("Profil fotoğrafı en fazla 5MB olabilir.");
         return Upload.LIST_IGNORE;
       }
 
@@ -149,7 +149,7 @@ export default function SettingsPage() {
   if (profileQuery.isError || !profileQuery.data) {
     return (
       <div style={{ padding: pagePadding, maxWidth: 720, margin: "0 auto" }}>
-        <Alert type="error" showIcon message="Profil bilgileri yuklenemedi." />
+        <Alert type="error" showIcon message="Profil bilgileri yüklenemedi." />
       </div>
     );
   }

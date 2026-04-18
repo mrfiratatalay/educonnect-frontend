@@ -75,7 +75,7 @@ export default function NotificationsMenu({
               onClick={handleMarkAllRead}
               style={{ paddingInline: 0 }}
             >
-              Tumunu Okundu Yap
+              Tümunu Okundu Yap
             </Button>
           )}
         </Flex>
@@ -89,7 +89,7 @@ export default function NotificationsMenu({
         >
           {notificationsQuery.isLoading && (
             <Typography.Text type="secondary">
-              Bildirimler yukleniyor...
+              Bildirimler yükleniyor...
             </Typography.Text>
           )}
 
@@ -200,7 +200,7 @@ export default function NotificationsMenu({
                 fontWeight: 600,
               }}
             >
-              Tum bildirimleri gor
+              Tüm bildirimleri gor
             </Button>
           )}
         </div>

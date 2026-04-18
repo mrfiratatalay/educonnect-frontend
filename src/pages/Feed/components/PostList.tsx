@@ -60,7 +60,7 @@ export default function PostList({
             <Empty
               description={
                 <span style={{ color: token.colorTextSecondary }}>
-                  {emptyDescription ?? "Henuz gonderi yok. Ilk paylasimi sen yap."}
+                  {emptyDescription ?? "Henuz gönderi yok. Ilk paylaşımı sen yap."}
                 </span>
               }
               image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -68,7 +68,7 @@ export default function PostList({
             >
               {showCreateAction ? (
                 <Button onClick={onCreatePostClick} type="primary" shape="round" style={{ marginTop: 8 }}>
-                  Paylasim olustur
+                  Paylaşım oluştur
                 </Button>
               ) : emptyActionLabel && onEmptyActionClick ? (
                 <Button onClick={onEmptyActionClick} type="primary" shape="round" style={{ marginTop: 8 }}>
@@ -85,7 +85,7 @@ export default function PostList({
             canManage={
               post.userId === currentUserId ||
               currentUserRole === "admin" ||
-              currentUserRole === "moderator"
+              currentUserRole === "moderatör"
             }
             isDeleting={deletingPostId === post.id}
             isUpdating={updatingPostId === post.id}

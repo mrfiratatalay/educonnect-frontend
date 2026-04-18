@@ -38,7 +38,7 @@ export default function ExploreDiscoveryPage() {
   const sidebarSurface = token.colorBgElevated;
   const pageHorizontalPadding = isTablet ? 16 : 0;
   const activeTabLabel =
-    exploreDiscoveryTabs.find((tab) => tab.key === activeTab)?.label ?? "Kesfet";
+    exploreDiscoveryTabs.find((tab) => tab.key === activeTab)?.label ?? "Keşfet";
   const discoveryQuery = useExploreDiscoveryQuery({
     tab: activeTab,
     query: deferredQuery.trim() || undefined,
@@ -120,7 +120,7 @@ export default function ExploreDiscoveryPage() {
                 <Button
                   type="text"
                   shape="circle"
-                  aria-label="Kesfeti yenile"
+                  aria-label="Keşfeti yenile"
                   style={{
                     width: 36,
                     height: 36,
@@ -272,7 +272,7 @@ export default function ExploreDiscoveryPage() {
                   style={{ padding: "0 16px 16px", fontSize: 15 }}
                   onClick={() => navigate("/profile")}
                 >
-                  Daha fazla goster
+                  Daha fazla göster
                 </Typography.Link>
               </SidebarCard>
 
@@ -414,8 +414,8 @@ function ExploreTrendEmptyState({
       </Typography.Title>
       <Typography.Text type="secondary" style={{ maxWidth: 320 }}>
         {query.trim()
-          ? "Farkli bir kelime dene veya diger sekmelere gec."
-          : `${tabLabel} sekmesinde gosterecek guncel bir trend yok.`}
+          ? "Farkli bir kelime dene veya diğer sekmelere gec."
+          : `${tabLabel} sekmesinde gösterecek guncel bir trend yok.`}
       </Typography.Text>
     </Flex>
   );
@@ -483,7 +483,7 @@ function SidebarRow({ children }: { children: ReactNode }) {
 
 function getSearchPlaceholder(tab: ExploreTrendTabKey) {
   if (tab === "campus") {
-    return "Kampuste ne konusuluyor ara";
+    return "Kampüste ne konusuluyor ara";
   }
   return "Ara";
 }

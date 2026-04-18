@@ -58,7 +58,7 @@ export default function FeedSidebar({
       >
         <Flex vertical gap={12}>
           <Typography.Title level={4} style={{ margin: 0 }}>
-            Hesabinin ozeti
+            Hesabinin özeti
           </Typography.Title>
           <Flex align="center" gap={12}>
             <Avatar src={user?.avatarUrl} size={52}>
@@ -66,14 +66,14 @@ export default function FeedSidebar({
             </Avatar>
             <div>
               <Typography.Text strong style={{ display: "block", fontSize: 15 }}>
-                {user?.fullName ?? "Kullanici"}
+                {user?.fullName ?? "Kullanıcı"}
               </Typography.Text>
               <Typography.Text type="secondary">
-                @{user?.email?.split("@")[0] ?? "kullanici"}
+                @{user?.email?.split("@")[0] ?? "kullanıcı"}
               </Typography.Text>
             </div>
           </Flex>
-          <QuickRow label="Akistaki gonderi" value={`${totalCount}`} />
+          <QuickRow label="Akistaki gönderi" value={`${totalCount}`} />
           <QuickRow label="Aktif topluluk" value={`${recentGroups.length}`} />
         </Flex>
       </Card>
@@ -92,7 +92,7 @@ export default function FeedSidebar({
             <Skeleton active title={false} paragraph={{ rows: 4 }} />
           ) : trendingQuery.isError ? (
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              Gundem simdilik yuklenemedi.
+              Gündem şimdilik yüklenemedi.
             </Typography.Text>
           ) : trendingQuery.data && trendingQuery.data.length > 0 ? (
             <>
@@ -112,12 +112,12 @@ export default function FeedSidebar({
                 style={{ fontSize: 15 }}
                 onClick={() => navigate("/explore")}
               >
-                Daha fazla goster
+                Daha fazla göster
               </Typography.Link>
             </>
           ) : (
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              Henuz aktif bir hashtag gundemi yok.
+              Henuz aktif bir hashtag gündemi yok.
             </Typography.Text>
           )}
         </Flex>
@@ -137,7 +137,7 @@ export default function FeedSidebar({
             <Skeleton active title={false} paragraph={{ rows: 3 }} />
           ) : followSuggestionsQuery.isError ? (
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              Kullanici onerileri simdilik yuklenemedi.
+              Kullanıcı onerileri şimdilik yüklenemedi.
             </Typography.Text>
           ) : followSuggestionsQuery.data && followSuggestionsQuery.data.length > 0 ? (
             <>
@@ -164,7 +164,7 @@ export default function FeedSidebar({
             </>
           ) : (
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              Su an yeni bir takip onerisi yok.
+              Şu an yeni bir takip onerisi yok.
             </Typography.Text>
           )}
         </Flex>
@@ -216,7 +216,7 @@ function TrendPreviewRow({
 }
 
 function formatTrendMetric(postCount: number) {
-  return `${postCount} gonderi`;
+  return `${postCount} gönderi`;
 }
 
 function FollowSuggestionRow({

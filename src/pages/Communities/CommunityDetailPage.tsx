@@ -187,7 +187,7 @@ export default function CommunityDetailPage() {
     setMemberActionTargetId(member.userId);
     try {
       await promoteMemberMutation.mutateAsync(member.userId);
-      messageApi.success("Kullanici moderator yapildi.");
+      messageApi.success("Kullanıcı moderatör yapildi.");
     } finally {
       setMemberActionTargetId(undefined);
     }
@@ -197,7 +197,7 @@ export default function CommunityDetailPage() {
     setMemberActionTargetId(member.userId);
     try {
       await demoteMemberMutation.mutateAsync(member.userId);
-      messageApi.success("Moderatorluk kaldirildi.");
+      messageApi.success("Moderatörluk kaldirildi.");
     } finally {
       setMemberActionTargetId(undefined);
     }
@@ -206,15 +206,15 @@ export default function CommunityDetailPage() {
   function handleRemoveMember(member: AppGroupMember) {
     Modal.confirm({
       title: `${member.fullName} topluluktan cikarilsin mi?`,
-      content: "Bu kullanici topluluk uyeliginin disina alinacak.",
+      content: "Bu kullanıcı topluluk üyeliginin disina alinacak.",
       okText: "Cikar",
-      cancelText: "Vazgec",
+      cancelText: "Vazgeç",
       okButtonProps: { danger: true },
       onOk: async () => {
         setMemberActionTargetId(member.userId);
         try {
           await removeMemberMutation.mutateAsync(member.userId);
-          messageApi.success("Uye topluluktan cikarildi.");
+          messageApi.success("Üye topluluktan cikarildi.");
         } finally {
           setMemberActionTargetId(undefined);
         }
@@ -260,9 +260,9 @@ export default function CommunityDetailPage() {
 
     Modal.confirm({
       title: "Topluluk silinsin mi?",
-      content: "Topluluk listelerden kalkacak ve artik kullanilamayacak.",
-      okText: "Toplulugu sil",
-      cancelText: "Vazgec",
+      content: "Topluluk listelerden kalkaçak ve artik kullanilamayacak.",
+      okText: "Topluluğu sil",
+      cancelText: "Vazgeç",
       okButtonProps: { danger: true, loading: deleteGroupMutation.isPending },
       onOk: async () => {
         await deleteGroupMutation.mutateAsync(group.id);
@@ -282,7 +282,7 @@ export default function CommunityDetailPage() {
         <Alert
           type="error"
           showIcon
-          message={groupQuery.error instanceof Error ? groupQuery.error.message : "Topluluk yuklenemedi."}
+          message={groupQuery.error instanceof Error ? groupQuery.error.message : "Topluluk yüklenemedi."}
         />
       </div>
     );
@@ -329,7 +329,7 @@ export default function CommunityDetailPage() {
 
                 <Flex align="center" gap={4}>
                   <Button type="text" onClick={handleHeaderAction}>
-                    Uyeler
+                    Üyeler
                   </Button>
                   <Button type="text" shape="circle" icon={<LinkOutlined />} onClick={() => void handleCopyLink()} />
                 </Flex>
@@ -384,7 +384,7 @@ export default function CommunityDetailPage() {
                       {formatCommunityMemberCount(group.memberCount)}
                     </Typography.Text>
                     <Button type="link" onClick={() => setIsMembersOpen(true)} style={{ paddingInline: 0 }}>
-                      Tum uyeleri gor
+                      Tüm üyeleri gor
                     </Button>
                   </Flex>
                 </div>
@@ -420,7 +420,7 @@ export default function CommunityDetailPage() {
                         paddingInline: 18,
                       }}
                       >
-                        Toplulugu duzenle
+                        Topluluğu düzenle
                       </Button>
                       <Button
                         danger
@@ -429,7 +429,7 @@ export default function CommunityDetailPage() {
                         loading={deleteGroupMutation.isPending}
                         onClick={handleDeleteGroup}
                       >
-                        Toplulugu sil
+                        Topluluğu sil
                       </Button>
                     </>
                   ) : (
@@ -446,7 +446,7 @@ export default function CommunityDetailPage() {
                         paddingInline: 18,
                       }}
                     >
-                      {actingGroupId === group.id ? "Isleniyor" : group.isMember ? "Katildi" : "Katil"}
+                      {actingGroupId === group.id ? "Isleniyor" : group.isMember ? "Katıldi" : "Katıl"}
                     </Button>
                   )}
                   {group.canManageMembers ? (
@@ -462,7 +462,7 @@ export default function CommunityDetailPage() {
                         paddingInline: 18,
                       }}
                     >
-                      Uye yonetimi
+                      Üye yönetimi
                     </Button>
                   ) : null}
                 </Flex>
@@ -500,25 +500,25 @@ export default function CommunityDetailPage() {
 
                   <PlainFact label="Kategori" value={group.category} />
                   <PlainFact label="Kurucu" value={group.creatorName} />
-                  <PlainFact label="Gonderiler" value={`${group.postCount}`} />
+                  <PlainFact label="Gönderiler" value={`${group.postCount}`} />
                   <PlainFact label="Etkinlikler" value={`${group.eventCount}`} />
                   <PlainFact label="Rolun" value={formatRoleLabel(group.currentUserRole)} />
                   <PlainFact
-                    label="Paylasim yetkisi"
-                    value={group.canCurrentUserPost ? "Uyelere acik" : "Uyelik gerekiyor"}
+                    label="Paylaşım yetkişi"
+                    value={group.canCurrentUserPost ? "Üyelere açık" : "Üyelik gerekiyor"}
                   />
                   <PlainFact
-                    label="Etkinlik yonetimi"
-                    value={group.canCreateEvents ? "Moderator veya kurucu" : "Yetkin yok"}
+                    label="Etkinlik yönetimi"
+                    value={group.canCreateEvents ? "Moderatör veya kurucu" : "Yetkin yok"}
                   />
 
-                  {group.moderatorPreviewMembers.length ? (
+                  {group.moderatörPreviewMembers.length ? (
                     <div>
                       <Typography.Title level={5} style={{ margin: 0 }}>
-                        Moderator ve yoneticiler
+                        Moderatör ve yöneticiler
                       </Typography.Title>
                       <Flex vertical gap={12} style={{ marginTop: 12 }}>
-                        {group.moderatorPreviewMembers.map((member) => (
+                        {group.moderatörPreviewMembers.map((member) => (
                           <Flex key={member.userId} align="center" gap={10}>
                             <Avatar src={member.avatarUrl}>
                               {!member.avatarUrl ? getCommunityInitials(member.fullName) : null}
@@ -610,7 +610,7 @@ export default function CommunityDetailPage() {
                       loading={postsQuery.isFetchingNextPage}
                       onClick={() => void postsQuery.fetchNextPage()}
                     >
-                      Daha fazla yukle
+                      Daha fazla yükle
                     </Button>
                   </Flex>
                 ) : null}
@@ -631,16 +631,16 @@ export default function CommunityDetailPage() {
                   </AsideCard>
 
                   <AsideCard
-                    title="Topluluk ozeti"
+                    title="Topluluk özeti"
                     footer={
                       <Button type="link" style={{ padding: 0 }} onClick={() => setIsMembersOpen(true)}>
-                        Uyeleri ac
+                        Üyeleri ac
                       </Button>
                     }
                   >
                     <Flex vertical gap={16}>
-                      <TrendRow label="Uyeler" title={formatCommunityMemberCount(group.memberCount)} />
-                      <TrendRow label="Gonderiler" title={`${group.postCount} paylasim`} />
+                      <TrendRow label="Üyeler" title={formatCommunityMemberCount(group.memberCount)} />
+                      <TrendRow label="Gönderiler" title={`${group.postCount} paylaşım`} />
                       <TrendRow label="Etkinlikler" title={`${group.eventCount} etkinlik`} />
                       <TrendRow label="Rolun" title={formatRoleLabel(group.currentUserRole)} />
                     </Flex>
@@ -669,7 +669,7 @@ export default function CommunityDetailPage() {
         onClose={() => setIsEditDialogOpen(false)}
         onSubmit={handleUpdateGroup}
         submitLabel="Degisiklikleri kaydet"
-        title="Toplulugu duzenle"
+        title="Topluluğu düzenle"
       />
       <CommunityMembersModal
         open={isMembersOpen}
@@ -805,10 +805,10 @@ function formatRoleLabel(role?: AppGroupMemberRole) {
   switch (role) {
     case "owner":
       return "Kurucu";
-    case "moderator":
-      return "Moderator";
+    case "moderatör":
+      return "Moderatör";
     case "member":
-      return "Uye";
+      return "Üye";
     default:
       return "Misafir";
   }

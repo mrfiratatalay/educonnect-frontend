@@ -20,7 +20,7 @@ export default function ProfileTimeline({ profile }: ProfileTimelineProps) {
             dot: <CalendarDays size={16} color={token.colorPrimary} />,
             children: (
               <>
-                <Typography.Text strong>Platforma katildi</Typography.Text>
+                <Typography.Text strong>Platforma katıldi</Typography.Text>
                 <br />
                 <Typography.Text type="secondary" style={{ fontSize: 13 }}>
                   {formatLongDate(profile.createdAt)}
@@ -37,7 +37,7 @@ export default function ProfileTimeline({ profile }: ProfileTimelineProps) {
             dot: <Building2 size={16} color={token.colorSuccess} />,
             children: (
               <>
-                <Typography.Text strong>Universite bilgisi eklendi</Typography.Text>
+                <Typography.Text strong>Üniversite bilgisi eklendi</Typography.Text>
                 <br />
                 <Typography.Text type="secondary" style={{ fontSize: 13 }}>
                   {profile.universityName}
@@ -54,10 +54,10 @@ export default function ProfileTimeline({ profile }: ProfileTimelineProps) {
             dot: <FileText size={16} color={token.colorTextTertiary} />,
             children: (
               <>
-                <Typography.Text strong>Biyografi hazir</Typography.Text>
+                <Typography.Text strong>Biyografi hazır</Typography.Text>
                 <br />
                 <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                  Profil aciklamasi eklenmis.
+                  Profil açıklaması eklenmiş.
                 </Typography.Text>
               </>
             ),
@@ -77,7 +77,7 @@ export default function ProfileTimeline({ profile }: ProfileTimelineProps) {
       styles={{ body: { padding: "18px 20px 12px" } }}
     >
       <Typography.Title level={5} style={{ margin: 0, fontWeight: 800 }}>
-        Hesap ozeti
+        Hesap özeti
       </Typography.Title>
 
       {items.length ? (

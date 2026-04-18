@@ -28,9 +28,9 @@ import {
 
 const profileEditSchema = z.object({
   fullName: z.string().min(3, "Ad soyad en az 3 karakter olmali"),
-  universityId: z.string().min(1, "Universite seciniz"),
-  department: z.string().min(2, "Bolum en az 2 karakter olmali"),
-  year: z.string().min(1, "Sinif seciniz"),
+  universityId: z.string().min(1, "Üniversite seçiniz"),
+  department: z.string().min(2, "Bölüm en az 2 karakter olmali"),
+  year: z.string().min(1, "Sinif seçiniz"),
   bio: z.string().max(500, "Biyografi en fazla 500 karakter olabilir").optional(),
 });
 
@@ -112,7 +112,7 @@ export default function ProfileEditModal({
         bio: data.bio?.trim() || undefined,
       });
 
-      message.success("Profil guncellendi.");
+      message.success("Profil güncellendi.");
       onClose();
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
@@ -127,12 +127,12 @@ export default function ProfileEditModal({
       const allowedTypes = ["image/png", "image/jpeg", "image/gif"];
 
       if (!allowedTypes.includes(file.type)) {
-        setSubmitError("Sadece JPG, PNG veya GIF dosyalari yukleyebilirsiniz.");
+        setSubmitError("Sadece JPG, PNG veya GIF dosyalari yükleyebilirsiniz.");
         return Upload.LIST_IGNORE;
       }
 
       if (file.size / 1024 / 1024 >= 5) {
-        setSubmitError("Profil fotografi en fazla 5MB olabilir.");
+        setSubmitError("Profil fotoğrafı en fazla 5MB olabilir.");
         return Upload.LIST_IGNORE;
       }
 
@@ -143,7 +143,7 @@ export default function ProfileEditModal({
       try {
         await uploadAvatarMutation.mutateAsync(file as File);
         onSuccess?.("ok");
-        message.success("Profil fotografi guncellendi.");
+        message.success("Profil fotoğrafı güncellendi.");
       } catch (error) {
         onError?.(error as Error);
         setSubmitError(getApiErrorMessage(error));
@@ -159,12 +159,12 @@ export default function ProfileEditModal({
       const allowedTypes = ["image/png", "image/jpeg", "image/gif"];
 
       if (!allowedTypes.includes(file.type)) {
-        setSubmitError("Sadece JPG, PNG veya GIF dosyalari yukleyebilirsiniz.");
+        setSubmitError("Sadece JPG, PNG veya GIF dosyalari yükleyebilirsiniz.");
         return Upload.LIST_IGNORE;
       }
 
       if (file.size / 1024 / 1024 >= 5) {
-        setSubmitError("Kapak fotografi en fazla 5MB olabilir.");
+        setSubmitError("Kapak fotoğrafı en fazla 5MB olabilir.");
         return Upload.LIST_IGNORE;
       }
 
@@ -175,7 +175,7 @@ export default function ProfileEditModal({
       try {
         await uploadCoverMutation.mutateAsync(file as File);
         onSuccess?.("ok");
-        message.success("Kapak fotografi guncellendi.");
+        message.success("Kapak fotoğrafı güncellendi.");
       } catch (error) {
         onError?.(error as Error);
         setSubmitError(getApiErrorMessage(error));
@@ -213,7 +213,7 @@ export default function ProfileEditModal({
             <Button
               type="text"
               shape="circle"
-              aria-label="Profili duzenlemeyi kapat"
+              aria-label="Profili düzenlemeyi kapat"
               onClick={onClose}
               style={{
                 width: 36,
@@ -227,7 +227,7 @@ export default function ProfileEditModal({
               <X size={20} />
             </Button>
             <Typography.Title level={4} style={{ margin: 0, fontWeight: 800 }}>
-              Profili duzenle
+              Profili düzenle
             </Typography.Title>
           </Flex>
 
@@ -304,7 +304,7 @@ export default function ProfileEditModal({
                 fontWeight: 700,
               }}
             >
-              {uploadCoverMutation.isPending ? "Kapak yukleniyor..." : "Kapak fotografi ekle"}
+              {uploadCoverMutation.isPending ? "Kapak yükleniyor..." : "Kapak fotoğrafı ekle"}
             </Typography.Text>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function ProfileEditModal({
           type="secondary"
           style={{ display: "block", marginTop: 12, fontSize: 13 }}
         >
-          Profil ve kapak fotografi icin JPG, GIF veya PNG. Maksimum 5MB.
+          Profil ve kapak fotoğrafı için JPG, GIF veya PNG. Maksimum 5MB.
         </Typography.Text>
 
         <Form
@@ -382,7 +382,7 @@ export default function ProfileEditModal({
           </Form.Item>
 
           <Form.Item
-            label={<Typography.Text strong>Kisisel bilgiler</Typography.Text>}
+            label={<Typography.Text strong>Kişisel bilgiler</Typography.Text>}
             validateStatus={errors.bio ? "error" : undefined}
             help={errors.bio?.message}
           >
@@ -402,7 +402,7 @@ export default function ProfileEditModal({
           </Form.Item>
 
           <Form.Item
-            label={<Typography.Text strong>Universite</Typography.Text>}
+            label={<Typography.Text strong>Üniversite</Typography.Text>}
             validateStatus={errors.universityId ? "error" : undefined}
             help={errors.universityId?.message}
           >
@@ -414,7 +414,7 @@ export default function ProfileEditModal({
                   {...field}
                   size="large"
                   loading={isUniversitiesLoading}
-                  placeholder="Universite seciniz"
+                  placeholder="Üniversite seçiniz"
                   options={universities.map((university) => ({
                     value: university.id,
                     label: university.name,
@@ -426,7 +426,7 @@ export default function ProfileEditModal({
 
           <Flex gap={16} wrap="wrap">
             <Form.Item
-              label={<Typography.Text strong>Bolum</Typography.Text>}
+              label={<Typography.Text strong>Bölüm</Typography.Text>}
               validateStatus={errors.department ? "error" : undefined}
               help={errors.department?.message}
               style={{ flex: "1 1 240px", marginBottom: 0 }}
@@ -451,7 +451,7 @@ export default function ProfileEditModal({
                   <Select
                     {...field}
                     size="large"
-                    placeholder="Seciniz"
+                    placeholder="Seçiniz"
                     options={Array.from({ length: 8 }, (_, index) => ({
                       value: String(index + 1),
                       label: `${index + 1}. sinif`,

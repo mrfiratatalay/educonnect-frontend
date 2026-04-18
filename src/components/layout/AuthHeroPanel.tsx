@@ -4,46 +4,46 @@ import { BadgePercent, BrainCircuit, GraduationCap, Users } from "lucide-react";
 const heroCopy = {
   "/login": {
     eyebrow: "Akademik ve sosyal aginiz tek yerde",
-    title: "Universite topluluguna hizli bir geri donus yapin.",
+    title: "Üniversite topluluğuna hizli bir geri donus yapin.",
     subtitle:
-      "Ders paylasimlari, sosyal baglantilar ve kampus odakli firsatlar tek bir akis icinde sizi bekliyor.",
+      "Ders paylaşımlari, sosyal baglantilar ve kampüs odakli firsatlar tek bir akis içinde sizi bekliyor.",
   },
   "/register": {
-    eyebrow: "Yeni uye kaydi",
-    title: "Birkac bilgiyle EduConnect topluluguna katilin.",
+    eyebrow: "Yeni üye kaydi",
+    title: "Birkaç bilgiyle EduConnect topluluğuna katılin.",
     subtitle:
-      "Universitenizi secin, profilinizi olusturun ve hem akademik hem sosyal akisa dogrudan baglanin.",
+      "Üniversitenizi secin, profilinizi oluştürün ve hem akademik hem sosyal akisa doğrudan baglanin.",
   },
   "/forgot-password": {
     eyebrow: "Hesap erisimi",
     title: "Hesabiniza guvenli sekilde yeniden ulasmanizi saglayin.",
     subtitle:
-      "Sifre sifirlama akisi e-posta uzerinden ilerler; hesap varsa yonlendirmeler size aninda gonderilir.",
+      "Şifre sifirlama akişi e-posta uzerinden ilerler; hesap varsa yonlendirmeler size aninda gönderilir.",
   },
 } as const;
 
 const highlights = [
   {
     icon: BrainCircuit,
-    title: "AI destekli calisma akisi",
-    description: "Ders, odev ve kampus sureclerini tek ekrandan daha hizli yonetin.",
+    title: "AI destekli çalışma akişi",
+    description: "Ders, ödev ve kampüs süreçlerini tek ekrandan daha hizli yönetin.",
   },
   {
     icon: Users,
-    title: "Universite odakli topluluk",
-    description: "Benzer bolumlerden ogrencilerle kolayca baglanti kurun.",
+    title: "Üniversite odakli topluluk",
+    description: "Benzer bölümlerden öğrencilerle kolayca baglanti kurun.",
   },
   {
     icon: BadgePercent,
-    title: "Ogrenci avantajlari",
-    description: "Platform icindeki indirimleri ve firsatlari tek yerde takip edin.",
+    title: "Öğrenci avantajlari",
+    description: "Platform içindeki indirimleri ve firsatlari tek yerde takip edin.",
   },
 ] as const;
 
 const stats = [
   { value: "7/24", label: "AI Asistan" },
-  { value: "500+", label: "Ogrenci" },
-  { value: "20+", label: "Kampus avantaji" },
+  { value: "500+", label: "Öğrenci" },
+  { value: "20+", label: "Kampüs avantaji" },
 ] as const;
 
 interface AuthHeroPanelProps {
@@ -142,7 +142,7 @@ export default function AuthHeroPanel({ pathname }: AuthHeroPanelProps) {
                 fontSize: 14,
               }}
             >
-              Universite ekosistemi icin tek platform
+              Üniversite ekosistemi için tek platform
             </Typography.Text>
           </div>
         </Flex>

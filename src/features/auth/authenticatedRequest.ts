@@ -33,7 +33,7 @@ async function getValidAccessToken() {
     const session = await refreshAccessToken();
     return session.accessToken;
   } catch {
-    throw new Error("Oturum bulunamadi. Lutfen yeniden giris yapin.");
+    throw new Error("Oturum bulunamadi. Lütfen yeniden giriş yapin.");
   }
 }
 

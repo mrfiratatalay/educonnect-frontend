@@ -42,18 +42,18 @@ interface ApiGroupMemberPreviewResponse {
   fullName: string;
   avatarUrl?: string | null;
   department?: string | null;
-  role: "member" | "moderator" | "owner";
+  role: "member" | "moderatör" | "owner";
 }
 
 interface ApiGroupDetailResponse extends ApiGroupResponse {
   postCount: number;
   eventCount: number;
   canCurrentUserPost: boolean;
-  currentUserRole?: "member" | "moderator" | "owner" | null;
+  currentUserRole?: "member" | "moderatör" | "owner" | null;
   canManageMembers: boolean;
   canManageSettings: boolean;
   canCreateEvents: boolean;
-  moderatorPreviewMembers: ApiGroupMemberPreviewResponse[];
+  moderatörPreviewMembers: ApiGroupMemberPreviewResponse[];
 }
 
 interface ApiGroupMemberResponse {
@@ -61,7 +61,7 @@ interface ApiGroupMemberResponse {
   fullName: string;
   avatarUrl?: string | null;
   department?: string | null;
-  role: "member" | "moderator" | "owner";
+  role: "member" | "moderatör" | "owner";
   joinedAtUtc: string;
   isCurrentUser: boolean;
   canBePromoted: boolean;
@@ -468,7 +468,7 @@ function normalizeGroupDetail(group: ApiGroupDetailResponse): AppGroupDetail {
     canManageMembers: group.canManageMembers,
     canManageSettings: group.canManageSettings,
     canCreateEvents: group.canCreateEvents,
-    moderatorPreviewMembers: group.moderatorPreviewMembers.map(normalizePreviewMember),
+    moderatörPreviewMembers: group.moderatörPreviewMembers.map(normalizePreviewMember),
   };
 }
 

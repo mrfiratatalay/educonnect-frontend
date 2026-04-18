@@ -50,9 +50,9 @@ export interface ProfileViewModel {
 }
 
 const roleLabels: Record<UserRole, string> = {
-  student: "Ogrenci",
-  admin: "Yonetici",
-  moderator: "Moderator",
+  student: "Öğrenci",
+  admin: "Yönetici",
+  moderatör: "Moderatör",
 };
 
 type ConnectionView = "followers" | "following" | null;
@@ -83,7 +83,7 @@ export default function ProfilePage() {
     return (
       <ProfileShell isDesktop={isDesktop}>
         <ProfileColumn borderInline={pageBorder}>
-          <ProfileTopBar title="Profil" subtitle="Profil bilgileri yukleniyor" onBack={() => goBack(navigate)} />
+          <ProfileTopBar title="Profil" subtitle="Profil bilgileri yükleniyor" onBack={() => goBack(navigate)} />
           <ProfileSummaryCard profile={{ id: "", fullName: "", role: "student", followersCount: 0, followingCount: 0 }} isOwnProfile={false} loading />
         </ProfileColumn>
         {isDesktop ? <ProfileRightRail /> : null}
@@ -95,8 +95,8 @@ export default function ProfilePage() {
     return (
       <ProfileShell isDesktop={isDesktop}>
         <ProfileColumn borderInline={pageBorder}>
-          <ProfileTopBar title="Profil" subtitle="Profil yuklenemedi" onBack={() => goBack(navigate)} />
-          <div style={{ padding: 16 }}><Alert type="error" showIcon message="Kullanici bulunamadi" /></div>
+          <ProfileTopBar title="Profil" subtitle="Profil yüklenemedi" onBack={() => goBack(navigate)} />
+          <div style={{ padding: 16 }}><Alert type="error" showIcon message="Kullanıcı bulunamadi" /></div>
         </ProfileColumn>
         {isDesktop ? <ProfileRightRail /> : null}
       </ProfileShell>
@@ -107,7 +107,7 @@ export default function ProfilePage() {
   const isFollowActionPending = toggleFollowMutation.isPending;
   const isFollowing = Boolean(!isOwnProfile && profile.isFollowedByCurrentUser);
   const activeConnectionsQuery = connectionView === "followers" ? followersQuery : followingUsersQuery;
-  const activeConnectionsTitle = connectionView === "followers" ? "Takipciler" : "Takip edilenler";
+  const activeConnectionsTitle = connectionView === "followers" ? "Takipçiler" : "Takip edilenler";
 
   return (
     <>
@@ -163,13 +163,13 @@ function buildTabItems(profile: ProfileViewModel, isOwnProfile: boolean) {
   );
 
   const items = [
-    { key: "posts", label: tabLabel("Gonderiler"), children: tabPanel(<ProfilePostsTab userId={profile.id} />) },
+    { key: "posts", label: tabLabel("Gönderiler"), children: tabPanel(<ProfilePostsTab userId={profile.id} />) },
     {
       key: "about", label: tabLabel("Hakkinda"),
       children: tabPanel(<Flex vertical gap={16}><ProfileDetailsCard profile={profile} isOwnProfile={isOwnProfile} /><ProfileTimeline profile={profile} /></Flex>),
     },
     { key: "listings", label: tabLabel("Ilanlar"), children: tabPanel(<ProfileListingsTab userId={profile.id} />) },
-    { key: "likes", label: tabLabel("Begeni"), children: tabPanel(<ProfileLikesTab userId={profile.id} />) },
+    { key: "likes", label: tabLabel("Beğeni"), children: tabPanel(<ProfileLikesTab userId={profile.id} />) },
   ];
 
   if (isOwnProfile) {

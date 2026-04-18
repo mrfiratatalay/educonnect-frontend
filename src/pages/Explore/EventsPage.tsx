@@ -5,7 +5,7 @@ export default function EventsPage() {
     <ExploreWorkspacePage
       forcedTab="events"
       title="Etkinlikler"
-      description="Kampusteki etkinlikleri takip et, kayit ol ve yaklasan organizasyonlari tek yerden gor."
+      description="Kampüsteki etkinlikleri takip et, kayıt ol ve yaklasan organizasyonlari tek yerden gor."
     />
   );
 }

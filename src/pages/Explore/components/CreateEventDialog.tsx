@@ -82,7 +82,7 @@ export default function CreateEventDialog({
     }
 
     if (description.trim().length < 10) {
-      setErrorMessage("Aciklama en az 10 karakter olmali.");
+      setErrorMessage("Açıklama en az 10 karakter olmali.");
       return;
     }
 
@@ -127,24 +127,24 @@ export default function CreateEventDialog({
         groupId: groupId || undefined,
       });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Etkinlik olusturulamadi.");
+      setErrorMessage(error instanceof Error ? error.message : "Etkinlik oluşturulamadı.");
     }
   }
 
   return (
     <Modal
-      title={event ? "Etkinligi Duzenle" : "Yeni Etkinlik Olustur"}
+      title={event ? "Etkinligi Düzenle" : "Yeni Etkinlik Oluştur"}
       open={isOpen}
       onCancel={onClose}
       footer={
         <Button type="primary" block loading={isSubmitting} onClick={handleOk}>
           {isSubmitting
             ? event
-              ? "Guncelleniyor"
-              : "Olusturuluyor"
+              ? "Güncelleniyor"
+              : "Oluşturuluyor"
             : event
-              ? "Etkinligi Guncelle"
-              : "Etkinligi Olustur"}
+              ? "Etkinligi Güncelle"
+              : "Etkinligi Oluştur"}
         </Button>
       }
       destroyOnHidden
@@ -153,7 +153,7 @@ export default function CreateEventDialog({
         <Form.Item label="Baslik">
           <Input value={title} onChange={(e) => setTitle(e.target.value)} />
         </Form.Item>
-        <Form.Item label="Aciklama">
+        <Form.Item label="Açıklama">
           <Input.TextArea
             rows={4}
             value={description}

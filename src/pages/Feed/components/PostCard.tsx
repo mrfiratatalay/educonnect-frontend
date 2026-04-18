@@ -166,14 +166,14 @@ export default function PostCard({
     {
       key: "edit",
       icon: <Pencil size={16} />,
-      label: isEditing ? "Duzenlemeyi kapat" : "Gonderiyi duzenle",
+      label: isEditing ? "Düzenlemeyi kapat" : "Gönderiyi düzenle",
       disabled: isUpdating,
     },
     { type: "divider" },
     {
       key: "delete",
       icon: <Trash2 size={16} />,
-      label: isDeleting ? "Siliniyor..." : "Gonderiyi sil",
+      label: isDeleting ? "Siliniyor..." : "Gönderiyi sil",
       danger: true,
       disabled: isDeleting,
     },
@@ -225,7 +225,7 @@ export default function PostCard({
 
     try {
       await copyTextToClipboard(postUrl);
-      messageApi.success("Gonderi baglantisi kopyalandi.");
+      messageApi.success("Gönderi baglantisi kopyalandi.");
     } catch {
       messageApi.error("Baglanti kopyalanamadi.");
     }
@@ -289,7 +289,7 @@ export default function PostCard({
                   marginBottom: 6,
                 }}
               >
-                Senin icin - {post.recommendationReason}
+                Senin için - {post.recommendationReason}
               </Typography.Text>
             ) : null}
 
@@ -427,7 +427,7 @@ export default function PostCard({
                   {post.imageUrl && (
                     <Image
                       src={post.imageUrl}
-                      alt="Gonderi gorseli"
+                      alt="Gönderi görseli"
                       preview
                       style={{
                         maxHeight: 384,

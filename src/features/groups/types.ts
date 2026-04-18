@@ -1,4 +1,4 @@
-export type AppGroupMemberRole = "member" | "moderator" | "owner";
+export type AppGroupMemberRole = "member" | "moderatör" | "owner";
 
 export interface AppGroupMemberPreview {
   userId: string;
@@ -34,7 +34,7 @@ export interface AppGroupDetail extends AppGroup {
   canManageMembers: boolean;
   canManageSettings: boolean;
   canCreateEvents: boolean;
-  moderatorPreviewMembers: AppGroupMemberPreview[];
+  moderatörPreviewMembers: AppGroupMemberPreview[];
 }
 
 export interface AppGroupMember {

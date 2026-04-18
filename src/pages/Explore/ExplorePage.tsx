@@ -44,7 +44,7 @@ interface ExploreWorkspacePageProps {
 export function ExploreWorkspacePage({
   forcedTab,
   title = "Topluluklar",
-  description = "Gruplari, etkinlikleri ve kampusteki yeni firsatlari bu ekrandan takip et.",
+  description = "Gruplari, etkinlikleri ve kampüsteki yeni firsatlari bu ekrandan takip et.",
   showTabs = false,
 }: ExploreWorkspacePageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -250,7 +250,7 @@ export function ExploreWorkspacePage({
       currentUser &&
         (event.creatorUserId === currentUser.id ||
           currentUser.role === "admin" ||
-          currentUser.role === "moderator"),
+          currentUser.role === "moderatör"),
     );
 
     if (!canManage) {

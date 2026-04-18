@@ -87,9 +87,9 @@ export default function VisualSearchPanel({ onResultsChange }: VisualSearchPanel
         >
           <Flex vertical align="center" gap={8} style={{ padding: "12px 0" }}>
             <Camera size={28} color={token.colorTextSecondary} />
-            <Typography.Text strong>Fotografla Urun Ara</Typography.Text>
+            <Typography.Text strong>Fotoğrafla Urun Ara</Typography.Text>
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              Bir urun fotografi yukleyin, butcenize uygun benzer urunleri bulalim
+              Bir urun fotoğrafı yükleyin, butcenize uygun benzer urunleri bulalim
             </Typography.Text>
           </Flex>
         </Upload.Dragger>
@@ -98,7 +98,7 @@ export default function VisualSearchPanel({ onResultsChange }: VisualSearchPanel
           <Flex align="center" justify="space-between">
             <Flex align="center" gap={8}>
               <ImagePlus size={16} />
-              <Typography.Text strong>Gorsel Arama</Typography.Text>
+              <Typography.Text strong>Görsel Arama</Typography.Text>
             </Flex>
             <Button type="text" size="small" icon={<X size={14} />} onClick={handleClear}>
               Temizle
@@ -108,7 +108,7 @@ export default function VisualSearchPanel({ onResultsChange }: VisualSearchPanel
           <Flex gap={16} align="start" wrap>
             <Image
               src={previewUrl}
-              alt="Yuklenen gorsel"
+              alt="Yüklenen görsel"
               width={120}
               height={120}
               style={{ objectFit: "cover", borderRadius: 8 }}
@@ -116,7 +116,7 @@ export default function VisualSearchPanel({ onResultsChange }: VisualSearchPanel
             />
             <Flex vertical gap={6} style={{ flex: 1, minWidth: 200 }}>
               {visualSearch.isPending && (
-                <Alert message="Gorsel analiz ediliyor..." type="info" showIcon />
+                <Alert message="Görsel analiz ediliyor..." type="info" showIcon />
               )}
               {visualSearch.isError && (
                 <Alert message="Arama sirasinda hata olustu." type="error" showIcon />

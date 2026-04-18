@@ -26,8 +26,8 @@ export default function CreateGroupDialog({
   isOpen,
   isSubmitting,
   initialValues,
-  submitLabel = "Toplulugu olustur",
-  title = "Topluluk olustur",
+  submitLabel = "Topluluğu oluştur",
+  title = "Topluluk oluştur",
   onClose,
   onSubmit,
 }: CreateGroupDialogProps) {
@@ -73,7 +73,7 @@ export default function CreateGroupDialog({
   const previewDescription =
     shortDescription.trim() ||
     description.trim() ||
-    "Toplulugun kisa aciklamasi burada gorunecek.";
+    "Topluluğun kisa açıklaması burada gorunecek.";
 
   async function handleBannerFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -84,7 +84,7 @@ export default function CreateGroupDialog({
       const url = await uploadGroupBanner(file);
       setBannerUrl(url);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Kapak gorseli yuklenemedi.");
+      setErrorMessage(error instanceof Error ? error.message : "Kapak görseli yüklenemedi.");
     } finally {
       setIsUploadingBanner(false);
       if (bannerFileInputRef.current) bannerFileInputRef.current.value = "";
@@ -100,7 +100,7 @@ export default function CreateGroupDialog({
       const url = await uploadGroupAvatar(file);
       setAvatarUrl(url);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Gorsel yuklenemedi.");
+      setErrorMessage(error instanceof Error ? error.message : "Görsel yüklenemedi.");
     } finally {
       setIsUploadingAvatar(false);
       if (avatarFileInputRef.current) avatarFileInputRef.current.value = "";
@@ -113,19 +113,19 @@ export default function CreateGroupDialog({
       return;
     }
     if (shortDescription.trim().length > 0 && shortDescription.trim().length < 3) {
-      setErrorMessage("Kisa aciklama en az 3 karakter olmali.");
+      setErrorMessage("Kisa açıklama en az 3 karakter olmali.");
       return;
     }
     if (description.trim().length < 10) {
-      setErrorMessage("Aciklama en az 10 karakter olmali.");
+      setErrorMessage("Açıklama en az 10 karakter olmali.");
       return;
     }
     if (normalizedAvatarUrl && !isValidUrl(normalizedAvatarUrl)) {
-      setErrorMessage("Profil gorseli icin gecerli bir URL gir.");
+      setErrorMessage("Profil görseli için gecerli bir URL gir.");
       return;
     }
     if (normalizedBannerUrl && !isValidUrl(normalizedBannerUrl)) {
-      setErrorMessage("Kapak gorseli icin gecerli bir URL gir.");
+      setErrorMessage("Kapak görseli için gecerli bir URL gir.");
       return;
     }
 
@@ -146,7 +146,7 @@ export default function CreateGroupDialog({
         bannerUrl: normalizedBannerUrl,
       });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Topluluk olusturulamadi.");
+      setErrorMessage(error instanceof Error ? error.message : "Topluluk oluşturulamadı.");
     }
   }
 
@@ -208,7 +208,7 @@ export default function CreateGroupDialog({
               onMouseLeave={(e) => { if (!isUploadingBanner) (e.currentTarget as HTMLDivElement).style.opacity = "0"; }}
             >
               <Upload size={18} />
-              {isUploadingBanner ? "Yukleniyor..." : "Kapak fotografi ekle"}
+              {isUploadingBanner ? "Yükleniyor..." : "Kapak fotoğrafı ekle"}
             </div>
           </div>
           <Flex align="center" gap={14} style={{ padding: 16 }}>
@@ -282,25 +282,25 @@ export default function CreateGroupDialog({
           </Form.Item>
 
           <Form.Item
-            label="Kisa aciklama"
-            extra="Kartlarda ve ust bilgi alaninda gorunur. Bos birakirsan uzun aciklamadan turetilir."
+            label="Kisa açıklama"
+            extra="Kartlarda ve ust bilgi alaninda gorunur. Bos birakirsan uzun açıklamadan turetilir."
           >
             <Input
               maxLength={220}
               value={shortDescription}
               onChange={(event) => setShortDescription(event.target.value)}
-              placeholder="Toplulugunu tek cumlede anlat."
+              placeholder="Topluluğunu tek cümlede anlat."
               showCount
             />
           </Form.Item>
 
-          <Form.Item label="Aciklama">
+          <Form.Item label="Açıklama">
             <Input.TextArea
               rows={4}
               maxLength={1000}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Toplulugun amaci, kimler icin oldugu ve ne paylasilacagi."
+              placeholder="Topluluğun amaci, kimler için oldugu ve ne paylaşilacagi."
               showCount
             />
           </Form.Item>
@@ -355,7 +355,7 @@ export default function CreateGroupDialog({
           </Form.Item>
 
           <Form.Item
-            label="Hazir profil gorselleri"
+            label="Hazır profil görselleri"
             extra="Bir preset sec veya alttan kendi URL'ni gir."
           >
             <Flex gap={12} wrap="wrap">
@@ -371,8 +371,8 @@ export default function CreateGroupDialog({
           </Form.Item>
 
           <Form.Item
-            label="Profil gorseli URL"
-            extra="Hazir secimi degistirmek istersen kendi URL'ni kullanabilirsin."
+            label="Profil görseli URL"
+            extra="Hazır seçimi degistirmek istersen kendi URL'ni kullanabilirsin."
           >
             <Input
               value={avatarUrl}
@@ -382,8 +382,8 @@ export default function CreateGroupDialog({
           </Form.Item>
 
           <Form.Item
-            label="Hazir kapaklar"
-            extra="Detay sayfasindaki ust kapak alani icin hizli secim."
+            label="Hazır kapaklar"
+            extra="Detay sayfasındaki ust kapak alani için hizli seçim."
           >
             <Flex vertical gap={12}>
               {resolvedCoverPresets.map((preset) => (
@@ -398,8 +398,8 @@ export default function CreateGroupDialog({
           </Form.Item>
 
           <Form.Item
-            label="Kapak gorseli URL"
-            extra="Istersen hazir secim yerine kendi kapak URL'ni kullan."
+            label="Kapak görseli URL"
+            extra="Istersen hazır seçim yerine kendi kapak URL'ni kullan."
           >
             <Input
               value={bannerUrl}

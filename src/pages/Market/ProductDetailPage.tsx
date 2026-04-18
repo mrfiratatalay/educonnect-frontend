@@ -132,7 +132,7 @@ export default function ProductDetailPage() {
 
         <Flex vertical gap={16} style={{ flex: 1 }}>
           <Flex align="center" gap={8} wrap>
-            <Tag color="processing">{product.categoryName ?? "Diger"}</Tag>
+            <Tag color="processing">{product.categoryName ?? "Diğer"}</Tag>
             <Tag color={CONDITION_COLORS[product.condition]}>
               {CONDITION_LABELS[product.condition]}
             </Tag>
@@ -184,7 +184,7 @@ export default function ProductDetailPage() {
                     Profili gor
                   </Button>
                   <Button type="primary" onClick={handleMessageSeller}>
-                    Mesaj gonder
+                    Mesaj gönder
                   </Button>
                 </Flex>
               </Flex>
@@ -194,13 +194,13 @@ export default function ProductDetailPage() {
           {isOwner && (
             <Flex gap={8}>
               <Button icon={<Pencil size={14} />} onClick={() => setIsEditOpen(true)}>
-                Ilani Duzenle
+                Ilani Düzenle
               </Button>
               <Popconfirm
                 title="Bu ilani silmek istediginize emin misiniz?"
                 onConfirm={handleDelete}
                 okText="Evet, sil"
-                cancelText="Vazgec"
+                cancelText="Vazgeç"
               >
                 <Button danger icon={<Trash2 size={14} />} loading={deleteMutation.isPending}>
                   Ilani Sil

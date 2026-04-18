@@ -54,16 +54,16 @@ export default function ForgotPasswordPage() {
       {sent ? (
         <>
           <AuthPageIntro
-            eyebrow="E-posta gonderildi"
-            title="Baglanti hazir"
-            description="Hesap varsa sifre sifirlama adimlarini e-posta adresine gonderdik. Gelen kutunu ve spam klasorunu kontrol et."
+            eyebrow="E-posta gönderildi"
+            title="Baglanti hazır"
+            description="Hesap varsa şifre sifirlama adimlarini e-posta adresine gönderdik. Gelen kutunu ve spam klasorunu kontrol et."
           />
 
           <Alert
             type="success"
             showIcon
-            title="Talep olusturuldu"
-            description="Ayni adresle tekrar denemek istersen birkac dakika beklemen yeterli."
+            title="Talep oluşturuldu"
+            description="Ayni adresle tekrar denemek istersen birkaç dakika beklemen yeterli."
             style={{ ...authSuccessAlertStyle, marginBottom: 24 }}
           />
 
@@ -75,15 +75,15 @@ export default function ForgotPasswordPage() {
             icon={<ArrowLeft size={16} />}
             style={authPrimaryButtonStyle}
           >
-            Giris sayfasina don
+            Giriş sayfasına don
           </Button>
         </>
       ) : (
         <>
           <AuthPageIntro
             eyebrow="Hesap erisimi"
-            title="Sifreni sifirla"
-            description="Kayitli e-posta adresini gir. Sifre sifirlama baglantisini oraya gonderelim."
+            title="Şifreni sifirla"
+            description="Kayıtlı e-posta adresini gir. Şifre sifirlama baglantisini oraya gönderelim."
           />
 
           <form
@@ -132,13 +132,13 @@ export default function ForgotPasswordPage() {
               loading={isSubmitting}
               style={authPrimaryButtonStyle}
             >
-              {isSubmitting ? "Gonderiliyor..." : "Sifirlama baglantisi gonder"}
+              {isSubmitting ? "Gönderiliyor..." : "Sifirlama baglantisi gönder"}
             </Button>
           </form>
 
           <AuthPageFooter
-            prompt="Sifreni hatirladiysan"
-            linkText="giris yap"
+            prompt="Şifreni hatirladiysan"
+            linkText="giriş yap"
             onClick={() => navigate("/login", { replace: true })}
           />
         </>

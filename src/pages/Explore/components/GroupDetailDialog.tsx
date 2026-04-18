@@ -76,8 +76,8 @@ export default function GroupDetailDialog({
                 children: group.creatorName,
               },
               {
-                label: "Gonderi",
-                children: "postCount" in group ? `${group.postCount} gonderi` : "-",
+                label: "Gönderi",
+                children: "postCount" in group ? `${group.postCount} gönderi` : "-",
               },
               {
                 label: "Etkinlik",
@@ -87,11 +87,11 @@ export default function GroupDetailDialog({
             size="small"
           />
 
-          {"moderatorPreviewMembers" in group && group.moderatorPreviewMembers.length > 0 ? (
+          {"moderatörPreviewMembers" in group && group.moderatörPreviewMembers.length > 0 ? (
             <Flex vertical gap={8}>
-              <Typography.Text strong>Yoneticiler</Typography.Text>
+              <Typography.Text strong>Yöneticiler</Typography.Text>
               <Flex gap={8} wrap>
-                {group.moderatorPreviewMembers.map((member) => (
+                {group.moderatörPreviewMembers.map((member) => (
                   <Tag key={member.userId}>{member.fullName}</Tag>
                 ))}
               </Flex>

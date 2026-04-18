@@ -10,7 +10,7 @@ import {
 
 const footerLinks = [
   "Hakkinda",
-  "Kampus rehberi",
+  "Kampüs rehberi",
   "Gizlilik",
   "Cerezler",
   "Kariyer",
@@ -122,7 +122,7 @@ function AuthLayoutContent() {
                   margin: "0 0 20px 0",
                 }}
               >
-                Kampuste simdi ne oluyor?
+                Kampüste şimdi ne oluyor?
               </Typography.Title>
 
               <Typography.Title
@@ -134,7 +134,7 @@ function AuthLayoutContent() {
                   margin: "0 0 28px 0",
                 }}
               >
-                Universite agina bugun katil.
+                Üniversite agina bugun katıl.
               </Typography.Title>
 
               <Flex vertical gap={14} style={{ width: "100%", maxWidth: 360 }}>
@@ -145,7 +145,7 @@ function AuthLayoutContent() {
                   onClick={() => navigate("/register")}
                   style={authPrimaryButtonStyle}
                 >
-                  Hesap olustur
+                  Hesap oluştur
                 </Button>
 
                 <AuthLegalText />
@@ -159,7 +159,7 @@ function AuthLayoutContent() {
                     fontWeight: 800,
                   }}
                 >
-                  Zaten bir hesabin var mi?
+                  Zaten bir hesabın var mi?
                 </Typography.Text>
 
                 <Button
@@ -168,7 +168,7 @@ function AuthLayoutContent() {
                   onClick={() => navigate("/login")}
                   style={authSecondaryButtonStyle}
                 >
-                  Giris yap
+                  Giriş yap
                 </Button>
               </Flex>
             </Flex>

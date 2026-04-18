@@ -17,7 +17,7 @@ export default function CommunitiesRail() {
         title="Neler oluyor?"
         footer={
           <Button type="link" style={{ padding: 0 }} onClick={() => navigate("/explore")}>
-            Daha fazla goster
+            Daha fazla göster
           </Button>
         }
       >
@@ -25,7 +25,7 @@ export default function CommunitiesRail() {
           <Skeleton active title={false} paragraph={{ rows: 4 }} />
         ) : trendingQuery.isError ? (
           <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-            Gundem simdilik yuklenemedi.
+            Gündem şimdilik yüklenemedi.
           </Typography.Text>
         ) : trendingQuery.data && trendingQuery.data.length > 0 ? (
           <Flex vertical gap={16}>
@@ -43,7 +43,7 @@ export default function CommunitiesRail() {
           </Flex>
         ) : (
           <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-            Henuz aktif bir gundem yok.
+            Henuz aktif bir gündem yok.
           </Typography.Text>
         )}
       </RailCard>
@@ -51,7 +51,7 @@ export default function CommunitiesRail() {
       <FollowSuggestionsCard />
 
       <div className="communities-meta-links">
-        Hizmet Sartlari | Gizlilik Politikasi | Cerez Politikasi | Reklam bilgisi | Daha fazla
+        Hizmet Şartları | Gizlilik Politikası | Cerez Politikasi | Reklam bilgisi | Daha fazla
       </div>
     </Flex>
   );
@@ -112,7 +112,7 @@ function TrendRow({
             {title}
           </Typography.Text>
           <Typography.Text type="secondary" style={{ display: "block", fontSize: 13, marginTop: 2 }}>
-            {postCount} gonderi
+            {postCount} gönderi
           </Typography.Text>
         </div>
         <EllipsisOutlined style={{ color: token.colorTextTertiary, marginTop: 4 }} />

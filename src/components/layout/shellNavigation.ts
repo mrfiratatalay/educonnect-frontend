@@ -21,7 +21,7 @@ export interface ShellNavItem {
 }
 
 export const shellMainNavItems: ShellNavItem[] = [
-  { key: "/", to: "/", icon: Home, label: "Anasayfa" },
+  { key: "/", to: "/", icon: Home, label: "Ana Sayfa" },
   { key: "/explore", to: "/explore", icon: Search, label: "Keşfet" },
   { key: "/communities", to: "/communities", icon: Users, label: "Topluluklar" },
   { key: "/events", to: "/events", icon: Calendar, label: "Etkinlikler" },

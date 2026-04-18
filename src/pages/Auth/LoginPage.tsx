@@ -18,7 +18,7 @@ import {
 
 const loginSchema = z.object({
   email: z.string().email("Gecerli bir e-posta adresi girin"),
-  password: z.string().min(8, "Sifre en az 8 karakter olmali"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmali"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -55,9 +55,9 @@ export default function LoginPage() {
   return (
     <Flex vertical style={{ width: "100%", maxWidth: 380 }}>
       <AuthPageIntro
-        eyebrow="Hesabina don"
-        title="Giris yap"
-        description="EduConnect hesabina erismek icin e-posta adresini ve sifreni gir."
+        eyebrow="Hesabına don"
+        title="Giriş yap"
+        description="EduConnect hesabına erismek için e-posta adresini ve şifreni gir."
       />
 
       <form
@@ -100,7 +100,7 @@ export default function LoginPage() {
                 value={field.value ?? ""}
                 onChange={(e) => field.onChange(e.target?.value ?? "")}
                 autoComplete="current-password"
-                placeholder="Sifre"
+                placeholder="Şifre"
                 size="large"
                 status={errors.password ? "error" : undefined}
                 style={authInputStyle}
@@ -127,7 +127,7 @@ export default function LoginPage() {
             loading={isSubmitting}
             style={authPrimaryButtonStyle}
           >
-            {isSubmitting ? "Giris yapiliyor..." : "Giris yap"}
+            {isSubmitting ? "Giriş yapiliyor..." : "Giriş yap"}
           </Button>
 
           <Button
@@ -136,7 +136,7 @@ export default function LoginPage() {
             onClick={() => navigate("/forgot-password")}
             style={authSecondaryButtonStyle}
           >
-            Sifremi unuttum
+            Şifremi unuttüm
           </Button>
 
           <Button
@@ -145,14 +145,14 @@ export default function LoginPage() {
             onClick={() => navigate("/verify-email")}
             style={authSecondaryButtonStyle}
           >
-            E-postami dogrula
+            E-postami doğrula
           </Button>
         </Flex>
       </form>
 
       <AuthPageFooter
         prompt="Hesabin yok mu?"
-        linkText="Kayit ol"
+        linkText="Kayıt ol"
         onClick={() => navigate("/register")}
       />
     </Flex>
