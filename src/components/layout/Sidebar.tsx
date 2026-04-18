@@ -182,7 +182,7 @@ export default function Sidebar() {
               onClick={() => navigate("/")}
               style={{ cursor: "pointer", padding: 6, borderRadius: 10, display: "inline-flex" }}
             >
-              <img src="/logo.png" alt="EduConnect" style={{ width: isMessages ? 52 : 110, height: isMessages ? 52 : 110, objectFit: "contain", display: "block" }} />
+              <img src="/logo.png" alt="EduConnect" style={{ width: isMessages ? 52 : 110, objectFit: "contain", display: "block" }} />
             </div>
           </div>
 
