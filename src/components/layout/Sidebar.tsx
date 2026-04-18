@@ -181,9 +181,9 @@ export default function Sidebar() {
             <Button
               type="text"
               onClick={() => navigate("/")}
-              style={{ height: "auto", padding: 6, borderRadius: 9999 }}
+              style={{ height: "auto", padding: 6, borderRadius: 12 }}
             >
-              <GraduationCap size={28} strokeWidth={2} />
+              <GraduationCap size={28} strokeWidth={2} color={token.colorPrimary} />
             </Button>
           </div>
 
@@ -198,7 +198,7 @@ export default function Sidebar() {
                   gap={18}
                   style={{
                     padding: navRowPadding,
-                    borderRadius: 9999,
+                    borderRadius: 12,
                     cursor: "pointer",
                     transition: "background-color 0.2s",
                     width: isMessages ? "auto" : "max-content",
@@ -311,7 +311,7 @@ export default function Sidebar() {
                   gap={18}
                   style={{
                     padding: navRowPadding,
-                    borderRadius: 9999,
+                    borderRadius: 12,
                     cursor: "pointer",
                     transition: "background-color 0.2s",
                     width: isMessages ? "auto" : "max-content",
@@ -368,7 +368,6 @@ export default function Sidebar() {
                   fontWeight: 700,
                   letterSpacing: "0.01em",
                   border: "none",
-                  borderRadius: 9999,
                 }}
                 onClick={openComposeModal}
               >

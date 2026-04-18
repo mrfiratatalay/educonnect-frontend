@@ -277,8 +277,8 @@ export default function MobileNav() {
                 style={{
                   flex: 1,
                   height: 48,
-                  borderRadius: 999,
-                  color: isActive ? token.colorText : token.colorTextSecondary,
+                  borderRadius: 12,
+                  color: isActive ? token.colorPrimary : token.colorTextSecondary,
                   padding: 0,
                 }}
               >
