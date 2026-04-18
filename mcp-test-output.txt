@@ -1,8 +1,0 @@
-The Ant Design MCP integration appears configured, but not currently usable in this session: `antd_list` was cancelled twice, and no MCP resources/templates are exposed.
-
-5 Ant Design components that fit a login page:
-- `Form`
-- `Input`
-- `Input.Password`
-- `Button`
-- `Checkbox`
