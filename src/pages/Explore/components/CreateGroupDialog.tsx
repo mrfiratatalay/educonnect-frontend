@@ -73,7 +73,7 @@ export default function CreateGroupDialog({
   const previewDescription =
     shortDescription.trim() ||
     description.trim() ||
-    "Topluluğun kisa açıklaması burada gorunecek.";
+    "Topluluğun kısa açıklaması burada görünecek.";
 
   async function handleBannerFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -109,23 +109,23 @@ export default function CreateGroupDialog({
 
   async function handleOk() {
     if (name.trim().length < 3) {
-      setErrorMessage("Topluluk adi en az 3 karakter olmali.");
+      setErrorMessage("Topluluk adı en az 3 karakter olmalı.");
       return;
     }
     if (shortDescription.trim().length > 0 && shortDescription.trim().length < 3) {
-      setErrorMessage("Kisa açıklama en az 3 karakter olmali.");
+      setErrorMessage("Kısa açıklama en az 3 karakter olmalı.");
       return;
     }
     if (description.trim().length < 10) {
-      setErrorMessage("Açıklama en az 10 karakter olmali.");
+      setErrorMessage("Açıklama en az 10 karakter olmalı.");
       return;
     }
     if (normalizedAvatarUrl && !isValidUrl(normalizedAvatarUrl)) {
-      setErrorMessage("Profil görseli için gecerli bir URL gir.");
+      setErrorMessage("Profil görseli için geçerli bir URL gir.");
       return;
     }
     if (normalizedBannerUrl && !isValidUrl(normalizedBannerUrl)) {
-      setErrorMessage("Kapak görseli için gecerli bir URL gir.");
+      setErrorMessage("Kapak görseli için geçerli bir URL gir.");
       return;
     }
 
@@ -256,7 +256,7 @@ export default function CreateGroupDialog({
             </div>
             <div style={{ minWidth: 0 }}>
               <Typography.Text strong style={{ display: "block", fontSize: 18 }}>
-                {name.trim() || "Topluluk adi"}
+                {name.trim() || "Topluluk adı"}
               </Typography.Text>
               <Typography.Text type="secondary" style={{ display: "block", marginTop: 4 }}>
                 {previewDescription}
@@ -272,18 +272,18 @@ export default function CreateGroupDialog({
         </div>
 
         <Form layout="vertical">
-          <Form.Item label="Topluluk adi">
+          <Form.Item label="Topluluk adı">
             <Input
               maxLength={150}
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Orn. Yapay Zeka Baronlari"
+              placeholder="Örn. Yapay Zeka Baronları"
             />
           </Form.Item>
 
           <Form.Item
-            label="Kisa açıklama"
-            extra="Kartlarda ve ust bilgi alaninda gorunur. Bos birakirsan uzun açıklamadan turetilir."
+            label="Kısa açıklama"
+            extra="Kartlarda ve üst bilgi alanında görünür. Boş bırakırsan uzun açıklamadan türetilir."
           >
             <Input
               maxLength={220}
@@ -300,14 +300,14 @@ export default function CreateGroupDialog({
               maxLength={1000}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Topluluğun amaci, kimler için oldugu ve ne paylaşilacagi."
+              placeholder="Topluluğun amacı, kimler için olduğu ve ne paylaşılacağı."
               showCount
             />
           </Form.Item>
 
           <Form.Item
-            label="Topluluk kurallari"
-            extra="Bos satirlar kaydedilmez. En fazla 10 kural tutulur."
+            label="Topluluk kuralları"
+            extra="Boş satırlar kaydedilmez. En fazla 10 kural tutulur."
           >
             <Flex vertical gap={8}>
               {rules.map((rule, index) => (
@@ -356,7 +356,7 @@ export default function CreateGroupDialog({
 
           <Form.Item
             label="Hazır profil görselleri"
-            extra="Bir preset sec veya alttan kendi URL'ni gir."
+            extra="Bir hazır görsel seç veya alttan kendi URL'ni gir."
           >
             <Flex gap={12} wrap="wrap">
               {resolvedAvatarPresets.map((preset) => (
@@ -372,7 +372,7 @@ export default function CreateGroupDialog({
 
           <Form.Item
             label="Profil görseli URL"
-            extra="Hazır seçimi degistirmek istersen kendi URL'ni kullanabilirsin."
+            extra="Hazır seçimi değiştirmek istersen kendi URL'ni kullanabilirsin."
           >
             <Input
               value={avatarUrl}
@@ -383,7 +383,7 @@ export default function CreateGroupDialog({
 
           <Form.Item
             label="Hazır kapaklar"
-            extra="Detay sayfasındaki ust kapak alani için hizli seçim."
+            extra="Detay sayfasındaki üst kapak alanı için hızlı seçim."
           >
             <Flex vertical gap={12}>
               {resolvedCoverPresets.map((preset) => (
@@ -399,7 +399,7 @@ export default function CreateGroupDialog({
 
           <Form.Item
             label="Kapak görseli URL"
-            extra="Istersen hazır seçim yerine kendi kapak URL'ni kullan."
+            extra="İstersen hazır seçim yerine kendi kapak URL'ni kullan."
           >
             <Input
               value={bannerUrl}

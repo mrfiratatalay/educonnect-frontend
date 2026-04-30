@@ -31,7 +31,7 @@ export default function ConversationList({
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
         description={
-          <Typography.Text type="secondary">Henuz konusma yok</Typography.Text>
+          <Typography.Text type="secondary">Henüz konuşma yok</Typography.Text>
         }
         style={{ margin: 24 }}
       />

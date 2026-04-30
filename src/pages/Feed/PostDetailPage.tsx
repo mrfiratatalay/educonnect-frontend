@@ -141,7 +141,7 @@ export default function PostDetailPage() {
           />
         </div>
       ) : (
-        <div style={{ padding: 16 }}>Gönderi bulunamadi.</div>
+        <div style={{ padding: 16 }}>Gönderi bulunamadı.</div>
       )}
     </div>
   );

@@ -12,14 +12,14 @@ export default function ProfileSavedTab() {
   }
 
   if (bookmarksQuery.isError) {
-    return <Alert type="error" showIcon message="Kaydedilenler yüklenirken bir hata olustu." />;
+    return <Alert type="error" showIcon message="Kaydedilenler yüklenirken bir hata oluştu." />;
   }
 
   if (posts.length === 0) {
     return (
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
-        description={<Typography.Text type="secondary">Kaydedilmis içerik bulunmuyor.</Typography.Text>}
+        description={<Typography.Text type="secondary">Kaydedilmiş içerik bulunmuyor.</Typography.Text>}
       />
     );
   }

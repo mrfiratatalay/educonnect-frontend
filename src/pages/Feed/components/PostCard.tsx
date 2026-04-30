@@ -225,9 +225,9 @@ export default function PostCard({
 
     try {
       await copyTextToClipboard(postUrl);
-      messageApi.success("Gönderi baglantisi kopyalandi.");
+      messageApi.success("Gönderi bağlantısı kopyalandı.");
     } catch {
-      messageApi.error("Baglanti kopyalanamadi.");
+      messageApi.error("Bağlantı kopyalanamadı.");
     }
   }
 

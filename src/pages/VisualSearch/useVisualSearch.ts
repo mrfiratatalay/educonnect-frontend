@@ -54,7 +54,7 @@ export function useVisualSearch() {
     setQueryState({
       src: example.imageUrl,
       name: example.label,
-      sizeLabel: "Ornek",
+      sizeLabel: "Örnek",
       source: "example",
       presetId: example.id,
     });

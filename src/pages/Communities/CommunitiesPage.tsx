@@ -151,7 +151,7 @@ export default function CommunitiesPage() {
 
             <div style={{ padding: "18px 16px 14px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
               <Typography.Title level={3} style={{ margin: 0, lineHeight: 1.15, fontSize: 32 }}>
-                Topluluklari Keşfet
+                Toplulukları Keşfet
               </Typography.Title>
 
               <Flex gap={8} wrap="wrap" style={{ marginTop: 14 }}>
@@ -247,7 +247,7 @@ function JoinedGroupsSection({
     <div style={{ padding: "16px 16px 10px", borderBottom: `1px solid ${token.colorBorderSecondary}` }}>
       <Flex align="center" justify="space-between" gap={12} style={{ marginBottom: 8 }}>
         <Typography.Title level={3} style={{ margin: 0, lineHeight: 1.15 }}>
-          Katıldigin topluluklar
+          Katıldığın topluluklar
         </Typography.Title>
         <Button type="text" shape="circle" icon={<EllipsisOutlined />} />
       </Flex>
@@ -270,11 +270,11 @@ function CommunityEmptyState({
 }) {
   const hasSearchQuery = searchQuery.trim().length > 0;
   const title = hasSearchQuery
-    ? "Aramana uygun topluluk bulunamadi."
+    ? "Aramana uygun topluluk bulunamadı."
     : "Yeni topluluklar burada listelenecek.";
   const description = hasSearchQuery
-    ? "Arama ifadesini sadelestir veya diğer sekmeye goz at."
-    : "Kendi topluluğunu kurarak ilk vitrini burada acabilirsin.";
+    ? "Arama ifadesini sadeleştir veya diğer sekmeye göz at."
+    : "Kendi topluluğunu kurarak ilk vitrini burada açabilirsin.";
 
   return (
     <Flex vertical align="center" gap={16} style={{ padding: "48px 24px 56px" }}>

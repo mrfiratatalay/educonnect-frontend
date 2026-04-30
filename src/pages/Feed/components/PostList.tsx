@@ -60,7 +60,7 @@ export default function PostList({
             <Empty
               description={
                 <span style={{ color: token.colorTextSecondary }}>
-                  {emptyDescription ?? "Henuz gönderi yok. Ilk paylaşımı sen yap."}
+                  {emptyDescription ?? "Henüz gönderi yok. İlk paylaşımı sen yap."}
                 </span>
               }
               image={Empty.PRESENTED_IMAGE_SIMPLE}

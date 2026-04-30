@@ -95,7 +95,7 @@ export default function ProfileSummaryCard({
       }
 
       if (file.size / 1024 / 1024 >= 5) {
-        message.error("Resim 5MB'dan küçük olmalidir.");
+        message.error("Resim 5MB'dan küçük olmalıdır.");
         return Upload.LIST_IGNORE;
       }
 

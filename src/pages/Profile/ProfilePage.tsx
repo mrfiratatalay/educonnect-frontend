@@ -96,7 +96,7 @@ export default function ProfilePage() {
       <ProfileShell isDesktop={isDesktop}>
         <ProfileColumn borderInline={pageBorder}>
           <ProfileTopBar title="Profil" subtitle="Profil yüklenemedi" onBack={() => goBack(navigate)} />
-          <div style={{ padding: 16 }}><Alert type="error" showIcon message="Kullanıcı bulunamadi" /></div>
+          <div style={{ padding: 16 }}><Alert type="error" showIcon message="Kullanıcı bulunamadı" /></div>
         </ProfileColumn>
         {isDesktop ? <ProfileRightRail /> : null}
       </ProfileShell>
@@ -165,10 +165,10 @@ function buildTabItems(profile: ProfileViewModel, isOwnProfile: boolean) {
   const items = [
     { key: "posts", label: tabLabel("Gönderiler"), children: tabPanel(<ProfilePostsTab userId={profile.id} />) },
     {
-      key: "about", label: tabLabel("Hakkinda"),
+      key: "about", label: tabLabel("Hakkında"),
       children: tabPanel(<Flex vertical gap={16}><ProfileDetailsCard profile={profile} isOwnProfile={isOwnProfile} /><ProfileTimeline profile={profile} /></Flex>),
     },
-    { key: "listings", label: tabLabel("Ilanlar"), children: tabPanel(<ProfileListingsTab userId={profile.id} />) },
+    { key: "listings", label: tabLabel("İlanlar"), children: tabPanel(<ProfileListingsTab userId={profile.id} />) },
     { key: "likes", label: tabLabel("Beğeni"), children: tabPanel(<ProfileLikesTab userId={profile.id} />) },
   ];
 
@@ -201,7 +201,7 @@ function ProfileTopBar({ title, subtitle, onBack }: { title: string; subtitle: s
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 20, background: token.colorBgContainer, borderBottom: `1px solid ${token.colorBorderSecondary}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
       <Flex align="center" gap={12} style={{ minHeight: 56, padding: "8px 16px" }}>
-        <Button type="text" aria-label="Geri don" onClick={onBack}
+        <Button type="text" aria-label="Geri dön" onClick={onBack}
           style={{ width: 36, height: 36, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flex: "0 0 auto" }}>
           <ArrowLeft size={20} />
         </Button>

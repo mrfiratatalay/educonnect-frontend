@@ -167,7 +167,7 @@ export default function NotificationsPage() {
                       />
                     </Tooltip>
 
-                    <Tooltip title="Tümunu okundu yap">
+                    <Tooltip title="Tümünü okundu yap">
                       <Button
                         type="text"
                         shape="circle"
@@ -197,7 +197,7 @@ export default function NotificationsPage() {
                       key: "all",
                       label: (
                         <span style={{ fontWeight: activeTab === "all" ? 700 : 600 }}>
-                          Tümu
+                          Tümü
                         </span>
                       ),
                     },
@@ -254,7 +254,7 @@ export default function NotificationsPage() {
                       <Typography.Text type="secondary" style={{ fontSize: 13 }}>
                         {notificationsQuery.isFetching && !notificationsQuery.isLoading
                           ? "Güncelleniyor..."
-                          : "Bildirim akişi hazır"}
+                          : "Bildirim akışı hazır"}
                       </Typography.Text>
                     </Flex>
                   </Flex>
@@ -364,7 +364,7 @@ export default function NotificationsPage() {
                       type="secondary"
                       style={{ fontSize: 13, padding: "0 16px 8px", display: "block" }}
                     >
-                      Henuz aktif bir hashtag gündemi yok.
+                      Henüz aktif bir hashtag gündemi yok.
                     </Typography.Text>
                   )}
                 </SidebarCard>
@@ -489,7 +489,7 @@ function NotificationEmptyState({
               lineHeight: 1.45,
             }}
           >
-            Baska bir kelime dene ya da filtreyi degistir.
+            Başka bir kelime dene ya da filtreyi değiştir.
           </Typography.Paragraph>
         </div>
       </Flex>
@@ -498,16 +498,16 @@ function NotificationEmptyState({
 
   const title =
     activeTab === "mentions"
-      ? "Burada gorecek bir bahsetme yok. Henuz..."
+      ? "Burada görecek bir bahsetme yok. Henüz..."
       : activeTab === "unread"
-        ? "Okunmayan bildirim kalmadi."
-      : "Burada gorecek bir sey yok. Henuz...";
+        ? "Okunmayan bildirim kalmadı."
+      : "Burada görecek bir şey yok. Henüz...";
   const description =
     activeTab === "mentions"
-      ? "Sana yonelik etkilesimler burada gorunur."
+      ? "Sana yönelik etkileşimler burada görünür."
       : activeTab === "unread"
-        ? "Yeni bir etkilesim geldiginde bu sekmede hemen gorunur."
-      : "Beğeniler, yeniden gönderiler ve çok daha fazlasi burada gerceklesir.";
+        ? "Yeni bir etkileşim geldiğinde bu sekmede hemen görünür."
+      : "Beğeniler, yeniden gönderiler ve çok daha fazlası burada gerçekleşir.";
 
   return (
     <Flex

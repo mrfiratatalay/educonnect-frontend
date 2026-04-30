@@ -119,7 +119,7 @@ export default function FeedPage() {
                 items={[
                   {
                     key: "foryou",
-                    label: <span style={{ fontWeight: 700, fontSize: isMobile ? 18 : undefined }}>Sana ozel</span>,
+                    label: <span style={{ fontWeight: 700, fontSize: isMobile ? 18 : undefined }}>Sana özel</span>,
                   },
                   {
                     key: "following",
@@ -160,12 +160,12 @@ export default function FeedPage() {
                 errorMessage={errorMessage}
                 emptyDescription={
                   isGroupsTab
-                    ? "Katıldigin topluluklardaki paylaşımlar burada akaçak."
+                    ? "Katıldığın topluluklardaki paylaşımlar burada akacak."
                     : isFollowingTab
-                      ? "Takip ettigin kullanıcıların kişisel paylaşımlari burada akaçak."
+                      ? "Takip ettiğin kullanıcıların kişisel paylaşımları burada akacak."
                       : undefined
                 }
-                emptyActionLabel={isGroupsTab ? "Topluluklari keşfet" : undefined}
+                emptyActionLabel={isGroupsTab ? "Toplulukları keşfet" : undefined}
                 isLoading={activeFeedQuery.isLoading}
                 onCreatePostClick={handleCreatePostClick}
                 onDelete={handleDeletePost}
@@ -193,7 +193,7 @@ export default function FeedPage() {
                 type="secondary"
                 style={{ textAlign: "center", padding: "24px 0", display: "block" }}
               >
-                Gösterilen gönderiler tamamlandi.
+                Gösterilen gönderiler tamamlandı.
               </Typography.Text>
             )}
           </div>

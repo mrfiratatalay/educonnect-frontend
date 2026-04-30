@@ -35,7 +35,7 @@ export default function ExploreDiscountGrid({
   }
 
   if (discounts.length === 0) {
-    return <Empty description="Aramana uygun indirim bulunamadi." />;
+    return <Empty description="Aramana uygun indirim bulunamadı." />;
   }
 
   return (

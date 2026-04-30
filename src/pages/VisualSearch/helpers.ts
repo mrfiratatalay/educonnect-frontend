@@ -34,7 +34,7 @@ export function formatPrice(price: number) {
 
 export function getSourceLabel(source: QuerySource) {
   if (source === "camera") return "Kamera";
-  if (source === "example") return "Ornek";
+  if (source === "example") return "Örnek";
   return "Dosya";
 }
 

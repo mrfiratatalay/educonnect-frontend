@@ -57,7 +57,7 @@ export default function ProfileRightRail() {
               </>
             ) : (
               <RailRow>
-                <Typography.Text type="secondary" style={{ fontSize: 13 }}>Henuz aktif bir gündem yok.</Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: 13 }}>Henüz aktif bir gündem yok.</Typography.Text>
               </RailRow>
             )}
             <Typography.Link

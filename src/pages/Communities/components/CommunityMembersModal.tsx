@@ -49,7 +49,7 @@ export default function CommunityMembersModal({
           <Skeleton active avatar paragraph={{ rows: 1 }} />
         </Flex>
       ) : members.length === 0 ? (
-        <Empty description="Üye bulunamadi." />
+        <Empty description="Üye bulunamadı." />
       ) : (
         <Flex vertical>
           {members.map((member, index) => {
@@ -97,12 +97,12 @@ export default function CommunityMembersModal({
                     ) : null}
                     {member.canBeDemoted ? (
                       <Button size="small" loading={isActing} onClick={() => void onDemote(member)}>
-                        Moderorlugu al
+                        Moderatörlüğü al
                       </Button>
                     ) : null}
                     {member.canBeRemoved ? (
                       <Button danger size="small" loading={isActing} onClick={() => void onRemove(member)}>
-                        Cikar
+                        Çıkar
                       </Button>
                     ) : null}
                   </Flex>

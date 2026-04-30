@@ -152,7 +152,7 @@ export default function PostComposer({
               >
                 <Image
                   src={imagePreviewUrl}
-                  alt="Secilen görsel"
+                  alt="Seçilen görsel"
                   preview
                   style={{
                     width: "100%",

@@ -19,14 +19,14 @@ export default function ProfileLikesTab({ userId }: ProfileLikesTabProps) {
   }
 
   if (likesQuery.isError) {
-    return <Alert type="error" showIcon message="Beğeniler yüklenirken bir hata olustu." />;
+    return <Alert type="error" showIcon message="Beğeniler yüklenirken bir hata oluştu." />;
   }
 
   if (posts.length === 0) {
     return (
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
-        description={<Typography.Text type="secondary">Beğeni gecmisi bulunmuyor.</Typography.Text>}
+        description={<Typography.Text type="secondary">Beğeni geçmişi bulunmuyor.</Typography.Text>}
       />
     );
   }

@@ -43,7 +43,7 @@ export default function CommunitiesRail() {
           </Flex>
         ) : (
           <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-            Henuz aktif bir gündem yok.
+            Henüz aktif bir gündem yok.
           </Typography.Text>
         )}
       </RailCard>

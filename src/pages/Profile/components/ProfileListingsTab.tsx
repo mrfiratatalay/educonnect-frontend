@@ -23,7 +23,7 @@ export default function ProfileListingsTab({ userId }: ProfileListingsTabProps) 
   }
 
   if (productsQuery.isError) {
-    return <Alert type="error" showIcon message="Ilanlar yüklenirken bir hata olustu." />;
+    return <Alert type="error" showIcon message="İlanlar yüklenirken bir hata oluştu." />;
   }
 
   if (products.length === 0) {

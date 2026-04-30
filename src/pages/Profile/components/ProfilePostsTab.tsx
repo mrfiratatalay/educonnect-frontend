@@ -19,14 +19,14 @@ export default function ProfilePostsTab({ userId }: ProfilePostsTabProps) {
   }
 
   if (postsQuery.isError) {
-    return <Alert type="error" showIcon message="Gönderiler yüklenirken bir hata olustu." />;
+    return <Alert type="error" showIcon message="Gönderiler yüklenirken bir hata oluştu." />;
   }
 
   if (posts.length === 0) {
     return (
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
-        description={<Typography.Text type="secondary">Henuz gönderi paylaşilmadi.</Typography.Text>}
+        description={<Typography.Text type="secondary">Henüz gönderi paylaşılmadı.</Typography.Text>}
       />
     );
   }

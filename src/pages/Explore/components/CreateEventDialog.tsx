@@ -77,27 +77,27 @@ export default function CreateEventDialog({
 
   async function handleOk() {
     if (title.trim().length < 3) {
-      setErrorMessage("Etkinlik basligi en az 3 karakter olmali.");
+      setErrorMessage("Etkinlik başlığı en az 3 karakter olmalı.");
       return;
     }
 
     if (description.trim().length < 10) {
-      setErrorMessage("Açıklama en az 10 karakter olmali.");
+      setErrorMessage("Açıklama en az 10 karakter olmalı.");
       return;
     }
 
     if (!location.trim()) {
-      setErrorMessage("Konum alani zorunludur.");
+      setErrorMessage("Konum alanı zorunludur.");
       return;
     }
 
     if (!maxParticipants || maxParticipants < 1 || maxParticipants > 5000) {
-      setErrorMessage("Kontenjan 1 ile 5000 arasinda olmalidir.");
+      setErrorMessage("Kontenjan 1 ile 5000 arasında olmalıdır.");
       return;
     }
 
     if (!dateRange) {
-      setErrorMessage("Baslangic ve bitis tarihi secilmelidir.");
+      setErrorMessage("Başlangıç ve bitiş tarihi seçilmelidir.");
       return;
     }
 
@@ -105,12 +105,12 @@ export default function CreateEventDialog({
     const end = dateRange[1].toDate();
 
     if (end <= start) {
-      setErrorMessage("Bitis tarihi baslangic tarihinden sonra olmali.");
+      setErrorMessage("Bitiş tarihi başlangıç tarihinden sonra olmalı.");
       return;
     }
 
     if (start <= new Date()) {
-      setErrorMessage("Etkinlik baslangic tarihi gelecekte olmali.");
+      setErrorMessage("Etkinlik başlangıç tarihi gelecekte olmalı.");
       return;
     }
 
@@ -133,7 +133,7 @@ export default function CreateEventDialog({
 
   return (
     <Modal
-      title={event ? "Etkinligi Düzenle" : "Yeni Etkinlik Oluştur"}
+      title={event ? "Etkinliği Düzenle" : "Yeni Etkinlik Oluştur"}
       open={isOpen}
       onCancel={onClose}
       footer={
@@ -143,14 +143,14 @@ export default function CreateEventDialog({
               ? "Güncelleniyor"
               : "Oluşturuluyor"
             : event
-              ? "Etkinligi Güncelle"
-              : "Etkinligi Oluştur"}
+              ? "Etkinliği Güncelle"
+              : "Etkinliği Oluştur"}
         </Button>
       }
       destroyOnHidden
     >
       <Form layout="vertical" style={{ marginTop: 16 }}>
-        <Form.Item label="Baslik">
+        <Form.Item label="Başlık">
           <Input value={title} onChange={(e) => setTitle(e.target.value)} />
         </Form.Item>
         <Form.Item label="Açıklama">
@@ -163,7 +163,7 @@ export default function CreateEventDialog({
         <Form.Item label="Konum">
           <Input value={location} onChange={(e) => setLocation(e.target.value)} />
         </Form.Item>
-        <Form.Item label="Bagli Grup">
+        <Form.Item label="Bağlı Grup">
           {joinedGroupsQuery.isLoading ? (
             <Skeleton.Input active block />
           ) : (
@@ -176,7 +176,7 @@ export default function CreateEventDialog({
         </Form.Item>
         <Row gutter={16}>
           <Col span={24}>
-            <Form.Item label="Tarih Araligi">
+            <Form.Item label="Tarih Aralığı">
               <DatePicker.RangePicker
                 showTime={{ format: "HH:mm" }}
                 style={{ width: "100%" }}

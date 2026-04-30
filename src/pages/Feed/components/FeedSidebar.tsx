@@ -58,7 +58,7 @@ export default function FeedSidebar({
       >
         <Flex vertical gap={12}>
           <Typography.Title level={4} style={{ margin: 0 }}>
-            Hesabinin özeti
+            Hesabının özeti
           </Typography.Title>
           <Flex align="center" gap={12}>
             <Avatar src={user?.avatarUrl} size={52}>
@@ -73,7 +73,7 @@ export default function FeedSidebar({
               </Typography.Text>
             </div>
           </Flex>
-          <QuickRow label="Akistaki gönderi" value={`${totalCount}`} />
+          <QuickRow label="Akıştaki gönderi" value={`${totalCount}`} />
           <QuickRow label="Aktif topluluk" value={`${recentGroups.length}`} />
         </Flex>
       </Card>
@@ -117,7 +117,7 @@ export default function FeedSidebar({
             </>
           ) : (
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              Henuz aktif bir hashtag gündemi yok.
+              Henüz aktif bir hashtag gündemi yok.
             </Typography.Text>
           )}
         </Flex>
@@ -137,7 +137,7 @@ export default function FeedSidebar({
             <Skeleton active title={false} paragraph={{ rows: 3 }} />
           ) : followSuggestionsQuery.isError ? (
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              Kullanıcı onerileri şimdilik yüklenemedi.
+              Kullanıcı önerileri şimdilik yüklenemedi.
             </Typography.Text>
           ) : followSuggestionsQuery.data && followSuggestionsQuery.data.length > 0 ? (
             <>
@@ -164,7 +164,7 @@ export default function FeedSidebar({
             </>
           ) : (
             <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              Şu an yeni bir takip onerisi yok.
+              Şu an yeni bir takip önerisi yok.
             </Typography.Text>
           )}
         </Flex>

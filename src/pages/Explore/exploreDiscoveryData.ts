@@ -11,9 +11,9 @@ export const exploreDiscoveryTabs: Array<{
 export const exploreFooterLinks = [
   "Hizmet Şartları",
   "Gizlilik Politikası",
-  "Cerez Politikasi",
+  "Çerez Politikası",
   "Imprint",
-  "Erisilebilirlik",
+  "Erişilebilirlik",
   "Reklam bilgisi",
   "Daha fazla ...",
 ];

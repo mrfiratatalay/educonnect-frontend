@@ -111,9 +111,9 @@ export default function EventCard({
           }}
         >
           {isActing
-            ? "Isleniyor"
+            ? "İşleniyor"
             : event.isRegistered
-              ? "Kaydi Iptal Et"
+              ? "Kaydı İptal Et"
               : full
                 ? "Kontenjan Dolu"
                 : "Kayıt Ol"}

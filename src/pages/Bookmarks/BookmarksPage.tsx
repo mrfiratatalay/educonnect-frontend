@@ -88,7 +88,7 @@ export default function BookmarksPage() {
               <Button
                 type="text"
                 shape="circle"
-                aria-label="Geri don"
+                aria-label="Geri dön"
                 style={{ width: 36, height: 36, color: token.colorText }}
                 icon={<ArrowLeft size={18} />}
                 onClick={() => navigate(-1)}
@@ -99,10 +99,10 @@ export default function BookmarksPage() {
                   level={3}
                   style={{ margin: 0, fontSize: 28, fontWeight: 800 }}
                 >
-                  Yer Isaretleri
+                  Yer İşaretleri
                 </Typography.Title>
                 <Typography.Text type="secondary">
-                  Kaydettigin gönderiler burada gorunur.
+                  Kaydettiğin gönderiler burada görünür.
                 </Typography.Text>
               </div>
             </Flex>
@@ -140,14 +140,14 @@ export default function BookmarksPage() {
           >
             <Bookmark size={48} color={token.colorTextTertiary} />
             <Typography.Title level={3} style={{ margin: 0, textAlign: "center" }}>
-              {query.trim() ? "Aramana uygun bir kayıt yok." : "Henuz kayıtlı gönderi yok."}
+              {query.trim() ? "Aramana uygun bir kayıt yok." : "Henüz kayıtlı gönderi yok."}
             </Typography.Title>
             <Typography.Paragraph
               type="secondary"
               style={{ margin: 0, textAlign: "center", maxWidth: 360 }}
             >
               {query.trim()
-                ? "Farkli bir kelime ile tekrar dene."
+                ? "Farklı bir kelime ile tekrar dene."
                 : "Feed'de bookmark ikonuna basarak gönderileri buraya kaydedebilirsin."}
             </Typography.Paragraph>
           </Flex>

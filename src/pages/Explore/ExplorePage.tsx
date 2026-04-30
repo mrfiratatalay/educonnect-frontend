@@ -44,7 +44,7 @@ interface ExploreWorkspacePageProps {
 export function ExploreWorkspacePage({
   forcedTab,
   title = "Topluluklar",
-  description = "Gruplari, etkinlikleri ve kampüsteki yeni firsatlari bu ekrandan takip et.",
+  description = "Grupları, etkinlikleri ve kampüsteki yeni fırsatları bu ekrandan takip et.",
   showTabs = false,
 }: ExploreWorkspacePageProps) {
   const [searchParams, setSearchParams] = useSearchParams();

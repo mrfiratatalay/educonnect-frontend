@@ -35,14 +35,14 @@ export default function CommunitySpotlight({
       >
         <Flex vertical gap={14}>
           <Typography.Text type="secondary" style={{ fontWeight: 700 }}>
-            Topluluklar için bos bir alan degil
+            Topluluklar için boş bir alan değil
           </Typography.Text>
           <Typography.Title level={3} style={{ margin: 0 }}>
-            Ilk topluluğu oluştur ve bu alani canlandir.
+            İlk topluluğu oluştur ve bu alanı canlandır.
           </Typography.Title>
           <Typography.Paragraph type="secondary" style={{ margin: 0 }}>
-            Bu sayfa akis degil, topluluk vitrini olacak. Guzel gorunmesi için once içerik
-            lazim. Ilk adimi buradan atabilirsin.
+            Bu sayfa akış değil, topluluk vitrini olacak. Güzel görünmesi için önce içerik
+            lazım. İlk adımı buradan atabilirsin.
           </Typography.Paragraph>
           <Flex>
             <Button
@@ -152,7 +152,7 @@ export default function CommunitySpotlight({
               onClick={() => onToggleMembership(group)}
               icon={<TeamOutlined />}
             >
-              {isActing ? "Isleniyor" : group.isMember ? "Ayril" : "Katıl"}
+              {isActing ? "İşleniyor" : group.isMember ? "Ayrıl" : "Katıl"}
             </Button>
           </Flex>
         </Flex>

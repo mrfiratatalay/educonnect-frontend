@@ -107,5 +107,5 @@ export function getApiErrorMessage(error: unknown) {
     return error.message;
   }
 
-  return "Beklenmeyen bir hata olustu.";
+  return "Beklenmeyen bir hata oluştu.";
 }

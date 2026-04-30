@@ -55,7 +55,7 @@ export default function EventDetailDialog({
       destroyOnHidden
       open={Boolean(eventId)}
       onClose={onClose}
-      title={event?.title ?? "Etkinlik Detayi"}
+      title={event?.title ?? "Etkinlik Detayı"}
       width={screens.md ? 520 : "100%"}
     >
       {isLoading ? (
@@ -125,12 +125,12 @@ export default function EventDetailDialog({
             onClick={() => onToggleRegistration(event)}
           >
             {actingEventId === event.id
-              ? "Isleniyor"
+              ? "İşleniyor"
               : event.isRegistered
-                ? "Kaydi Iptal Et"
+                ? "Kaydı İptal Et"
                 : full
                   ? "Kontenjan Dolu"
-                  : "Etkinlige Kayıt Ol"}
+                  : "Etkinliğe Kayıt Ol"}
           </Button>
 
           {canManage ? (
@@ -140,7 +140,7 @@ export default function EventDetailDialog({
               </Button>
               <Popconfirm
                 title="Etkinlik silinsin mi?"
-                description="Bu islem geri alinamaz."
+                description="Bu işlem geri alınamaz."
                 okText="Sil"
                 cancelText="Vazgeç"
                 onConfirm={() => onDelete?.(event)}

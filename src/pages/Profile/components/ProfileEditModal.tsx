@@ -27,9 +27,9 @@ import {
 } from "@/features/users/hooks";
 
 const profileEditSchema = z.object({
-  fullName: z.string().min(3, "Ad soyad en az 3 karakter olmali"),
+  fullName: z.string().min(3, "Ad soyad en az 3 karakter olmalı"),
   universityId: z.string().min(1, "Üniversite seçiniz"),
-  department: z.string().min(2, "Bölüm en az 2 karakter olmali"),
+  department: z.string().min(2, "Bölüm en az 2 karakter olmalı"),
   year: z.string().min(1, "Sinif seçiniz"),
   bio: z.string().max(500, "Biyografi en fazla 500 karakter olabilir").optional(),
 });

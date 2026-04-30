@@ -75,7 +75,7 @@ export default function NotificationsMenu({
               onClick={handleMarkAllRead}
               style={{ paddingInline: 0 }}
             >
-              Tümunu Okundu Yap
+              Tümünü Okundu Yap
             </Button>
           )}
         </Flex>
@@ -102,7 +102,7 @@ export default function NotificationsMenu({
           {!notificationsQuery.isLoading && notifications.length === 0 && (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="Henuz bildirimin yok."
+              description="Henüz bildirimin yok."
               styles={{
                 image: { height: 48 },
               }}
@@ -200,7 +200,7 @@ export default function NotificationsMenu({
                 fontWeight: 600,
               }}
             >
-              Tüm bildirimleri gor
+              Tüm bildirimleri gör
             </Button>
           )}
         </div>
@@ -228,17 +228,17 @@ function formatNotificationTime(value: string) {
   const diffInMinutes = Math.round((Date.now() - date.getTime()) / (1000 * 60));
 
   if (diffInMinutes < 60) {
-    return `${Math.max(diffInMinutes, 1)} dk once`;
+    return `${Math.max(diffInMinutes, 1)} dk önce`;
   }
 
   const diffInHours = Math.round(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `${diffInHours} sa once`;
+    return `${diffInHours} sa önce`;
   }
 
   const diffInDays = Math.round(diffInHours / 24);
   if (diffInDays < 7) {
-    return `${diffInDays} g once`;
+    return `${diffInDays} g önce`;
   }
 
   return new Intl.DateTimeFormat("tr-TR", {

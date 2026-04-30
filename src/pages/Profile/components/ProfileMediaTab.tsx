@@ -18,7 +18,7 @@ export default function ProfileMediaTab({ userId }: ProfileMediaTabProps) {
   }
 
   if (mediaQuery.isError) {
-    return <Alert type="error" showIcon message="Medya içerikleri yüklenirken bir hata olustu." />;
+    return <Alert type="error" showIcon message="Medya içerikleri yüklenirken bir hata oluştu." />;
   }
 
   if (posts.length === 0) {

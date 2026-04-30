@@ -108,7 +108,7 @@ export default function SessionHistory({
 
       {sessions.length === 0 && (
         <Typography.Text type="secondary" style={{ fontSize: 12, padding: "12px 8px", textAlign: "center" }}>
-          Henuz sohbet yok.
+          Henüz sohbet yok.
         </Typography.Text>
       )}
     </div>

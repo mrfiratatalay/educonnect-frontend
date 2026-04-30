@@ -121,7 +121,7 @@ export default function CommunityDetailPage() {
   const createGroupPostMutation = useMutation({
     mutationFn: async (input: CreatePostInput) => {
       if (!group?.id) {
-        throw new Error("Topluluk bulunamadi.");
+        throw new Error("Topluluk bulunamadı.");
       }
 
       return createPost({ ...input, groupId: group.id });
@@ -187,7 +187,7 @@ export default function CommunityDetailPage() {
     setMemberActionTargetId(member.userId);
     try {
       await promoteMemberMutation.mutateAsync(member.userId);
-      messageApi.success("Kullanıcı moderatör yapildi.");
+      messageApi.success("Kullanıcı moderatör yapıldı.");
     } finally {
       setMemberActionTargetId(undefined);
     }
@@ -197,7 +197,7 @@ export default function CommunityDetailPage() {
     setMemberActionTargetId(member.userId);
     try {
       await demoteMemberMutation.mutateAsync(member.userId);
-      messageApi.success("Moderatörluk kaldirildi.");
+      messageApi.success("Moderatörlük kaldırıldı.");
     } finally {
       setMemberActionTargetId(undefined);
     }
@@ -205,16 +205,16 @@ export default function CommunityDetailPage() {
 
   function handleRemoveMember(member: AppGroupMember) {
     Modal.confirm({
-      title: `${member.fullName} topluluktan cikarilsin mi?`,
-      content: "Bu kullanıcı topluluk üyeliginin disina alinacak.",
-      okText: "Cikar",
+      title: `${member.fullName} topluluktan çıkarılsın mı?`,
+      content: "Bu kullanıcı topluluk üyeliğinin dışına alınacak.",
+      okText: "Çıkar",
       cancelText: "Vazgeç",
       okButtonProps: { danger: true },
       onOk: async () => {
         setMemberActionTargetId(member.userId);
         try {
           await removeMemberMutation.mutateAsync(member.userId);
-          messageApi.success("Üye topluluktan cikarildi.");
+          messageApi.success("Üye topluluktan çıkarıldı.");
         } finally {
           setMemberActionTargetId(undefined);
         }
@@ -231,9 +231,9 @@ export default function CommunityDetailPage() {
 
     try {
       await copyTextToClipboard(pageUrl);
-      messageApi.success("Topluluk baglantisi kopyalandi.");
+      messageApi.success("Topluluk bağlantısı kopyalandı.");
     } catch {
-      messageApi.error("Baglanti kopyalanamadi.");
+      messageApi.error("Bağlantı kopyalanamadı.");
     }
   }
 
@@ -260,7 +260,7 @@ export default function CommunityDetailPage() {
 
     Modal.confirm({
       title: "Topluluk silinsin mi?",
-      content: "Topluluk listelerden kalkaçak ve artik kullanilamayacak.",
+      content: "Topluluk listelerden kalkacak ve artık kullanılamayacak.",
       okText: "Topluluğu sil",
       cancelText: "Vazgeç",
       okButtonProps: { danger: true, loading: deleteGroupMutation.isPending },
@@ -364,7 +364,7 @@ export default function CommunityDetailPage() {
 
                   <Typography.Paragraph
                     type="secondary"
-                    ellipsis={{ rows: 3, expandable: true, symbol: "Daha Fazla Goruntule" }}
+                    ellipsis={{ rows: 3, expandable: true, symbol: "Daha Fazla Görüntüle" }}
                     style={{ marginTop: 8, marginBottom: 0, fontSize: 16, lineHeight: 1.55 }}
                   >
                     {summary}
@@ -384,7 +384,7 @@ export default function CommunityDetailPage() {
                       {formatCommunityMemberCount(group.memberCount)}
                     </Typography.Text>
                     <Button type="link" onClick={() => setIsMembersOpen(true)} style={{ paddingInline: 0 }}>
-                      Tüm üyeleri gor
+                      Tüm üyeleri gör
                     </Button>
                   </Flex>
                 </div>
@@ -446,7 +446,7 @@ export default function CommunityDetailPage() {
                         paddingInline: 18,
                       }}
                     >
-                      {actingGroupId === group.id ? "Isleniyor" : group.isMember ? "Katıldi" : "Katıl"}
+                      {actingGroupId === group.id ? "İşleniyor" : group.isMember ? "Katıldı" : "Katıl"}
                     </Button>
                   )}
                   {group.canManageMembers ? (
@@ -479,10 +479,10 @@ export default function CommunityDetailPage() {
                 margin: "12px 0 0",
               }}
               items={[
-                { key: "popular", label: "Populer" },
+                { key: "popular", label: "Popüler" },
                 { key: "latest", label: "En Son" },
                 { key: "events", label: "Etkinlikler" },
-                { key: "about", label: "Hakkinda" },
+                { key: "about", label: "Hakkında" },
               ]}
             />
 
@@ -491,7 +491,7 @@ export default function CommunityDetailPage() {
                 <Flex vertical gap={18}>
                   <div>
                     <Typography.Title level={4} style={{ margin: 0 }}>
-                      Hakkinda
+                      Hakkında
                     </Typography.Title>
                     <Typography.Paragraph style={{ margin: "8px 0 0", lineHeight: 1.75 }}>
                       {group.description}
@@ -502,9 +502,9 @@ export default function CommunityDetailPage() {
                   <PlainFact label="Kurucu" value={group.creatorName} />
                   <PlainFact label="Gönderiler" value={`${group.postCount}`} />
                   <PlainFact label="Etkinlikler" value={`${group.eventCount}`} />
-                  <PlainFact label="Rolun" value={formatRoleLabel(group.currentUserRole)} />
+                  <PlainFact label="Rolün" value={formatRoleLabel(group.currentUserRole)} />
                   <PlainFact
-                    label="Paylaşım yetkişi"
+                    label="Paylaşım yetkisi"
                     value={group.canCurrentUserPost ? "Üyelere açık" : "Üyelik gerekiyor"}
                   />
                   <PlainFact
@@ -564,7 +564,7 @@ export default function CommunityDetailPage() {
                   </div>
                 ) : (
                   <Empty
-                    description="Bu toplulukta henuz etkinlik yok."
+                    description="Bu toplulukta henüz etkinlik yok."
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                   />
                 )}
@@ -622,7 +622,7 @@ export default function CommunityDetailPage() {
             <div style={{ width: 350, flexShrink: 0, paddingLeft: 20 }}>
               <div style={{ position: "sticky", top: 12, padding: "0 16px 24px" }}>
                 <Flex vertical gap={16}>
-                  <AsideCard title={`${group.name} Kurallari`}>
+                  <AsideCard title={`${group.name} Kuralları`}>
                     <Flex vertical gap={16}>
                       {communityRules.map((rule, index) => (
                         <RuleRow key={rule} index={index + 1} text={rule} />
@@ -642,7 +642,7 @@ export default function CommunityDetailPage() {
                       <TrendRow label="Üyeler" title={formatCommunityMemberCount(group.memberCount)} />
                       <TrendRow label="Gönderiler" title={`${group.postCount} paylaşım`} />
                       <TrendRow label="Etkinlikler" title={`${group.eventCount} etkinlik`} />
-                      <TrendRow label="Rolun" title={formatRoleLabel(group.currentUserRole)} />
+                      <TrendRow label="Rolün" title={formatRoleLabel(group.currentUserRole)} />
                     </Flex>
                   </AsideCard>
 
@@ -668,7 +668,7 @@ export default function CommunityDetailPage() {
         }}
         onClose={() => setIsEditDialogOpen(false)}
         onSubmit={handleUpdateGroup}
-        submitLabel="Degisiklikleri kaydet"
+        submitLabel="Değişiklikleri kaydet"
         title="Topluluğu düzenle"
       />
       <CommunityMembersModal

@@ -104,8 +104,8 @@ export function getCommunityRules(group: AppGroup) {
   }
 
   return [
-    `${group.name} içinde saygili ve yapici iletisim kur.`,
-    `${group.category} konusu disina tasan paylaşımlari sinirli tut.`,
-    "Tartisma yerine katki, spam yerine fayda uret.",
+    `${group.name} içinde saygılı ve yapıcı iletişim kur.`,
+    `${group.category} konusu dışına taşan paylaşımları sınırlı tut.`,
+    "Tartışma yerine katkı, spam yerine fayda üret.",
   ];
 }

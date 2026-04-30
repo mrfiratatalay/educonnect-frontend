@@ -410,12 +410,12 @@ function ExploreTrendEmptyState({
       style={{ padding: "56px 24px 64px", textAlign: "center" }}
     >
       <Typography.Title level={5} style={{ margin: 0 }}>
-        Trend bulunamadi
+        Trend bulunamadı
       </Typography.Title>
       <Typography.Text type="secondary" style={{ maxWidth: 320 }}>
         {query.trim()
-          ? "Farkli bir kelime dene veya diğer sekmelere gec."
-          : `${tabLabel} sekmesinde gösterecek guncel bir trend yok.`}
+          ? "Farklı bir kelime dene veya diğer sekmelere geç."
+          : `${tabLabel} sekmesinde gösterecek güncel bir trend yok.`}
       </Typography.Text>
     </Flex>
   );
@@ -483,7 +483,7 @@ function SidebarRow({ children }: { children: ReactNode }) {
 
 function getSearchPlaceholder(tab: ExploreTrendTabKey) {
   if (tab === "campus") {
-    return "Kampüste ne konusuluyor ara";
+    return "Kampüste ne konuşuluyor ara";
   }
   return "Ara";
 }

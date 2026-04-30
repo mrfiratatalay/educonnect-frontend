@@ -31,7 +31,7 @@ export default function ExploreTagPage() {
   const posts = postsQuery.data?.pages.flatMap((page) => page.items) ?? [];
   const totalCount = postsQuery.data?.pages[0]?.totalCount ?? 0;
   const errorMessage = !normalizedTag
-    ? "Gecersiz hashtag."
+    ? "Geçersiz hashtag."
     : postsQuery.error instanceof Error
       ? postsQuery.error.message
       : undefined;
@@ -76,7 +76,7 @@ export default function ExploreTagPage() {
                 <Button
                   type="text"
                   shape="circle"
-                  aria-label="Keşfete don"
+                  aria-label="Keşfete dön"
                   style={{ width: 36, height: 36, color: token.colorText }}
                   icon={<ArrowLeft size={18} />}
                   onClick={() => navigate("/explore")}
@@ -87,7 +87,7 @@ export default function ExploreTagPage() {
                     type="secondary"
                     style={{ display: "block", fontSize: 13, lineHeight: 1.3 }}
                   >
-                    Hashtag detayi
+                    Hashtag detayı
                   </Typography.Text>
                   <Flex align="center" gap={8} wrap>
                     <Hash size={18} color={token.colorText} />
@@ -105,8 +105,8 @@ export default function ExploreTagPage() {
                   </Flex>
                   <Typography.Text type="secondary" style={{ fontSize: 14 }}>
                     {totalCount > 0
-                      ? `${totalCount} gönderi bu trend altinda listeleniyor.`
-                      : "Bu trenddeki guncel paylaşımlar burada akaçak."}
+                      ? `${totalCount} gönderi bu trend altında listeleniyor.`
+                      : "Bu trenddeki güncel paylaşımlar burada akacak."}
                   </Typography.Text>
                 </div>
               </Flex>
@@ -121,10 +121,10 @@ export default function ExploreTagPage() {
               errorMessage={errorMessage}
               emptyDescription={
                 normalizedTag
-                  ? `${displayTag} etiketiyle eslesen guncel bir paylaşım yok.`
-                  : "Hashtag baglantisi gecersiz oldugu için bu trend acilamadi."
+                  ? `${displayTag} etiketiyle eşleşen güncel bir paylaşım yok.`
+                  : "Hashtag bağlantısı geçersiz olduğu için bu trend açılamadı."
               }
-              emptyActionLabel="Keşfete don"
+              emptyActionLabel="Keşfete dön"
               isLoading={Boolean(normalizedTag) && postsQuery.isLoading}
               onCreatePostClick={() => undefined}
               onDelete={handleDeletePost}

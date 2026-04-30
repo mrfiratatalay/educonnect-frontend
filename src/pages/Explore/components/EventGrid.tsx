@@ -38,7 +38,7 @@ export default function EventGrid({
   }
 
   if (events.length === 0) {
-    return <Empty description="Aramana uygun etkinlik bulunamadi." />;
+    return <Empty description="Aramana uygun etkinlik bulunamadı." />;
   }
 
   return (

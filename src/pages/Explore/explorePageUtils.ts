@@ -35,7 +35,7 @@ export function getExploreActionConfig(activeTab: ExploreTab) {
         ? "Grup ara"
         : activeTab === "events"
           ? "Etkinlik ara"
-          : "Indirim ara",
+          : "İndirim ara",
   };
 }
 
@@ -49,11 +49,11 @@ export function getExplorePreviewMessage({
   groupsUsePreview: boolean;
 }) {
   if (activeTab === "groups" && groupsUsePreview) {
-    return "Ornek grup içerikleri gösteriliyor.";
+    return "Örnek grup içerikleri gösteriliyor.";
   }
 
   if (activeTab === "events" && eventsUsePreview) {
-    return "Ornek etkinlik içerikleri gösteriliyor.";
+    return "Örnek etkinlik içerikleri gösteriliyor.";
   }
 
   return null;

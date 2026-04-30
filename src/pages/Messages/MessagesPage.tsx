@@ -393,7 +393,7 @@ function NewConversationModal({
         ) : (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={<Typography.Text type="secondary">Kullanıcı bulunamadi</Typography.Text>}
+            description={<Typography.Text type="secondary">Kullanıcı bulunamadı</Typography.Text>}
           />
         )}
       </Flex>
