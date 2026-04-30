@@ -51,7 +51,7 @@ export default function VisualSearchPanel({ onResultsChange }: VisualSearchPanel
     const formData = new FormData();
     formData.append("image", file);
     formData.append("maxResults", "8");
-    formData.append("mode", "discovery");
+    formData.append("mode", "strict");
 
     try {
       const response = await visualSearch.mutateAsync(formData);
