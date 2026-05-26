@@ -18,6 +18,7 @@ export default function PostCommentComposer({
   const { token } = theme.useToken();
   const user = useAuthStore((state) => state.user);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const submittingRef = useRef(false);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -29,16 +30,20 @@ export default function PostCommentComposer({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submittingRef.current) return;
 
     const trimmedContent = content.trim();
     if (!trimmedContent) return;
 
+    submittingRef.current = true;
     try {
       await onSubmit(trimmedContent);
       setContent("");
       if (textareaRef.current) textareaRef.current.style.height = "auto";
     } catch {
       message.error("Yorum gönderilemedi. Lütfen tekrar deneyin.");
+    } finally {
+      submittingRef.current = false;
     }
   }
 

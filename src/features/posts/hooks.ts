@@ -61,12 +61,11 @@ export function useInfinitePostsQuery(pageSize = 10, enabled = true) {
       getForYouPosts({ page: Number(pageParam ?? 1), pageSize }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
-      const loadedCount = pages.reduce(
-        (count, page) => count + page.items.length,
-        0,
-      );
-
-      return loadedCount >= lastPage.totalCount ? undefined : pages.length + 1;
+      // count-tabanli karsilastirma yeni post atilinca duplicate yaratiyordu.
+      // Bunun yerine son sayfanin dolu olup olmadigina bakiyoruz: kisa sayfa = son sayfa.
+      if (lastPage.items.length === 0) return undefined;
+      if (lastPage.items.length < lastPage.pageSize) return undefined;
+      return pages.length + 1;
     },
     enabled,
   });
@@ -79,12 +78,11 @@ export function useInfiniteFollowingPostsQuery(pageSize = 10, enabled = true) {
       getFollowingPosts({ page: Number(pageParam ?? 1), pageSize }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
-      const loadedCount = pages.reduce(
-        (count, page) => count + page.items.length,
-        0,
-      );
-
-      return loadedCount >= lastPage.totalCount ? undefined : pages.length + 1;
+      // count-tabanli karsilastirma yeni post atilinca duplicate yaratiyordu.
+      // Bunun yerine son sayfanin dolu olup olmadigina bakiyoruz: kisa sayfa = son sayfa.
+      if (lastPage.items.length === 0) return undefined;
+      if (lastPage.items.length < lastPage.pageSize) return undefined;
+      return pages.length + 1;
     },
     enabled,
   });
@@ -103,12 +101,11 @@ export function useInfiniteTagPostsQuery(
       getPostsByTag({ tag, page: Number(pageParam ?? 1), pageSize }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
-      const loadedCount = pages.reduce(
-        (count, page) => count + page.items.length,
-        0,
-      );
-
-      return loadedCount >= lastPage.totalCount ? undefined : pages.length + 1;
+      // count-tabanli karsilastirma yeni post atilinca duplicate yaratiyordu.
+      // Bunun yerine son sayfanin dolu olup olmadigina bakiyoruz: kisa sayfa = son sayfa.
+      if (lastPage.items.length === 0) return undefined;
+      if (lastPage.items.length < lastPage.pageSize) return undefined;
+      return pages.length + 1;
     },
     enabled: enabled && Boolean(tag),
   });
@@ -121,12 +118,11 @@ export function useInfiniteBookmarkedPostsQuery(pageSize = 10, enabled = true) {
       getBookmarkedPosts({ page: Number(pageParam ?? 1), pageSize }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
-      const loadedCount = pages.reduce(
-        (count, page) => count + page.items.length,
-        0,
-      );
-
-      return loadedCount >= lastPage.totalCount ? undefined : pages.length + 1;
+      // count-tabanli karsilastirma yeni post atilinca duplicate yaratiyordu.
+      // Bunun yerine son sayfanin dolu olup olmadigina bakiyoruz: kisa sayfa = son sayfa.
+      if (lastPage.items.length === 0) return undefined;
+      if (lastPage.items.length < lastPage.pageSize) return undefined;
+      return pages.length + 1;
     },
     enabled,
   });

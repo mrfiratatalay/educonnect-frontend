@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CompassOutlined } from "@ant-design/icons";
 import { Button, Drawer, Flex, FloatButton, Grid, Tabs, Typography, theme } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +37,11 @@ export default function FeedPage() {
   const isFollowingTab = activeTab === "following";
   const isGroupsTab = activeTab === "groups";
   const isForYouTab = activeTab === "foryou";
+
+  // Tab degisikliginde sayfanin basina don ki kullanici onceki tab'in scroll pozisyonunda kafa karistirici sekilde takilmasin.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeTab]);
   const activeFeedQuery = isGroupsTab
     ? groupsFeedQuery
     : isFollowingTab

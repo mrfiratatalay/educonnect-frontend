@@ -16,7 +16,9 @@ export function useNotificationsQuery(enabled = true) {
     queryKey: notificationKeys.list(),
     queryFn: (): Promise<AppNotification[]> => getNotifications(),
     enabled,
-    refetchInterval: 20_000,
+    // SignalR realtime push var; polling sadece SignalR'in koptugu durumlar icin guvenlik agi.
+    // 20sn cok agresifti, gereksiz network trafigi yarattigi gibi SignalR push'larla yarisiyordu.
+    refetchInterval: 60_000,
     refetchOnWindowFocus: true,
   });
 }

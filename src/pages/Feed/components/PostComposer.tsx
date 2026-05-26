@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Avatar, Button, Flex, Image, Input, Typography, Upload, theme } from "antd";
 import type { UploadProps } from "antd";
 import { DeleteOutlined, FileImageOutlined } from "@ant-design/icons";
@@ -27,6 +27,7 @@ export default function PostComposer({
   const clearDraft = usePostComposerStore((state) => state.clearDraft);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | undefined>();
+  const submittingRef = useRef(false); // double-click guard: parent isSubmitting set olana kadar yari saniye acigi olabiliyor.
   const { token } = theme.useToken();
   const remainingCharacterCount = 1500 - content.length;
 
@@ -82,12 +83,15 @@ export default function PostComposer({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (submittingRef.current) return; // Cift gonderim koruyucusu.
+
     const trimmedContent = content.trim();
     if (!trimmedContent && !imageFile) {
       setErrorMessage("Bir metin yaz veya görsel ekle.");
       return;
     }
 
+    submittingRef.current = true;
     try {
       setErrorMessage(null);
       await onSubmit({
@@ -98,6 +102,8 @@ export default function PostComposer({
       clearDraft();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Paylaşım gönderilemedi.");
+    } finally {
+      submittingRef.current = false;
     }
   }
 
