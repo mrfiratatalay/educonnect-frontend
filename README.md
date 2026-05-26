@@ -2,7 +2,7 @@
 
 > Üniversite öğrencileri için yapay zekâ destekli sosyal medya platformunun React + TypeScript arayüzü.
 
-Bu repo, EduConnect projesinin **kullanıcı arayüzünü** içerir. TÜBİTAK 2209-A Üniversite Öğrencileri Araştırma Projeleri kapsamında, Recep Tayyip Erdoğan Üniversitesi Bilgisayar Mühendisliği bitirme tezim olarak geliştirdim.
+Bu repo, EduConnect projesinin **kullanıcı arayüzünü** içerir. TÜBİTAK 2209-A Üniversite Öğrencileri Araştırma Projeleri kapsamında, Recep Tayyip Erdoğan Üniversitesi Bilgisayar Mühendisliği bitirme tezi olarak **Fırat Atalay** ve **Ayşe Mandıralı** olarak ikimiz birlikte geliştirdik.
 
 Backend ve AI servisleri için: 👉 [educonnect-backend](https://github.com/mrfiratatalay/educonnect-backend)
 
@@ -22,9 +22,9 @@ Backend ve AI servisleri için: 👉 [educonnect-backend](https://github.com/mrf
 
 ## 🎯 Bu Frontend Ne İşe Yarar?
 
-Backend'in sunduğu 80+ REST endpoint'ini, **öğrencinin gerçekten kullanmak isteyeceği akıcı bir arayüz** haline getirmek için tasarladım. Hedef kullanıcı: lisans öğrencisi. Hedefim: kullanıcı uygulamayı açtığında "bu Instagram + Slack + Sahibinden.com + ChatGPT'nin üniversite versiyonu" hissini versin, ama hiçbirini açıkça taklit etmesin — kendine özgü, **akademik bağlamı vurgulayan** bir kimliği olsun.
+Backend'in sunduğu 80+ REST endpoint'ini, **öğrencinin gerçekten kullanmak isteyeceği akıcı bir arayüz** haline getirmek için tasarladık. Hedef kullanıcı: lisans öğrencisi. Hedefimiz: kullanıcı uygulamayı açtığında "bu Instagram + Slack + Sahibinden.com + ChatGPT'nin üniversite versiyonu" hissini versin, ama hiçbirini açıkça taklit etmesin — kendine özgü, **akademik bağlamı vurgulayan** bir kimliği olsun.
 
-Mobile-first responsive tasarım yaptım çünkü öğrenciler bilgisayardan çok telefondan giriyor. Ant Design'ı seçtim çünkü zengin component kütüphanesi var ve **tema customization'ı çok güçlü** — markamı (mavi-indigo paleti) tek bir tema dosyasından tüm sisteme yaydım.
+Mobile-first responsive tasarım yaptık çünkü öğrenciler bilgisayardan çok telefondan giriyor. Ant Design'ı seçtik çünkü zengin component kütüphanesi var ve **tema customization'ı çok güçlü** — markamızı (mavi-indigo paleti) tek bir tema dosyasından tüm sisteme yaydık.
 
 ---
 
@@ -107,7 +107,7 @@ frontend/
 └── tsconfig.json
 ```
 
-**Feature-based mimari** seçtim çünkü 11 modüllü bir projede `components/` ve `pages/` klasörleri çok kalabalıklaşıyor. Her feature kendi API call'larını, hook'larını, component'lerini ve type'larını kendi klasöründe tutuyor — yeni feature eklemek bir klasör açmak kadar kolay.
+**Feature-based mimari** seçtik çünkü 11 modüllü bir projede `components/` ve `pages/` klasörleri çok kalabalıklaşıyor. Her feature kendi API call'larını, hook'larını, component'lerini ve type'larını kendi klasöründe tutuyor — yeni feature eklemek bir klasör açmak kadar kolay.
 
 ---
 
@@ -167,7 +167,7 @@ Vercel Dashboard → Project Settings → Environment Variables:
 |---|---|
 | `VITE_API_BASE_URL` | `https://educonnect-backend-qr03.onrender.com` |
 
-(Lokal geliştirmede aynı değişkeni `.env.local` dosyasında set ediyorum.)
+(Lokal geliştirmede aynı değişkeni `.env.local` dosyasında set ediyoruz.)
 
 ### Otomatik Deploy
 
@@ -193,7 +193,7 @@ Vercel Dashboard → Project Settings → Environment Variables:
 
 ### TanStack Query Pattern
 
-Her feature'da bir `api.ts` (raw axios çağrıları) ve bir `hooks.ts` (`useQuery`/`useMutation` wrapper'ları). Cache invalidation key'leri merkezi olarak tanımlı. Optimistic update kullanıyorum beğeni/bookmark gibi hızlı geri bildirim gereken yerlerde.
+Her feature'da bir `api.ts` (raw axios çağrıları) ve bir `hooks.ts` (`useQuery`/`useMutation` wrapper'ları). Cache invalidation key'leri merkezi olarak tanımlı. Optimistic update kullanıyoruz beğeni/bookmark gibi hızlı geri bildirim gereken yerlerde.
 
 ---
 
@@ -252,12 +252,14 @@ Gerçek bir kullanıcı yaratmak isterseniz Register sayfasından kayıt olabili
 
 ---
 
-## 👤 Geliştirici
+## 👥 Geliştiriciler
 
-**Fırat Atalay**
-Bilgisayar Mühendisliği Lisans Öğrencisi
-Recep Tayyip Erdoğan Üniversitesi
-📧 firat_atalay21@erdogan.edu.tr
+Bu proje, Recep Tayyip Erdoğan Üniversitesi Bilgisayar Mühendisliği bölümünde yakın iki arkadaş olarak birlikte geliştirildi:
+
+- **Fırat Atalay** — Bilgisayar Mühendisliği Lisans Öğrencisi, RTEU
+- **Ayşe Mandıralı** — Bilgisayar Mühendisliği Lisans Öğrencisi, RTEU
+
+Tüm tasarım kararları, mimari seçimler, kod yazımı ve deploy süreci ikimizin ortak çalışmasının ürünüdür.
 
 TÜBİTAK 2209-A Üniversite Öğrencileri Araştırma Projeleri Programı bitirme tezi olarak geliştirildi.
 
