@@ -18,10 +18,7 @@ import FollowToggleButton from "@/components/shared/FollowToggleButton";
 import { useExploreDiscoveryQuery } from "@/features/explore/hooks";
 import { useToggleFollowUserMutation } from "@/features/users/hooks";
 import type { ExploreTrendItem, ExploreTrendTabKey } from "@/features/explore/types";
-import {
-  exploreDiscoveryTabs,
-  exploreFooterLinks,
-} from "@/pages/Explore/exploreDiscoveryData";
+import { exploreDiscoveryTabs } from "@/pages/Explore/exploreDiscoveryData";
 
 export default function ExploreDiscoveryPage() {
   const [query, setQuery] = useState("");
@@ -275,25 +272,6 @@ export default function ExploreDiscoveryPage() {
                   Daha fazla göster
                 </Typography.Link>
               </SidebarCard>
-
-              <Flex
-                wrap
-                gap={8}
-                style={{ padding: "16px 12px 0", maxWidth: 320 }}
-              >
-                {exploreFooterLinks.map((item) => (
-                  <Typography.Text
-                    key={item}
-                    type="secondary"
-                    style={{ fontSize: 13 }}
-                  >
-                    {item}
-                  </Typography.Text>
-                ))}
-                <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                  (c) 2026 EduConnect Corp.
-                </Typography.Text>
-              </Flex>
             </div>
           </div>
         )}

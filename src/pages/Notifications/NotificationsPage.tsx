@@ -41,14 +41,6 @@ import type {
 } from "@/features/notifications/types";
 import { useAuthStore } from "@/store/authStore";
 
-const footerLinks = [
-  "Hizmet Şartları",
-  "Gizlilik Politikası",
-  "Cerez Politikasi",
-  "Reklam bilgisi",
-  "Daha fazla",
-];
-
 type NotificationTabKey = "all" | "unread" | "mentions";
 
 export default function NotificationsPage() {
@@ -370,21 +362,6 @@ export default function NotificationsPage() {
                 </SidebarCard>
 
                 <FollowSuggestionsCard background={elevatedBackground} bordered={false} />
-
-                <Flex wrap gap={8} style={{ paddingInline: 12 }}>
-                  {footerLinks.map((item) => (
-                    <Typography.Text
-                      key={item}
-                      type="secondary"
-                      style={{ fontSize: 13 }}
-                    >
-                      {item}
-                    </Typography.Text>
-                  ))}
-                  <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                    (c) 2026 EduConnect Corp.
-                  </Typography.Text>
-                </Flex>
               </Flex>
             </div>
           </div>

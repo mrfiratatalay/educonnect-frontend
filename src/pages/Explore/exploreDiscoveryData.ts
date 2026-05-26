@@ -8,12 +8,3 @@ export const exploreDiscoveryTabs: Array<{
   { key: "campus", label: "Gündemdekiler" },
 ];
 
-export const exploreFooterLinks = [
-  "Hizmet Şartları",
-  "Gizlilik Politikası",
-  "Çerez Politikası",
-  "Imprint",
-  "Erişilebilirlik",
-  "Reklam bilgisi",
-  "Daha fazla ...",
-];
