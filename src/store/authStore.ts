@@ -8,6 +8,7 @@ import {
   clearAccessToken,
   setAccessToken,
 } from "@/features/auth/token";
+import { disconnectAllSignalR } from "@/lib/signalrLifecycle";
 import type { User } from "@/types";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
@@ -79,6 +80,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // Logout should still clear the local session even if the request fails.
     } finally {
+      // Once SignalR baglantilarini explicit kapat ki eski token ile reconnect denemesin.
+      await disconnectAllSignalR();
       get().clearSession();
     }
   },

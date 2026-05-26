@@ -427,7 +427,7 @@ export default function PostCard({
                   {post.imageUrl && (
                     <Image
                       src={post.imageUrl}
-                      alt="Gönderi görseli"
+                      alt={post.content ? `${post.userName} gönderisi: ${post.content.slice(0, 80)}` : `${post.userName} gönderisindeki görsel`}
                       preview
                       style={{
                         maxHeight: 384,

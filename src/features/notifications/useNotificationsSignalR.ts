@@ -5,6 +5,7 @@ import { getAccessToken } from "@/features/auth/token";
 import { normalizeNotification } from "@/features/notifications/api";
 import { notificationKeys } from "@/features/notifications/hooks";
 import type { AppNotification, NotificationTypeValue } from "@/features/notifications/types";
+import { registerSignalRConnection } from "@/lib/signalrLifecycle";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
 
@@ -56,11 +57,13 @@ export function useNotificationsSignalR(enabled: boolean) {
     });
 
     connectionRef.current = connection;
+    const unregister = registerSignalRConnection(connection);
     void connection.start().catch(() => {
       /* polling ile devam */
     });
 
     return () => {
+      unregister();
       void connection.stop();
       connectionRef.current = null;
     };

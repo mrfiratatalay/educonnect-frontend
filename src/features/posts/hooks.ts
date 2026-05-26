@@ -370,7 +370,34 @@ export function useTogglePostBookmarkMutation() {
       postId,
       isBookmarked: await togglePostBookmark(postId),
     }),
+    onMutate: async (postId) => {
+      // Like ile ayni pattern: optimistic flip + snapshot. API patlarsa snapshot'tan geri dondur.
+      await queryClient.cancelQueries({
+        predicate: (query) =>
+          query.queryKey[0] === "posts" || isGroupsPostQuery(query.queryKey),
+      });
+
+      const snapshot = queryClient.getQueriesData<
+        PostsPage | InfiniteData<PostsPage> | PostDetail
+      >({
+        predicate: (query) =>
+          query.queryKey[0] === "posts" || isGroupsPostQuery(query.queryKey),
+      });
+
+      updatePostAcrossCaches(queryClient, postId, (post) => ({
+        ...post,
+        isBookmarked: !post.isBookmarked,
+      }));
+
+      return { snapshot };
+    },
+    onError: (_error, _postId, context) => {
+      context?.snapshot.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
     onSuccess: async ({ postId, isBookmarked }) => {
+      // Server'in dondurdugu kesin durumla tutarla (paralel istek senaryolari icin).
       updatePostAcrossCaches(queryClient, postId, (post) => ({
         ...post,
         isBookmarked,

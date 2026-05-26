@@ -37,7 +37,7 @@ export default function ProfileMediaTab({ userId }: ProfileMediaTabProps) {
           <Col key={post.id} xs={8} sm={6}>
             <Image
               src={post.imageUrl}
-              alt=""
+              alt={post.content ? `Gönderi: ${post.content.slice(0, 60)}` : "Profil medya görseli"}
               style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 8 }}
               preview
             />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
@@ -63,6 +63,7 @@ export default function ProfileEditModal({
   const uploadAvatarMutation = useUploadMyAvatarMutation();
   const uploadCoverMutation = useUploadMyCoverMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const submittingRef = useRef(false);
 
   const { data: universities = [], isLoading: isUniversitiesLoading } = useQuery({
     queryKey: ["universities"],
@@ -101,6 +102,8 @@ export default function ProfileEditModal({
   }, [open, profile, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
+    if (submittingRef.current) return; // Double-click koruyucusu.
+    submittingRef.current = true;
     setSubmitError(null);
 
     try {
@@ -116,6 +119,8 @@ export default function ProfileEditModal({
       onClose();
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
+    } finally {
+      submittingRef.current = false;
     }
   });
 

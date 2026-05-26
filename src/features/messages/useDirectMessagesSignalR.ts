@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getAccessToken } from "@/features/auth/token";
 import { messageKeys } from "@/features/messages/hooks";
 import type { ReceiveMessagePayload } from "@/features/messages/types";
+import { registerSignalRConnection } from "@/lib/signalrLifecycle";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
 
@@ -47,11 +48,13 @@ export function useDirectMessagesSignalR(enabled: boolean) {
     });
 
     connectionRef.current = connection;
+    const unregister = registerSignalRConnection(connection);
     void connection.start().catch(() => {
       /* REST ile devam */
     });
 
     return () => {
+      unregister();
       void connection.stop();
       connectionRef.current = null;
     };
