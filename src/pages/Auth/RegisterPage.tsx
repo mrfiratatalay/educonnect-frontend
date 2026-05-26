@@ -76,7 +76,6 @@ const yearOptions = [
   { value: "2", label: "2. Sınıf" },
   { value: "3", label: "3. Sınıf" },
   { value: "4", label: "4. Sınıf" },
-  { value: "5", label: "5. Sınıf+" },
 ];
 
 export default function RegisterPage() {

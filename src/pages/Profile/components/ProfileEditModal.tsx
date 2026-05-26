@@ -452,7 +452,7 @@ export default function ProfileEditModal({
                     {...field}
                     size="large"
                     placeholder="Seçiniz"
-                    options={Array.from({ length: 8 }, (_, index) => ({
+                    options={Array.from({ length: 4 }, (_, index) => ({
                       value: String(index + 1),
                       label: `${index + 1}. sinif`,
                     }))}
