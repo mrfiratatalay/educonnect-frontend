@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 const { Title, Paragraph, Text, Link } = Typography;
 
-const EFFECTIVE_DATE = "18 Nisan 2026";
+const EFFECTIVE_DATE = "27 Mayıs 2026";
 const PLATFORM_NAME = "EduConnect";
-const CONTACT_EMAIL = "firat_atalay21@erdogan.edu.tr";
 
 export default function TermsPage() {
   const navigate = useNavigate();
@@ -31,14 +30,18 @@ export default function TermsPage() {
 
       <Paragraph>
         Bu Hizmet Şartları ("Şartlar"), {PLATFORM_NAME} platformunu ("Platform") kullanan bireyler ("Kullanıcı") ile
-        Platform'u işleten araştırma ekibi ("Biz") arasındaki hukuki ilişkiyi düzenler.
+        Platform'u Recep Tayyip Erdoğan Üniversitesi Bilgisayar Mühendisliği lisans bitirme tezi ve
+        TÜBİTAK 2209-A Üniversite Öğrencileri Araştırma Projeleri Programı kapsamında geliştiren
+        <strong> Fırat Atalay ve Ayşe Mandıralı</strong> ("Biz") arasındaki hukuki ilişkiyi düzenler.
         Platform'a erişerek veya hesap oluşturarak bu Şartları okuduğunuzu, anladığınızı ve kabul ettiğinizi beyan edersiniz.
       </Paragraph>
 
       <Title level={3}>1. Platformun Amacı ve Kapsamı</Title>
       <Paragraph>
-        {PLATFORM_NAME}, üniversite öğrencilerinin akademik ve sosyal etkileşimini desteklemek amacıyla yürütülen
-        bir TÜBİTAK destekli araştırma projesi kapsamında geliştirilmiş bir prototip platformdur.
+        {PLATFORM_NAME}, üniversite öğrencilerinin akademik ve sosyal etkileşimini desteklemek amacıyla
+        Recep Tayyip Erdoğan Üniversitesi Bilgisayar Mühendisliği lisans bitirme tezi ve
+        TÜBİTAK 2209-A Üniversite Öğrencileri Araştırma Projeleri Programı kapsamında
+        geliştirilmiş bir prototip platformdur.
         Platform; gönderi paylaşımı, topluluk oluşturma, etkinlik takibi, yapay zeka destekli akademik asistan ve
         öğrenci pazarı gibi özellikler sunmaktadır.
       </Paragraph>
@@ -116,13 +119,13 @@ export default function TermsPage() {
 
       <Title level={3}>10. Uygulanacak Hukuk</Title>
       <Paragraph>
-        Bu Şartlar Türkiye Cumhuriyeti hukukuna tabidir. Uyuşmazlıklarda yetkili mahkeme İstanbul Mahkemeleri'dir.
+        Bu Şartlar Türkiye Cumhuriyeti hukukuna tabidir. Uyuşmazlıklarda yetkili mahkeme Rize Mahkemeleri'dir.
       </Paragraph>
 
       <Title level={3}>11. İletişim</Title>
       <Paragraph>
-        Bu Şartlara ilişkin sorularınız için{" "}
-        <Link href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</Link> adresine yazabilirsiniz.
+        Bu Şartlara ilişkin sorularınız için Platform'a kayıtlı kurumsal e-posta adresinizden geliştirici ekibe
+        ulaşabilirsiniz. Talepler, akademik dönem içerisinde mümkün olan en kısa sürede yanıtlanır.
       </Paragraph>
     </Flex>
   );

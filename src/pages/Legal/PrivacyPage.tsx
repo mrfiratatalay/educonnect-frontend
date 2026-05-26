@@ -1,11 +1,10 @@
 import { Typography, Divider, Flex, Table } from "antd";
 import { useNavigate } from "react-router-dom";
 
-const { Title, Paragraph, Text, Link } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
-const EFFECTIVE_DATE = "18 Nisan 2026";
+const EFFECTIVE_DATE = "27 Mayıs 2026";
 const PLATFORM_NAME = "EduConnect";
-const CONTACT_EMAIL = "firat_atalay21@erdogan.edu.tr";
 
 const dataCategories = [
   {
@@ -89,9 +88,11 @@ export default function PrivacyPage() {
 
       <Title level={3}>1. Veri Sorumlusu</Title>
       <Paragraph>
-        Platform kapsamında veri sorumlusu sıfatını taşıyan araştırma ekibi aşağıdaki iletişim bilgileriyle ulaşılabilir durumdadır:
-        <br />
-        <Link href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</Link>
+        Platform kapsamında veri sorumlusu sıfatını taşıyan kişiler, Platform'u
+        Recep Tayyip Erdoğan Üniversitesi Bilgisayar Mühendisliği lisans bitirme tezi ve
+        TÜBİTAK 2209-A Üniversite Öğrencileri Araştırma Projeleri Programı kapsamında geliştiren
+        <strong> Fırat Atalay ve Ayşe Mandıralı</strong>'dır.
+        İletişim talepleriniz için Platform'a kayıtlı kurumsal e-posta adresinizden bizlere ulaşabilirsiniz.
       </Paragraph>
 
       <Title level={3}>2. Toplanan Kişisel Veriler ve İşleme Amaçları</Title>
@@ -141,18 +142,30 @@ export default function PrivacyPage() {
         Verilerinizi korumak için aşağıdaki teknik ve idari önlemler uygulanmaktadır:
       </Paragraph>
       <ul style={{ paddingLeft: 20, lineHeight: 2 }}>
-        <li>HTTPS ile şifreli iletişim</li>
-        <li>Şifrelerin bcrypt algoritmasıyla hash'lenerek saklanması</li>
-        <li>JWT tabanlı oturum yönetimi ve token sona erme süreleri</li>
-        <li>Rol tabanlı erişim kontrolü (RBAC)</li>
-        <li>Güvenlik açıklarının düzenli olarak izlenmesi</li>
+        <li>HTTPS / TLS 1.2+ ile şifreli iletişim</li>
+        <li>Şifrelerin <Text code>PBKDF2-HMAC-SHA256</Text> algoritmasıyla (ASP.NET Core Identity standardı) salt'lı şekilde hash'lenerek saklanması</li>
+        <li>JWT tabanlı oturum yönetimi, kısa ömürlü access token ve döngüsel refresh token kullanımı</li>
+        <li>Rol tabanlı yetkilendirme</li>
+        <li>Veritabanı şifreli bağlantı (SSL/TLS) üzerinden erişim</li>
+        <li>Güvenlik açıklarının düzenli olarak izlenmesi ve bağımlılıkların güncel tutulması</li>
       </ul>
 
       <Title level={3}>7. Verilerin Uluslararası Aktarımı</Title>
       <Paragraph>
-        Verileriniz kural olarak Türkiye sınırları içinde işlenir ve saklanır. Barındırma altyapısının
-        yurt dışı sunuculara ihtiyaç duyması halinde, KVKK madde 9 kapsamında yeterli koruma güvenceleri
-        sağlanır ve bu durum kullanıcılara bildirilir.
+        Platform, prototip aşamasında olduğu için bazı verileriniz aşağıdaki yurt dışı barındırma ve servis
+        sağlayıcılarının altyapısı üzerinde işlenmektedir. Bu durum KVKK madde 9 kapsamında aşağıda açıkça
+        beyan edilmiştir; Platform'a kayıt olarak verilerinizin bu sağlayıcılara aktarılmasına açık rıza vermiş olursunuz:
+      </Paragraph>
+      <ul style={{ paddingLeft: 20, lineHeight: 2 }}>
+        <li><strong>Vercel Inc. (ABD)</strong> — Frontend barındırma (CDN, statik dosya servisi)</li>
+        <li><strong>Render Inc. (ABD, Oregon)</strong> — Backend API barındırma + PostgreSQL veritabanı</li>
+        <li><strong>Hugging Face SAS (Fransa)</strong> — Doğal dil işleme (NLP) servisi barındırma</li>
+        <li><strong>Google LLC (ABD)</strong> — Gemini API üzerinden chatbot yanıt üretimi (gönderdiğiniz mesaj metni anlık olarak işlenir, kalıcı saklanmaz)</li>
+        <li><strong>Brevo SAS (Fransa)</strong> — Hesap doğrulama e-postası gönderimi</li>
+      </ul>
+      <Paragraph>
+        Bu sağlayıcıların tamamı GDPR ve eşdeğer veri koruma standartlarına tabidir. Platform yalnızca
+        işlevsel olarak gerekli verileri aktarır; pazarlama veya analitik amacıyla üçüncü taraflara veri satışı yapılmaz.
       </Paragraph>
 
       <Title level={3}>8. KVKK ve GDPR Kapsamındaki Haklarınız</Title>
@@ -167,7 +180,7 @@ export default function PrivacyPage() {
         <li><strong>Şikâyet:</strong> Kişisel Verileri Koruma Kurumu (KVKK) veya ilgili AB denetim makamına şikâyette bulunma</li>
       </ul>
       <Paragraph>
-        Bu haklarınızı kullanmak için <Link href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</Link> adresine
+        Bu haklarınızı kullanmak için Platform'a kayıtlı kurumsal e-posta adresinizden geliştirici ekibe
         yazılı başvuruda bulunabilirsiniz. Başvurularınız en geç 30 gün içinde yanıtlanır.
       </Paragraph>
 
@@ -187,8 +200,9 @@ export default function PrivacyPage() {
       <Title level={3}>11. İletişim</Title>
       <Paragraph>
         Gizlilik Politikamıza ilişkin sorularınız, haklarınızı kullanma talepleriniz veya veri ihlali
-        bildirimleri için:{" "}
-        <Link href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</Link>
+        bildirimleri için Platform'a kayıtlı kurumsal e-posta adresinizden geliştirici ekibe ulaşabilirsiniz.
+        Acil veri ihlali şüphesi durumunda Platform'daki "Geri Bildirim" özelliği üzerinden de bilgi
+        verebilirsiniz; bu kanaldan gelen talepler öncelikli olarak değerlendirilir.
       </Paragraph>
     </Flex>
   );
