@@ -265,6 +265,17 @@ TÜBİTAK 2209-A Üniversite Öğrencileri Araştırma Projeleri Programı bitir
 
 ---
 
+## 📁 Ek Dokümantasyon
+
+Detaylı teknik belgeler için `docs/` klasörüne bakın:
+
+| Doküman | İçerik |
+|---------|--------|
+| [docs/frontend-architecture.md](docs/frontend-architecture.md) | Teknoloji seçim gerekçeleri, klasör yapısı, state mimarisi |
+| [docs/component-guide.md](docs/component-guide.md) | Bileşen kuralları, TanStack Query örüntüleri, form yönetimi |
+
+---
+
 ## 📄 Lisans
 
 MIT License. Akademik ve eğitim amaçlı her kullanım serbesttir; ticari kullanım öncesi lütfen iletişime geçin.
