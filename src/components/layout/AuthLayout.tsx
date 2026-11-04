@@ -6,6 +6,7 @@ import {
   authPrimaryButtonStyle,
   authSecondaryButtonStyle,
 } from "@/pages/Auth/AuthPageParts";
+import DemoAccessPanel from "@/demo/ui/DemoAccessPanel";
 
 function AuthLayoutContent() {
   const { pathname } = useLocation();
@@ -114,6 +115,8 @@ function AuthLayoutContent() {
               >
                 Üniversite ağına bugün katıl.
               </Typography.Title>
+
+              {__DEMO_MODE__ ? <DemoAccessPanel /> : null}
 
               <Flex vertical gap={14} style={{ width: "100%", maxWidth: 360 }}>
                 <Button

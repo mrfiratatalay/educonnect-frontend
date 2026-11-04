@@ -6,6 +6,7 @@ import { z } from "zod";
 import { Alert, Button, Flex, Input } from "antd";
 import { getApiErrorMessage, login as loginRequest } from "@/features/auth/api";
 import { useAuthStore } from "@/store/authStore";
+import DemoAccessPanel from "@/demo/ui/DemoAccessPanel";
 import {
   AuthPageFooter,
   AuthPageIntro,
@@ -54,6 +55,7 @@ export default function LoginPage() {
 
   return (
     <Flex vertical style={{ width: "100%", maxWidth: 380 }}>
+      {__DEMO_MODE__ ? <DemoAccessPanel compact /> : null}
       <AuthPageIntro
         eyebrow="Hesabına dön"
         title="Giriş yap"
