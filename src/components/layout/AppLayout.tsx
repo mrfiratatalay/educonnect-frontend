@@ -12,6 +12,7 @@ import Header from "./Header";
 import MobileNav from "./MobileNav";
 import ChatBubble from "@/components/chat/ChatBubble";
 import PostComposer from "@/pages/Feed/components/PostComposer";
+import DemoBadge from "@/demo/ui/DemoBadge";
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -87,6 +88,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </div>
 
       <MobileNav />
+      {__DEMO_MODE__ ? <DemoBadge /> : null}
       {shouldShowChatBubble && <ChatBubble />}
 
       {isMobile ? (

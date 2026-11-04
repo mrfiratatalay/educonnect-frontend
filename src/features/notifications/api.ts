@@ -1,4 +1,4 @@
-import axios from "axios";
+import { createApiClient } from "@/lib/apiClient";
 import { getApiErrorMessage } from "@/features/auth/api";
 import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
 import type {
@@ -7,12 +7,7 @@ import type {
   NotificationTypeValue,
 } from "@/features/notifications/types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
-
-const notificationsApi = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-});
+const notificationsApi = createApiClient();
 
 interface ApiNotificationResponse {
   id: string;

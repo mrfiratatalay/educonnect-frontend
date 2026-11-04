@@ -1,4 +1,4 @@
-import axios from "axios";
+import { createApiClient } from "@/lib/apiClient";
 import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
 import type {
   ChatbotReply,
@@ -7,13 +7,7 @@ import type {
   ChatSessionStartedResponse,
 } from "@/features/chat/types";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
-
-const chatApi = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-});
+const chatApi = createApiClient();
 
 export async function startSession(): Promise<ChatSessionStartedResponse> {
   const response = await executeAuthorizedRequest<ChatSessionStartedResponse>((token) =>

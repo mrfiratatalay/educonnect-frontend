@@ -4,7 +4,7 @@ import type { UserRole } from "@/types";
 const roleLabels: Record<UserRole, string> = {
   student: "Öğrenci",
   admin: "Yönetici",
-  moderatör: "Moderatör",
+  moderator: "Moderatör",
 };
 
 interface ProfileDetailsCardProps {

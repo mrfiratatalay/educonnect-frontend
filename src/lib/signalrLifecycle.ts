@@ -1,13 +1,13 @@
-import type * as signalR from "@microsoft/signalr";
+import type { RealtimeConnection } from "@/lib/realtime";
 
 /**
  * Module-level registry of active SignalR connections.
  * useEffect cleanup auth state degisikliginde tetiklenmeyebilir (ornek: AppLayout unmount sirasi yarisi varsa
  * accessTokenFactory hala eski token'i kullanir). Bu registry ile logout aninda explicit olarak stop edebiliyoruz.
  */
-const activeConnections = new Set<signalR.HubConnection>();
+const activeConnections = new Set<RealtimeConnection>();
 
-export function registerSignalRConnection(connection: signalR.HubConnection): () => void {
+export function registerSignalRConnection(connection: RealtimeConnection): () => void {
   activeConnections.add(connection);
   return () => {
     activeConnections.delete(connection);

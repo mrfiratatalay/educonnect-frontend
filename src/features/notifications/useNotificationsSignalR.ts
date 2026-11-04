@@ -1,13 +1,10 @@
-import { useEffect, useRef } from "react";
-import * as signalR from "@microsoft/signalr";
+import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getAccessToken } from "@/features/auth/token";
 import { normalizeNotification } from "@/features/notifications/api";
 import { notificationKeys } from "@/features/notifications/hooks";
 import type { AppNotification, NotificationTypeValue } from "@/features/notifications/types";
+import { createRealtimeConnection } from "@/lib/realtime";
 import { registerSignalRConnection } from "@/lib/signalrLifecycle";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
 
 interface NotificationPayload {
   id: string;
@@ -21,22 +18,13 @@ interface NotificationPayload {
 
 export function useNotificationsSignalR(enabled: boolean) {
   const queryClient = useQueryClient();
-  const connectionRef = useRef<signalR.HubConnection | null>(null);
 
   useEffect(() => {
     if (!enabled) {
       return;
     }
 
-    const base = API_BASE_URL.replace(/\/$/, "");
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${base}/hubs/notifications`, {
-        accessTokenFactory: () => getAccessToken() ?? "",
-        transport: signalR.HttpTransportType.WebSockets,
-        skipNegotiation: true,
-      })
-      .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
-      .build();
+    const connection = createRealtimeConnection("/hubs/notifications");
 
     connection.on("NotificationReceived", (payload: NotificationPayload) => {
       if (!payload?.id) {
@@ -56,7 +44,6 @@ export function useNotificationsSignalR(enabled: boolean) {
       );
     });
 
-    connectionRef.current = connection;
     const unregister = registerSignalRConnection(connection);
     void connection.start().catch(() => {
       /* polling ile devam */
@@ -65,7 +52,6 @@ export function useNotificationsSignalR(enabled: boolean) {
     return () => {
       unregister();
       void connection.stop();
-      connectionRef.current = null;
     };
   }, [enabled, queryClient]);
 }

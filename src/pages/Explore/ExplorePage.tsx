@@ -250,7 +250,7 @@ export function ExploreWorkspacePage({
       currentUser &&
         (event.creatorUserId === currentUser.id ||
           currentUser.role === "admin" ||
-          currentUser.role === "moderatör"),
+          currentUser.role === "moderator"),
     );
 
     if (!canManage) {

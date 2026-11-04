@@ -1,12 +1,8 @@
 import axios from "axios";
+import { createApiClient } from "@/lib/apiClient";
 import type { User } from "@/types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
-
-const authApi = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-});
+const authApi = createApiClient();
 
 export interface LoginInput {
   email: string;

@@ -45,7 +45,7 @@ export default function PostCommentList({
           (currentUser.id === comment.userId ||
             currentUser.id === postAuthorId ||
             currentUser.role === "admin" ||
-            currentUser.role === "moderatör");
+            currentUser.role === "moderator");
 
         return (
           <div key={comment.id} style={{ padding: "8px 0" }}>

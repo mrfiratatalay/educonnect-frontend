@@ -87,11 +87,11 @@ export default function GroupDetailDialog({
             size="small"
           />
 
-          {"moderatörPreviewMembers" in group && group.moderatörPreviewMembers.length > 0 ? (
+          {"moderatorPreviewMembers" in group && group.moderatorPreviewMembers.length > 0 ? (
             <Flex vertical gap={8}>
               <Typography.Text strong>Yöneticiler</Typography.Text>
               <Flex gap={8} wrap>
-                {group.moderatörPreviewMembers.map((member) => (
+                {group.moderatorPreviewMembers.map((member) => (
                   <Tag key={member.userId}>{member.fullName}</Tag>
                 ))}
               </Flex>

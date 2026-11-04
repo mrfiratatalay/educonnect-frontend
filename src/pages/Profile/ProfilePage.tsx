@@ -52,7 +52,7 @@ export interface ProfileViewModel {
 const roleLabels: Record<UserRole, string> = {
   student: "Öğrenci",
   admin: "Yönetici",
-  moderatör: "Moderatör",
+  moderator: "Moderatör",
 };
 
 type ConnectionView = "followers" | "following" | null;

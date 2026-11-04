@@ -1,4 +1,4 @@
-import axios from "axios";
+import { createApiClient } from "@/lib/apiClient";
 import { getApiErrorMessage } from "@/features/auth/api";
 import { executeAuthorizedRequest } from "@/features/auth/authenticatedRequest";
 import type {
@@ -12,12 +12,7 @@ import type {
 } from "@/features/groups/types";
 import type { FeedPost, GetPostsInput, PostsPage } from "@/features/posts/types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5160";
-
-const groupsApi = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-});
+const groupsApi = createApiClient();
 
 interface ApiGroupResponse {
   id: string;
@@ -42,18 +37,18 @@ interface ApiGroupMemberPreviewResponse {
   fullName: string;
   avatarUrl?: string | null;
   department?: string | null;
-  role: "member" | "moderatör" | "owner";
+  role: "member" | "moderator" | "owner";
 }
 
 interface ApiGroupDetailResponse extends ApiGroupResponse {
   postCount: number;
   eventCount: number;
   canCurrentUserPost: boolean;
-  currentUserRole?: "member" | "moderatör" | "owner" | null;
+  currentUserRole?: "member" | "moderator" | "owner" | null;
   canManageMembers: boolean;
   canManageSettings: boolean;
   canCreateEvents: boolean;
-  moderatörPreviewMembers: ApiGroupMemberPreviewResponse[];
+  moderatorPreviewMembers: ApiGroupMemberPreviewResponse[];
 }
 
 interface ApiGroupMemberResponse {
@@ -61,7 +56,7 @@ interface ApiGroupMemberResponse {
   fullName: string;
   avatarUrl?: string | null;
   department?: string | null;
-  role: "member" | "moderatör" | "owner";
+  role: "member" | "moderator" | "owner";
   joinedAtUtc: string;
   isCurrentUser: boolean;
   canBePromoted: boolean;
@@ -468,7 +463,7 @@ function normalizeGroupDetail(group: ApiGroupDetailResponse): AppGroupDetail {
     canManageMembers: group.canManageMembers,
     canManageSettings: group.canManageSettings,
     canCreateEvents: group.canCreateEvents,
-    moderatörPreviewMembers: (group.moderatörPreviewMembers ?? []).map(normalizePreviewMember),
+    moderatorPreviewMembers: (group.moderatorPreviewMembers ?? []).map(normalizePreviewMember),
   };
 }
 

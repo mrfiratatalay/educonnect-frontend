@@ -85,7 +85,7 @@ export default function PostList({
             canManage={
               post.userId === currentUserId ||
               currentUserRole === "admin" ||
-              currentUserRole === "moderatör"
+              currentUserRole === "moderator"
             }
             isDeleting={deletingPostId === post.id}
             isUpdating={updatingPostId === post.id}

@@ -163,7 +163,7 @@ export default function BookmarksPage() {
                   canManage={
                     post.userId === user?.id ||
                     user?.role === "admin" ||
-                    user?.role === "moderatör"
+                    user?.role === "moderator"
                   }
                   isDeleting={deletingPostId === post.id}
                   isUpdating={updatingPostId === post.id}
