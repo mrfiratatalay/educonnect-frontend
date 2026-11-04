@@ -136,10 +136,13 @@ src/
 
 ## Team
 
-**Fırat Atalay** and **Ayşe Mandıralı** built EduConnect together. We shared every responsibility; there was no
-captain or single owner. A large part of the code was written together with AI coding assistants (Claude Code); we
-decided the architecture, the rules and what counted as correct. We thank the TÜBİTAK 2209-A programme for its
-support.
+**Fırat Atalay** (team captain) and **Ayşe Mandıralı**. As a two-person team we shared the work. A large part of the
+code was written together with AI coding assistants (Claude Code); we decided the architecture, the rules and what
+counted as correct. We thank the TÜBİTAK 2209-A programme for its support.
 
 **Notice.** Recep Tayyip Erdoğan University, TÜBİTAK and other names are trademarks of their owners. EduConnect is a
 student project, not an official service of the university. The people and data in the demo are made up.
+
+## License
+
+[MIT](LICENSE) © 2026 Fırat Atalay, Ayşe Mandıralı

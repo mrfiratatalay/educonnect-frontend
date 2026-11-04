@@ -133,9 +133,13 @@ src/
 
 ## Ekip
 
-EduConnect'i **Fırat Atalay** ve **Ayşe Mandıralı** birlikte geliştirdi. Bütün sorumlulukları paylaştık; kaptan ya
-da tek bir sahip yoktu. Kodun önemli bir kısmı yapay zekâ kodlama asistanlarıyla (Claude Code) birlikte yazıldı;
-mimariyi, kuralları ve doğruluğu biz belirledik. Desteği için TÜBİTAK 2209-A programına teşekkür ederiz.
+**Fırat Atalay** (takım kaptanı) ve **Ayşe Mandıralı**. İki kişilik takımda işi paylaştık. Kodun önemli bir kısmı
+yapay zekâ kodlama asistanlarıyla (Claude Code) birlikte yazıldı; mimariyi, kuralları ve doğruluğu biz belirledik.
+Desteği için TÜBİTAK 2209-A programına teşekkür ederiz.
 
 **Uyarı.** Recep Tayyip Erdoğan Üniversitesi, TÜBİTAK ve diğer adlar sahiplerinin markalarıdır. EduConnect bir
 öğrenci projesi; üniversitenin resmî bir hizmeti değil. Demodaki kişiler ve veriler uydurma.
+
+## Lisans
+
+[MIT](LICENSE) © 2026 Fırat Atalay, Ayşe Mandıralı
