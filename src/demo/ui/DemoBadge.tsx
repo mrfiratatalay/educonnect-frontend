@@ -1,6 +1,6 @@
 import { App, Button, Flex, Grid, Popover, Typography } from "antd";
 import { FlaskConical, RotateCcw, Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { resetDemo } from "@/demo/storage";
 import { useAuthStore } from "@/store/authStore";
 
@@ -13,7 +13,11 @@ export default function DemoBadge() {
   const screens = Grid.useBreakpoint();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const { pathname } = useLocation();
   const isDesktop = Boolean(screens.lg);
+  // EduAI and messages have a message box at the bottom; on phones the badge sits above it.
+  const hasBottomComposer = pathname.startsWith("/edu-ai") || pathname.startsWith("/messages");
+  const mobileBottom = hasBottomComposer ? 164 : 86;
 
   const switchRole = async () => {
     await logout();
@@ -51,7 +55,7 @@ export default function DemoBadge() {
         style={{
           position: "fixed",
           left: isDesktop ? 20 : 12,
-          bottom: isDesktop ? 96 : 86,
+          bottom: isDesktop ? 96 : mobileBottom,
           zIndex: 1030,
           display: "flex",
           alignItems: "center",
