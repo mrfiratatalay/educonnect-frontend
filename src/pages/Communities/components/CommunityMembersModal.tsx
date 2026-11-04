@@ -16,7 +16,7 @@ interface CommunityMembersModalProps {
 
 const roleLabels: Record<AppGroupMember["role"], string> = {
   owner: "Kurucu",
-  moderatör: "Moderatör",
+  moderator: "Moderatör",
   member: "Üye",
 };
 
@@ -120,7 +120,7 @@ function getRoleColor(role: AppGroupMember["role"]) {
   switch (role) {
     case "owner":
       return "gold";
-    case "moderatör":
+    case "moderator":
       return "blue";
     default:
       return "default";

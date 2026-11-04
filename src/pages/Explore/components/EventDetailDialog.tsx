@@ -47,7 +47,7 @@ export default function EventDetailDialog({
       currentUser &&
       (event.creatorUserId === currentUser.id ||
         currentUser.role === "admin" ||
-        currentUser.role === "moderatör"),
+        currentUser.role === "moderator"),
   );
 
   return (

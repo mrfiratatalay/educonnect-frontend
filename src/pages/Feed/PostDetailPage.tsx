@@ -113,7 +113,7 @@ export default function PostDetailPage() {
             canManage={
               postDetailQuery.data.post.userId === user?.id ||
               user?.role === "admin" ||
-              user?.role === "moderatör"
+              user?.role === "moderator"
             }
             isDeleting={deletingPostId === postDetailQuery.data.post.id}
             isUpdating={updatingPostId === postDetailQuery.data.post.id}
